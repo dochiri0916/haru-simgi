@@ -1,0 +1,9 @@
+rootProject.name = 'msa-todo'
+
+include(
+        'config-server',
+        'eureka-server',
+        'gateway',
+        'health-service',
+        'user-service'
+)

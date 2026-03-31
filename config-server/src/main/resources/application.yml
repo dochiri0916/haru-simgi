@@ -1,0 +1,14 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: config-server
+
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://https: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@github.com/ssbin0916/msa-config.git
+          clone-on-start: true
+          default-label: main
