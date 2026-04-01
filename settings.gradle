@@ -4,6 +4,9 @@ include(
         'config-server',
         'eureka-server',
         'gateway',
-        'health-service',
-        'user-service'
+        'user-service',
+        'auth-service',
+        'modules:error-handling',
+        'modules:jpa',
+        'modules:security'
 )

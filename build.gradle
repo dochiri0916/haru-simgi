@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.7'
+    id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.example'
+group = 'com.dochiri'
 version = '0.0.1-SNAPSHOT'
 description = 'msa-base'
 
@@ -39,7 +39,7 @@ subprojects {
     }
 
     ext {
-        set('springCloudVersion', "2025.0.0")
+        set('springCloudVersion', "2025.1.1")
     }
 
     dependencyManagement {
@@ -47,8 +47,8 @@ subprojects {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
         }
     }
-}
 
-tasks.named('test') {
-    useJUnitPlatform()
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+    }
 }

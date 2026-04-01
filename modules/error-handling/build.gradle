@@ -1,0 +1,19 @@
+apply plugin: 'java-library'
+
+description = 'error-handling-module'
+
+tasks.named('bootJar') {
+    enabled = false
+}
+
+tasks.named('jar') {
+    enabled = true
+}
+
+dependencies {
+    api 'org.springframework:spring-webmvc'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    compileOnly 'org.slf4j:slf4j-api'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
