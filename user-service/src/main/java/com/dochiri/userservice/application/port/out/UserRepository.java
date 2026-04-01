@@ -17,4 +17,6 @@ public interface UserRepository {
 
     boolean existsByEmail(String email);
 
+    UserProjection loadProjectionByEmail(String email);
+
 }

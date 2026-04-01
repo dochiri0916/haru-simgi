@@ -7,11 +7,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
 
 @Entity
 @Table(name = "auditable_entities")
-@Getter
 class AuditableEntity extends BaseEntity {
 
     @Id
@@ -26,6 +24,14 @@ class AuditableEntity extends BaseEntity {
 
     AuditableEntity(String name) {
         this.name = name;
+    }
+
+    Long getId() {
+        return id;
+    }
+
+    String getName() {
+        return name;
     }
 
     void rename(String name) {

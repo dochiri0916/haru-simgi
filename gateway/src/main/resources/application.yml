@@ -7,12 +7,14 @@ spring:
       server:
         webflux:
           routes:
-            - id: health-service
-              uri: lb://health
+            - id: auth-service
+              uri: lb://auth-service
               predicates:
-                - Path=/health/**
-              filters:
-                - StripPrefix=1
+                - Path=/api/auth/**
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/users/**
 
 eureka:
   client:

@@ -1,6 +1,7 @@
 package com.dochiri.userservice.infrastructure.user;
 
 import com.dochiri.errorhandling.BaseException;
+import com.dochiri.userservice.application.port.out.UserProjection;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.Id;
 import com.dochiri.userservice.domain.User;
@@ -53,6 +54,20 @@ public class UserJpaAdapter implements UserRepository {
     @Override
     public boolean existsByEmail(String email) {
         return userJpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public UserProjection loadProjectionByEmail(String email) {
+        UserEntity userEntity = userJpaRepository.findByEmail(email)
+                .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
+
+        return new UserProjection(
+                userEntity.getId(),
+                userEntity.getPublicId(),
+                userEntity.getEmail(),
+                userEntity.getPasswordHash(),
+                "USER"
+        );
     }
 
 }
