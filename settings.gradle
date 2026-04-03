@@ -8,5 +8,7 @@ include(
         'auth-service',
         'modules:error-handling',
         'modules:jpa',
-        'modules:security'
+        'modules:security',
+        'modules:kafka',
+        'modules:time'
 )
