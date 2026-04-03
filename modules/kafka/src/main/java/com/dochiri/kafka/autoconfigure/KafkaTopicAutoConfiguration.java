@@ -23,4 +23,5 @@ class KafkaTopicAutoConfiguration {
 
         return new KafkaAdmin.NewTopics(topics.toArray(NewTopic[]::new));
     }
+
 }
