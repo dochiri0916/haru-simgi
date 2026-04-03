@@ -1,4 +1,3 @@
-HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
@@ -25,6 +24,9 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.env
+env/*.env
+*.env
 
 ### NetBeans ###
 /nbproject/private/

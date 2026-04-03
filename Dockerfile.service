@@ -1,0 +1,47 @@
+# syntax=docker/dockerfile:1.7
+
+FROM gradle:9.4.0-jdk21 AS builder
+
+WORKDIR /workspace
+
+ARG MODULE_NAME
+
+COPY --chown=gradle:gradle gradlew gradlew.bat settings.gradle build.gradle ./
+COPY --chown=gradle:gradle gradle ./gradle
+
+COPY --chown=gradle:gradle config-server/build.gradle ./config-server/build.gradle
+COPY --chown=gradle:gradle eureka-server/build.gradle ./eureka-server/build.gradle
+COPY --chown=gradle:gradle gateway/build.gradle ./gateway/build.gradle
+COPY --chown=gradle:gradle auth-service/build.gradle ./auth-service/build.gradle
+COPY --chown=gradle:gradle user-service/build.gradle ./user-service/build.gradle
+COPY --chown=gradle:gradle modules/error-handling/build.gradle ./modules/error-handling/build.gradle
+COPY --chown=gradle:gradle modules/jpa/build.gradle ./modules/jpa/build.gradle
+COPY --chown=gradle:gradle modules/kafka/build.gradle ./modules/kafka/build.gradle
+COPY --chown=gradle:gradle modules/security/build.gradle ./modules/security/build.gradle
+COPY --chown=gradle:gradle modules/time/build.gradle ./modules/time/build.gradle
+
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle :${MODULE_NAME}:dependencies --no-daemon --configuration-cache > /dev/null
+
+COPY --chown=gradle:gradle modules ./modules
+COPY --chown=gradle:gradle config-server ./config-server
+COPY --chown=gradle:gradle eureka-server ./eureka-server
+COPY --chown=gradle:gradle gateway ./gateway
+COPY --chown=gradle:gradle auth-service ./auth-service
+COPY --chown=gradle:gradle user-service ./user-service
+
+RUN --mount=type=cache,target=/home/gradle/.gradle \
+    gradle :${MODULE_NAME}:bootJar --no-daemon --configuration-cache -x test \
+    && cp /workspace/${MODULE_NAME}/build/libs/*.jar /workspace/app.jar
+
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /workspace/app.jar /app/app.jar
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
