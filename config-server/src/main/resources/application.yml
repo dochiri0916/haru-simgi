@@ -9,6 +9,8 @@ spring:
     config:
       server:
         git:
-          uri: https://https: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@github.com/ssbin0916/msa-config.git
+          uri: ${CONFIG_GIT_URI}
+          username: ${CONFIG_GIT_USERNAME:}
+          password: ${CONFIG_GIT_PASSWORD:}
           clone-on-start: true
           default-label: main
