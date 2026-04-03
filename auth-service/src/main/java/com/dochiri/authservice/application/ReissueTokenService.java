@@ -1,11 +1,11 @@
 package com.dochiri.authservice.application;
 
+import com.dochiri.authservice.application.error.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
 import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.domain.RefreshToken;
-import com.dochiri.authservice.presentation.error.AuthErrorCode;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;

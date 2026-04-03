@@ -12,29 +12,18 @@ public final class User {
 
     private final Id id;
     private final String email;
-    private final String passwordHash;
 
-    public static User create(String email, String passwordHash) {
+    public static User create(String email) {
         return new User(
                 Id.newId(),
-                requireNonNull(email),
-                requireNonNull(passwordHash)
+                requireNonNull(email)
         );
     }
 
-    public static User from(String publicId, String email, String passwordHash) {
+    public static User from(String publicId, String email) {
         return new User(
                 Id.from(publicId),
-                requireNonNull(email),
-                requireNonNull(passwordHash)
-        );
-    }
-
-    public User changePassword(String passwordHash) {
-        return new User(
-                id,
-                email,
-                requireNonNull(passwordHash)
+                requireNonNull(email)
         );
     }
 

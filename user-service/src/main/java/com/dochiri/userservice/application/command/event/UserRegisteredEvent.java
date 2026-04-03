@@ -1,6 +1,6 @@
-package com.dochiri.authservice.application.port.in.dto;
+package com.dochiri.userservice.application.command.event;
 
-public record SyncAuthUserCommand(
+public record UserRegisteredEvent(
         Long userId,
         String publicId,
         String email,
