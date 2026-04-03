@@ -5,7 +5,13 @@ spring:
     bootstrap-servers: localhost:9092
     consumer:
       group-id: auth-service-test
+    listener:
+      auto-startup: false
   cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
     discovery:
       enabled: false
 

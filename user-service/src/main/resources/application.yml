@@ -1,0 +1,8 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: user-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://adbin:adbin@config-server:9000}

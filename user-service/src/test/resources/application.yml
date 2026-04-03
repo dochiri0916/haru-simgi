@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: user-service
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+    discovery:
+      enabled: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JacksonJsonSerializer
+
+eureka:
+  client:
+    enabled: false
+
+app:
+  kafka:
+    topics:
+      user-registered: user.registered

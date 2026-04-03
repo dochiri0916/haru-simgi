@@ -7,8 +7,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.listener.CommonErrorHandler;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
@@ -54,14 +54,13 @@ class KafkaModuleAutoConfigurationTest {
     }
 
     @Test
-    void CommonErrorHandler가_있으면_리스너_팩토리_커스터마이저와_PostProcessor를_등록한다() {
+    void ConsumerFactory가_있으면_기본_리스너_팩토리와_에러핸들러를_등록한다() {
         contextRunner
-                .withUserConfiguration(KafkaListenerConfig.class)
+                .withUserConfiguration(KafkaConsumerConfig.class)
                 .run(context -> {
                     assertThat(context).hasSingleBean(CommonErrorHandler.class);
                     assertThat(context).hasSingleBean(KafkaErrorHandlerProperties.class);
-                    assertThat(context).hasSingleBean(KafkaListenerContainerFactoryCustomizer.class);
-                    assertThat(context).hasSingleBean(KafkaListenerFactoryPostProcessor.class);
+                    assertThat(context).hasBean("kafkaListenerContainerFactory");
                 });
     }
 
@@ -93,20 +92,20 @@ class KafkaModuleAutoConfigurationTest {
     }
 
     @Configuration(proxyBeanMethods = false)
-    static class KafkaListenerConfig {
-
-        @Bean
-        ConcurrentKafkaListenerContainerFactory<Object, Object> kafkaListenerContainerFactory() {
-            return new ConcurrentKafkaListenerContainerFactory<>();
-        }
-    }
-
-    @Configuration(proxyBeanMethods = false)
     static class KafkaOperationsConfig {
 
         @Bean
         KafkaOperations<Object, Object> kafkaOperations() {
             return mock(KafkaOperations.class);
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    static class KafkaConsumerConfig {
+
+        @Bean
+        ConsumerFactory<Object, Object> consumerFactory() {
+            return mock(ConsumerFactory.class);
         }
     }
 }
