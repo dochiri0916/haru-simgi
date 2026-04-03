@@ -1,10 +1,10 @@
-package com.dochiri.authservice.infrastructure.adapter.in.web.publicapi;
+package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 
 import com.dochiri.authservice.application.port.in.AuthenticateUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
-import com.dochiri.authservice.infrastructure.adapter.in.web.publicapi.request.LoginRequest;
-import com.dochiri.authservice.infrastructure.adapter.in.web.publicapi.request.RefreshTokenRequest;
-import com.dochiri.authservice.infrastructure.adapter.in.web.publicapi.response.AuthTokenResponse;
+import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.LoginRequest;
+import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.RefreshTokenRequest;
+import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.AuthTokenResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

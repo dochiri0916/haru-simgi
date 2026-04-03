@@ -12,8 +12,7 @@ public class UserRegisteredConsumer {
     private final SyncAuthUserUseCase syncAuthUserUseCase;
 
     @KafkaListener(
-            topics = "${app.kafka.topics.user-registered}",
-            containerFactory = "kafkaListenerContainerFactory"
+            topics = "${app.kafka.topics.user-registered}"
     )
     public void consume(UserRegisteredMessage message) {
         syncAuthUserUseCase.sync(message.toCommand());

@@ -1,4 +1,4 @@
-package com.dochiri.authservice.infrastructure.adapter.in.web.publicapi.request;
+package com.dochiri.authservice.infrastructure.adapter.in.web.external.request;
 
 import com.dochiri.authservice.application.port.in.dto.LoginCommand;
 import jakarta.validation.constraints.Email;
