@@ -16,17 +16,10 @@ class CorsPropertiesTest {
     }
 
     @Test
-    void 와일드카드_origin이_포함되면_hasWildcardOrigin이_true를_반환한다() {
+    void 와일드카드_origin도_그대로_보관한다() {
         CorsProperties properties = new CorsProperties(List.of("*"));
 
-        assertThat(properties.hasWildcardOrigin()).isTrue();
-    }
-
-    @Test
-    void 특정_origin만_있으면_hasWildcardOrigin이_false를_반환한다() {
-        CorsProperties properties = new CorsProperties(List.of("https://example.com"));
-
-        assertThat(properties.hasWildcardOrigin()).isFalse();
+        assertThat(properties.allowedOrigins()).containsExactly("*");
     }
 
     @Test

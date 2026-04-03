@@ -13,8 +13,4 @@ public record CorsProperties(
             allowedOrigins = List.of();
         }
     }
-
-    public boolean hasWildcardOrigin() {
-        return allowedOrigins.contains("*");
-    }
 }

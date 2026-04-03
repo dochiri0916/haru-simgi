@@ -6,6 +6,7 @@ import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
 import com.dochiri.security.jwt.RefreshTokenVerifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 import java.time.Clock;
 
 @Configuration(proxyBeanMethods = false)
+@ConditionalOnProperty(prefix = "jwt", name = {"secret", "access-expiration", "refresh-expiration"})
 @EnableConfigurationProperties(JwtProperties.class)
 class JwtAutoConfiguration {
 
