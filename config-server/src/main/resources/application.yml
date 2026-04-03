@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: ${SERVER_PORT:9000}
 
 spring:
   application:
@@ -14,3 +14,18 @@ spring:
           password: ${CONFIG_GIT_PASSWORD:}
           clone-on-start: true
           default-label: main
+
+config-server:
+  security:
+    username: ${CONFIG_SERVER_USERNAME:adbin}
+    password: ${CONFIG_SERVER_PASSWORD:adbin}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true
