@@ -1,6 +1,6 @@
 package com.dochiri.security.jwt;
 
-import com.dochiri.security.configuration.properties.JwtProperties;
+import com.dochiri.security.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;

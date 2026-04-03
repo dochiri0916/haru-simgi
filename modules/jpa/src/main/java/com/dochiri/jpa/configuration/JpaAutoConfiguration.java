@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import java.util.Optional;
 
-@AutoConfiguration(afterName = "com.dochiri.security.configuration.SecurityAutoConfiguration")
+@AutoConfiguration(afterName = "com.dochiri.security.autoconfigure.SecurityAutoConfiguration")
 @EnableJpaAuditing
 class JpaAutoConfiguration {
 

@@ -1,8 +1,8 @@
-package com.dochiri.security.configuration;
+package com.dochiri.security.autoconfigure;
 
 import com.dochiri.security.jwt.JwtAuthenticationConverter;
 import com.dochiri.security.jwt.JwtAuthenticationFilter;
-import com.dochiri.security.configuration.properties.JwtProperties;
+import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
 import com.dochiri.security.jwt.RefreshTokenVerifier;

@@ -6,7 +6,6 @@ plugins {
 
 group = 'com.dochiri'
 version = '0.0.1-SNAPSHOT'
-description = 'msa-base'
 
 java {
     toolchain {
@@ -24,17 +23,10 @@ subprojects {
     apply plugin: 'java'
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
-    apply plugin: 'java-test-fixtures'
 
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(21)
-        }
-    }
-
-    configurations {
-        compileOnly {
-            extendsFrom annotationProcessor
         }
     }
 

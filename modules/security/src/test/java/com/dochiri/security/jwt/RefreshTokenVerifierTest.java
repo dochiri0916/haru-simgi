@@ -1,6 +1,6 @@
 package com.dochiri.security.jwt;
 
-import com.dochiri.security.configuration.properties.JwtProperties;
+import com.dochiri.security.properties.JwtProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;

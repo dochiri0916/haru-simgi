@@ -1,6 +1,6 @@
 package com.dochiri.security.jwt;
 
-import com.dochiri.security.configuration.properties.JwtProperties;
+import com.dochiri.security.properties.JwtProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;

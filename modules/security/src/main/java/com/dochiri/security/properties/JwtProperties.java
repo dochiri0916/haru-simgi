@@ -1,4 +1,4 @@
-package com.dochiri.security.configuration.properties;
+package com.dochiri.security.properties;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;

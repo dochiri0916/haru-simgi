@@ -6,7 +6,7 @@ import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.domain.AuthUser;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
-import com.dochiri.security.configuration.properties.JwtProperties;
+import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
 import org.junit.jupiter.api.BeforeEach;

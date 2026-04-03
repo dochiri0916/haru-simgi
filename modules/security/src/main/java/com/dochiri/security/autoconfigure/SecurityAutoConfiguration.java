@@ -1,4 +1,4 @@
-package com.dochiri.security.configuration;
+package com.dochiri.security.autoconfigure;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Import;

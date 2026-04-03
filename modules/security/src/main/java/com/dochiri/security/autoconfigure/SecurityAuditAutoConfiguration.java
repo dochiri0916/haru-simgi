@@ -1,7 +1,7 @@
-package com.dochiri.security.configuration;
+package com.dochiri.security.autoconfigure;
 
 import com.dochiri.security.audit.SecurityAuditorAware;
-import com.dochiri.security.configuration.properties.SecurityProperties;
+import com.dochiri.security.properties.SecurityProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,8 +1,8 @@
-package com.dochiri.security.configuration;
+package com.dochiri.security.autoconfigure;
 
-import com.dochiri.security.configuration.properties.SecurityProperties;
-import com.dochiri.security.handler.JwtAccessDeniedHandler;
-import com.dochiri.security.handler.JwtAuthenticationEntryPoint;
+import com.dochiri.security.properties.SecurityProperties;
+import com.dochiri.security.web.JwtAccessDeniedHandler;
+import com.dochiri.security.web.JwtAuthenticationEntryPoint;
 import com.dochiri.security.jwt.JwtAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

@@ -1,4 +1,4 @@
-package com.dochiri.security.configuration;
+package com.dochiri.security.autoconfigure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

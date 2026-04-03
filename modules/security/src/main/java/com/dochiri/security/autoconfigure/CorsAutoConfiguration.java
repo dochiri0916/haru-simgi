@@ -1,6 +1,6 @@
-package com.dochiri.security.configuration;
+package com.dochiri.security.autoconfigure;
 
-import com.dochiri.security.configuration.properties.CorsProperties;
+import com.dochiri.security.properties.CorsProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

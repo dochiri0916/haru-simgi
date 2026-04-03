@@ -1,4 +1,4 @@
-package com.dochiri.security.handler;
+package com.dochiri.security.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
