@@ -1,6 +1,6 @@
-package com.dochiri.userservice.infrastructure.adapter.in.web.publicapi.response;
+package com.dochiri.userservice.infrastructure.adapter.in.web.external.response;
 
-import com.dochiri.userservice.application.command.port.in.dto.RegisterUserResult;
+import com.dochiri.userservice.application.port.in.dto.RegisterUserResult;
 
 public record RegisterUserResponse(
         String publicId,

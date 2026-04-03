@@ -1,8 +1,8 @@
-package com.dochiri.userservice.infrastructure.adapter.in.web.publicapi;
+package com.dochiri.userservice.infrastructure.adapter.in.web.external;
 
-import com.dochiri.userservice.application.command.service.RegisterUserService;
-import com.dochiri.userservice.infrastructure.adapter.in.web.publicapi.request.RegisterUserRequest;
-import com.dochiri.userservice.infrastructure.adapter.in.web.publicapi.response.RegisterUserResponse;
+import com.dochiri.userservice.application.service.RegisterUserService;
+import com.dochiri.userservice.infrastructure.adapter.in.web.external.request.RegisterUserRequest;
+import com.dochiri.userservice.infrastructure.adapter.in.web.external.response.RegisterUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

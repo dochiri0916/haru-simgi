@@ -1,4 +1,4 @@
-package com.dochiri.userservice.application.command.port.in.dto;
+package com.dochiri.userservice.application.port.in.dto;
 
 import static java.util.Objects.requireNonNull;
 

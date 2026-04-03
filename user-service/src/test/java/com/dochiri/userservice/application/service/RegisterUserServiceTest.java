@@ -1,10 +1,10 @@
-package com.dochiri.userservice.application.command.service;
+package com.dochiri.userservice.application.service;
 
-import com.dochiri.userservice.application.command.event.UserRegisteredEvent;
-import com.dochiri.userservice.application.command.port.in.dto.RegisterUserCommand;
-import com.dochiri.userservice.application.command.port.out.UserEventPublisher;
-import com.dochiri.userservice.application.command.port.out.UserProjection;
-import com.dochiri.userservice.application.command.port.out.UserRepository;
+import com.dochiri.userservice.application.event.UserRegisteredEvent;
+import com.dochiri.userservice.application.port.in.dto.RegisterUserCommand;
+import com.dochiri.userservice.application.port.out.UserEventPublisher;
+import com.dochiri.userservice.application.port.out.UserProjection;
+import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

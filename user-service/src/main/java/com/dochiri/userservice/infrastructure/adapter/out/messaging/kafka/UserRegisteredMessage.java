@@ -1,6 +1,6 @@
 package com.dochiri.userservice.infrastructure.adapter.out.messaging.kafka;
 
-import com.dochiri.userservice.application.command.event.UserRegisteredEvent;
+import com.dochiri.userservice.application.event.UserRegisteredEvent;
 
 public record UserRegisteredMessage(
         Long userId,

@@ -2,8 +2,8 @@ package com.dochiri.userservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.userservice.application.error.UserErrorCode;
-import com.dochiri.userservice.application.command.port.out.UserProjection;
-import com.dochiri.userservice.application.command.port.out.UserRepository;
+import com.dochiri.userservice.application.port.out.UserProjection;
+import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.Id;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;

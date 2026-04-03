@@ -1,4 +1,4 @@
-package com.dochiri.userservice.application.command.port.out;
+package com.dochiri.userservice.application.port.out;
 
 import com.dochiri.userservice.domain.Id;
 import com.dochiri.userservice.domain.User;

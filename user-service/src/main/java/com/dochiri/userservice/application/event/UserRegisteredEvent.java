@@ -1,4 +1,4 @@
-package com.dochiri.userservice.application.command.event;
+package com.dochiri.userservice.application.event;
 
 public record UserRegisteredEvent(
         Long userId,
