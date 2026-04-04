@@ -6,7 +6,6 @@ import com.dochiri.userservice.application.event.UserRegisteredEvent;
 import com.dochiri.userservice.application.port.in.RegisterUserUseCase;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserCommand;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserResult;
-import com.dochiri.userservice.application.port.out.UserProjection;
 import com.dochiri.userservice.application.port.out.UserEventPublisher;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
@@ -31,16 +30,7 @@ public class RegisterUserService implements RegisterUserUseCase {
 
         try {
             User saved = userRepository.save(newUser);
-            UserProjection projection = userRepository.loadProjectionByEmail(saved.getEmail());
-            userEventPublisher.publishUserRegistered(
-                    new UserRegisteredEvent(
-                            projection.userId(),
-                            projection.publicId(),
-                            projection.email(),
-                            command.password(),
-                            projection.role()
-                    )
-            );
+            userEventPublisher.publishUserRegistered(UserRegisteredEvent.of(saved, command.password()));
             return new RegisterUserResult(saved.getId().value(), saved.getEmail());
         } catch (DataIntegrityViolationException exception) {
             throw new BaseException(UserErrorCode.DUPLICATE_EMAIL);

@@ -3,7 +3,6 @@ package com.dochiri.userservice.application.service;
 import com.dochiri.userservice.application.event.UserRegisteredEvent;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserCommand;
 import com.dochiri.userservice.application.port.out.UserEventPublisher;
-import com.dochiri.userservice.application.port.out.UserProjection;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,17 +28,15 @@ class RegisterUserServiceTest {
     @Test
     void 회원가입에_성공하면_유저_등록_이벤트를_발행한다() {
         RegisterUserCommand command = new RegisterUserCommand("alice@example.com", "secret123");
-        User savedUser = User.from("user-public-id", "alice@example.com");
+        User savedUser = User.from(1L, "user-public-id", "alice@example.com");
 
         when(userRepository.existsByEmail(command.email())).thenReturn(false);
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(userRepository.loadProjectionByEmail(savedUser.getEmail()))
-                .thenReturn(new UserProjection(1L, "user-public-id", "alice@example.com", "USER"));
 
         registerUserService.register(command);
 
         verify(userEventPublisher).publishUserRegistered(
-                new UserRegisteredEvent(1L, "user-public-id", "alice@example.com", "secret123", "USER")
+                UserRegisteredEvent.of(savedUser, "secret123")
         );
     }
 }

@@ -10,7 +10,7 @@ public class UserMapper {
 
     public User toDomain(UserEntity entity) {
         requireNonNull(entity);
-        return User.from(entity.getPublicId(), entity.getEmail());
+        return User.from(entity.getId(), entity.getPublicId(), entity.getEmail());
     }
 
     public UserEntity toEntity(User domain) {
