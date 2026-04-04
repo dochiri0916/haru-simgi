@@ -17,4 +17,5 @@ public class UserRegisteredConsumer {
     public void consume(UserRegisteredMessage message) {
         syncAuthUserUseCase.sync(message.toCommand());
     }
+
 }

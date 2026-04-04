@@ -2,6 +2,7 @@ package com.dochiri.authservice.application;
 
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
+import com.dochiri.authservice.application.service.ReissueTokenService;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtProperties;

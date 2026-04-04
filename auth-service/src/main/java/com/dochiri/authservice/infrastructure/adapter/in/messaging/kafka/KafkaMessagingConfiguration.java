@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JacksonJsonDeserializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +24,8 @@ public class KafkaMessagingConfiguration {
         properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
-        JsonDeserializer<UserRegisteredMessage> valueDeserializer =
-                new JsonDeserializer<>(UserRegisteredMessage.class);
+        JacksonJsonDeserializer<UserRegisteredMessage> valueDeserializer =
+                new JacksonJsonDeserializer<>(UserRegisteredMessage.class);
         valueDeserializer.addTrustedPackages(UserRegisteredMessage.class.getPackageName());
         valueDeserializer.ignoreTypeHeaders();
 
