@@ -1,12 +1,12 @@
-package com.dochiri.authservice.application;
+package com.dochiri.authservice.application.service;
 
 import com.dochiri.authservice.application.port.in.AuthenticateUseCase;
 import com.dochiri.authservice.application.error.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.LoginCommand;
-import com.dochiri.authservice.application.port.out.AuthUserRepository;
+import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
-import com.dochiri.authservice.domain.AuthUser;
+import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.jwt.JwtProvider;
@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthenticateService implements AuthenticateUseCase {
 
-    private final AuthUserRepository authUserRepository;
+    private final AuthAccountRepository authAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenGenerator jwtTokenGenerator;
     private final JwtProvider jwtProvider;
@@ -31,14 +31,14 @@ public class AuthenticateService implements AuthenticateUseCase {
     @Transactional
     @Override
     public AuthTokenResult authenticate(LoginCommand command) {
-        AuthUser user = authUserRepository.findByEmail(command.email())
+        AuthAccount account = authAccountRepository.findByEmail(command.email())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.INVALID_CREDENTIALS));
 
-        if (!passwordEncoder.matches(command.password(), user.passwordHash())) {
+        if (!passwordEncoder.matches(command.password(), account.passwordHash())) {
             throw new BaseException(AuthErrorCode.INVALID_CREDENTIALS);
         }
 
-        JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(user.userId(), user.role());
+        JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(account.userId(), account.role());
         storeRefreshToken(tokenResult);
 
         return AuthTokenResult.from(tokenResult);
@@ -55,4 +55,5 @@ public class AuthenticateService implements AuthenticateUseCase {
         refreshTokenRepository.deleteByUserId(refreshToken.getUserId());
         refreshTokenRepository.save(refreshToken);
     }
+
 }

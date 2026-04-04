@@ -1,4 +1,4 @@
-package com.dochiri.authservice.application;
+package com.dochiri.authservice.application.service;
 
 import com.dochiri.authservice.application.error.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
