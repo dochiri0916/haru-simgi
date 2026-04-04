@@ -1,6 +1,6 @@
 package com.dochiri.authservice.domain;
 
-public record AuthUser(
+public record AuthAccount(
         Long userId,
         String publicId,
         String email,

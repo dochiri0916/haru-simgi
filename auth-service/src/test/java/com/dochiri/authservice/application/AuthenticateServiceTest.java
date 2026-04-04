@@ -1,9 +1,10 @@
 package com.dochiri.authservice.application;
 
 import com.dochiri.authservice.application.port.in.dto.LoginCommand;
-import com.dochiri.authservice.application.port.out.AuthUserRepository;
+import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
-import com.dochiri.authservice.domain.AuthUser;
+import com.dochiri.authservice.application.service.AuthenticateService;
+import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtProperties;
@@ -26,7 +27,7 @@ import static org.mockito.Mockito.when;
 
 class AuthenticateServiceTest {
 
-    private final AuthUserRepository authUserRepository = mock(AuthUserRepository.class);
+    private final AuthAccountRepository authAccountRepository = mock(AuthAccountRepository.class);
     private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final JwtProvider jwtProvider = new JwtProvider(new JwtProperties(
@@ -41,7 +42,7 @@ class AuthenticateServiceTest {
     @BeforeEach
     void setUp() {
         authenticateService = new AuthenticateService(
-                authUserRepository,
+                authAccountRepository,
                 passwordEncoder,
                 jwtTokenGenerator,
                 jwtProvider,
@@ -52,8 +53,8 @@ class AuthenticateServiceTest {
     @Test
     void 로그인에_성공하면_토큰을_발급하고_리프레시_토큰을_저장한다() {
         String passwordHash = passwordEncoder.encode("secret123");
-        when(authUserRepository.findByEmail("alice@example.com"))
-                .thenReturn(Optional.of(new AuthUser(1L, "user-public-id", "alice@example.com", passwordHash, "USER")));
+        when(authAccountRepository.findByEmail("alice@example.com"))
+                .thenReturn(Optional.of(new AuthAccount(1L, "user-public-id", "alice@example.com", passwordHash, "USER")));
         when(refreshTokenRepository.save(any(RefreshToken.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -68,8 +69,8 @@ class AuthenticateServiceTest {
 
     @Test
     void 비밀번호가_틀리면_예외가_발생한다() {
-        when(authUserRepository.findByEmail("alice@example.com"))
-                .thenReturn(Optional.of(new AuthUser(
+        when(authAccountRepository.findByEmail("alice@example.com"))
+                .thenReturn(Optional.of(new AuthAccount(
                         1L,
                         "user-public-id",
                         "alice@example.com",

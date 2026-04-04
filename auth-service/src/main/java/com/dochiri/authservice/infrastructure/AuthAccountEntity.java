@@ -17,7 +17,7 @@ import static java.util.Objects.requireNonNull;
 @Table(name = "auth_users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AuthUserEntity extends BaseEntity {
+public class AuthAccountEntity extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +38,8 @@ public class AuthUserEntity extends BaseEntity {
     @Column(nullable = false)
     private String role;
 
-    public static AuthUserEntity from(Long userId, String publicId, String email, String passwordHash, String role) {
-        AuthUserEntity entity = new AuthUserEntity();
+    public static AuthAccountEntity from(Long userId, String publicId, String email, String passwordHash, String role) {
+        AuthAccountEntity entity = new AuthAccountEntity();
         entity.userId = requireNonNull(userId);
         entity.publicId = requireNonNull(publicId);
         entity.email = requireNonNull(email);
