@@ -1,0 +1,8 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: task-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://adbin:adbin@config-server:9000}
