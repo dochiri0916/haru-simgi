@@ -31,8 +31,7 @@ public class AuthenticateService implements AuthenticateUseCase {
     @Transactional
     @Override
     public AuthTokenResult authenticate(LoginCommand command) {
-        AuthAccount account = authAccountRepository.findByEmail(command.email())
-                .orElseThrow(() -> new BaseException(AuthErrorCode.INVALID_CREDENTIALS));
+        AuthAccount account = authAccountRepository.loadByEmail(command.email());
 
         if (!passwordEncoder.matches(command.password(), account.passwordHash())) {
             throw new BaseException(AuthErrorCode.INVALID_CREDENTIALS);
@@ -52,8 +51,7 @@ public class AuthenticateService implements AuthenticateUseCase {
                 jwtProvider.extractExpiration(claims)
         );
 
-        refreshTokenRepository.deleteByUserId(refreshToken.getUserId());
-        refreshTokenRepository.save(refreshToken);
+        refreshTokenRepository.replaceByUserId(refreshToken);
     }
 
 }

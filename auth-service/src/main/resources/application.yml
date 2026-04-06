@@ -6,6 +6,9 @@ spring:
     name: auth-service
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://adbin:adbin@config-server:9000}
+  threads:
+    virtual:
+      enabled: true
 
 security:
   public-endpoints:

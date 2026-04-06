@@ -49,8 +49,6 @@ public class ReissueTokenService implements ReissueTokenUseCase {
         AuthAccount account = authAccountRepository.findByUserId(userId)
                 .orElseThrow(() -> new BaseException(AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND));
 
-        refreshTokenRepository.deleteByUserId(userId);
-
         JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(userId, account.role().name());
         storeRefreshToken(tokenResult);
 
@@ -59,7 +57,7 @@ public class ReissueTokenService implements ReissueTokenUseCase {
 
     private void storeRefreshToken(JwtTokenResult tokenResult) {
         Claims claims = jwtProvider.parseAndValidate(tokenResult.refreshToken());
-        refreshTokenRepository.save(
+        refreshTokenRepository.replaceByUserId(
                 RefreshToken.create(
                         jwtProvider.extractTokenId(claims),
                         jwtProvider.extractUserId(claims),

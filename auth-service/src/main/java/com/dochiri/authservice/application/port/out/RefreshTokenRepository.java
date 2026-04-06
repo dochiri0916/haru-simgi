@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface RefreshTokenRepository {
 
-    RefreshToken save(RefreshToken refreshToken);
+    RefreshToken replaceByUserId(RefreshToken refreshToken);
 
     Optional<RefreshToken> findByTokenId(String tokenId);
 

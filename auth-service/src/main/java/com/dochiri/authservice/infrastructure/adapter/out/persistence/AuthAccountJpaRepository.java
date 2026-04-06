@@ -10,4 +10,5 @@ public interface AuthAccountJpaRepository extends JpaRepository<AuthAccountEntit
     Optional<AuthAccountEntity> findByEmail(String email);
 
     Optional<AuthAccountEntity> findByUserId(Long userId);
+
 }

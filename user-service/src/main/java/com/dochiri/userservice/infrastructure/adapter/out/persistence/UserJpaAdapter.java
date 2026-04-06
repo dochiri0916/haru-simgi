@@ -17,14 +17,8 @@ public class UserJpaAdapter implements UserRepository {
     private final UserMapper userMapper;
 
     @Override
-    public Long save(User user) {
-        Optional<UserEntity> existingOptional = userJpaRepository.findByPublicId(user.getPublicId());
-
-        if (existingOptional.isPresent()) {
-            return existingOptional.get().getId();
-        }
-
-        UserEntity saved = userJpaRepository.save(userMapper.toEntity(user));
+    public Long create(User user) {
+        UserEntity saved = userJpaRepository.saveAndFlush(userMapper.toEntity(user));
         return saved.getId();
     }
 
@@ -57,4 +51,5 @@ public class UserJpaAdapter implements UserRepository {
     public boolean existsByEmail(String email) {
         return userJpaRepository.existsByEmail(email);
     }
+
 }

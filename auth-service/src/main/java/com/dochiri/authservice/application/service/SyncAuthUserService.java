@@ -17,7 +17,7 @@ public class SyncAuthUserService implements SyncAuthUserUseCase {
     @Transactional
     @Override
     public void sync(SyncAuthUserCommand command) {
-        authAccountRepository.save(new AuthAccount(
+        authAccountRepository.upsertByUserId(new AuthAccount(
                 command.userId(),
                 command.publicId(),
                 command.email(),

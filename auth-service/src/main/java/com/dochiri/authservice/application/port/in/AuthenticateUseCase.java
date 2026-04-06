@@ -6,4 +6,5 @@ import com.dochiri.authservice.application.port.in.dto.LoginCommand;
 public interface AuthenticateUseCase {
 
     AuthTokenResult authenticate(LoginCommand command);
+
 }

@@ -52,7 +52,7 @@ class ReissueTokenServiceTest {
                 .thenReturn(Optional.of(RefreshToken.create(tokenId, 1L, Instant.now().plusSeconds(60))));
         when(authAccountRepository.findByUserId(1L))
                 .thenReturn(Optional.of(new AuthAccount(1L, "user-public-id", "alice@example.com", "password-hash", UserRole.USER)));
-        when(refreshTokenRepository.save(any(RefreshToken.class)))
+        when(refreshTokenRepository.replaceByUserId(any(RefreshToken.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         var result = reissueTokenService.reissue(new RefreshTokenCommand(refreshToken));
@@ -60,8 +60,7 @@ class ReissueTokenServiceTest {
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
         assertThat(result.role()).isEqualTo(UserRole.USER);
-        verify(refreshTokenRepository).deleteByUserId(1L);
-        verify(refreshTokenRepository).save(any(RefreshToken.class));
+        verify(refreshTokenRepository).replaceByUserId(any(RefreshToken.class));
     }
 
     @Test

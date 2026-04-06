@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface UserRepository {
 
-    Long save(User user);
+    Long create(User user);
 
     Optional<User> findByEmail(String email);
 
@@ -17,4 +17,5 @@ public interface UserRepository {
     User loadByUserId(Long userId);
 
     boolean existsByEmail(String email);
+
 }

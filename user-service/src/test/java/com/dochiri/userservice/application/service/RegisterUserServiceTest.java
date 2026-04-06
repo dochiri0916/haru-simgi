@@ -1,7 +1,7 @@
 package com.dochiri.userservice.application.service;
 
 import com.dochiri.userservice.application.port.in.dto.RegisterUserCommand;
-import com.dochiri.userservice.application.port.out.AuthAccountProvisioner;
+import com.dochiri.userservice.application.port.out.AuthAccountProvisionerPort;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class RegisterUserServiceTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final AuthAccountProvisioner authAccountProvisioner = mock(AuthAccountProvisioner.class);
+    private final AuthAccountProvisionerPort authAccountProvisioner = mock(AuthAccountProvisionerPort.class);
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private final RegisterUserService registerUserService =
@@ -29,13 +29,13 @@ class RegisterUserServiceTest {
         RegisterUserCommand command = new RegisterUserCommand("alice@example.com", "secret123");
 
         when(userRepository.existsByEmail(command.email())).thenReturn(false);
-        when(userRepository.save(any())).thenReturn(1L);
+        when(userRepository.create(any())).thenReturn(1L);
 
         registerUserService.register(command);
 
         ArgumentCaptor<com.dochiri.userservice.domain.User> userCaptor =
                 ArgumentCaptor.forClass(com.dochiri.userservice.domain.User.class);
-        verify(userRepository).save(userCaptor.capture());
+        verify(userRepository).create(userCaptor.capture());
 
         String publicId = userCaptor.getValue().getPublicId();
         var passwordHashCaptor = org.mockito.ArgumentCaptor.forClass(String.class);

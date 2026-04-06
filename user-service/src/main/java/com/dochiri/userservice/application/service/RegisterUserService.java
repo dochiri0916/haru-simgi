@@ -6,7 +6,7 @@ import com.dochiri.userservice.application.error.UserErrorCode;
 import com.dochiri.userservice.application.port.in.RegisterUserUseCase;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserCommand;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserResult;
-import com.dochiri.userservice.application.port.out.AuthAccountProvisioner;
+import com.dochiri.userservice.application.port.out.AuthAccountProvisionerPort;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RegisterUserService implements RegisterUserUseCase {
 
     private final UserRepository userRepository;
-    private final AuthAccountProvisioner authAccountProvisioner;
+    private final AuthAccountProvisionerPort authAccountProvisioner;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -32,9 +32,9 @@ public class RegisterUserService implements RegisterUserUseCase {
         String passwordHash = passwordEncoder.encode(command.password());
 
         try {
-            Long userId = userRepository.save(newUser);
+            Long userId = userRepository.create(newUser);
             authAccountProvisioner.provision(userId, newUser.getPublicId(), newUser.getEmail(), passwordHash, UserRole.USER);
-            return new RegisterUserResult(newUser.getPublicId(), newUser.getEmail(), UserRole.USER);
+            return RegisterUserResult.from(newUser, UserRole.USER);
         } catch (DataIntegrityViolationException exception) {
             throw new BaseException(UserErrorCode.DUPLICATE_EMAIL);
         }
