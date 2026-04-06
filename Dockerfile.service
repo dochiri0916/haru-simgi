@@ -13,6 +13,7 @@ COPY --chown=gradle:gradle config-server/build.gradle ./config-server/build.grad
 COPY --chown=gradle:gradle eureka-server/build.gradle ./eureka-server/build.gradle
 COPY --chown=gradle:gradle gateway/build.gradle ./gateway/build.gradle
 COPY --chown=gradle:gradle auth-service/build.gradle ./auth-service/build.gradle
+COPY --chown=gradle:gradle task-service/build.gradle ./task-service/build.gradle
 COPY --chown=gradle:gradle user-service/build.gradle ./user-service/build.gradle
 COPY --chown=gradle:gradle modules/error-handling/build.gradle ./modules/error-handling/build.gradle
 COPY --chown=gradle:gradle modules/jpa/build.gradle ./modules/jpa/build.gradle
@@ -28,6 +29,7 @@ COPY --chown=gradle:gradle config-server ./config-server
 COPY --chown=gradle:gradle eureka-server ./eureka-server
 COPY --chown=gradle:gradle gateway ./gateway
 COPY --chown=gradle:gradle auth-service ./auth-service
+COPY --chown=gradle:gradle task-service ./task-service
 COPY --chown=gradle:gradle user-service ./user-service
 
 RUN --mount=type=cache,target=/home/gradle/.gradle \

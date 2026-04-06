@@ -100,8 +100,6 @@ services:
         MODULE_NAME: auth-service
     container_name: msa-todo-auth-service
     depends_on:
-      kafka:
-        condition: service_started
       eureka-server:
         condition: service_healthy
       auth-mysql:
@@ -112,9 +110,9 @@ services:
       SERVER_PORT: 8082
       CONFIG_SERVER_URL: http://adbin:adbin@config-server:9000
       EUREKA_DEFAULT_ZONE: http://adbin:adbin@eureka-server:8761/eureka/
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      USER_REGISTERED_TOPIC: user.registered
-      AUTH_KAFKA_GROUP_ID: auth-service
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://adbin:adbin@eureka-server:8761/eureka/
+      SECURITY_PUBLIC_ENDPOINTS_0: /api/auth/**
+      SECURITY_PUBLIC_ENDPOINTS_1: /internal/auth-users
       JWT_SECRET: "12345678901234567890123456789012"
       SPRING_DATASOURCE_URL: jdbc:mysql://auth-mysql:3306/auth_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
       SPRING_DATASOURCE_USERNAME: auth_user
@@ -129,8 +127,6 @@ services:
         MODULE_NAME: user-service
     container_name: msa-todo-user-service
     depends_on:
-      kafka:
-        condition: service_started
       eureka-server:
         condition: service_healthy
       user-mysql:
@@ -141,13 +137,32 @@ services:
       SERVER_PORT: 8081
       CONFIG_SERVER_URL: http://adbin:adbin@config-server:9000
       EUREKA_DEFAULT_ZONE: http://adbin:adbin@eureka-server:8761/eureka/
-      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      USER_REGISTERED_TOPIC: user.registered
+      SECURITY_PUBLIC_ENDPOINTS_0: /api/users
+      AUTH_SERVICE_BASE_URL: http://auth-service:8082
       JWT_SECRET: "12345678901234567890123456789012"
       SPRING_DATASOURCE_URL: jdbc:mysql://user-mysql:3306/user_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
       SPRING_DATASOURCE_USERNAME: user_user
       SPRING_DATASOURCE_PASSWORD: user_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+
+  task-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.service
+      args:
+        MODULE_NAME: task-service
+    container_name: msa-todo-task-service
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      CONFIG_SERVER_URL: http://adbin:adbin@config-server:9000
+      EUREKA_DEFAULT_ZONE: http://adbin:adbin@eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://adbin:adbin@eureka-server:8761/eureka/
+      JWT_SECRET: "12345678901234567890123456789012"
 
   gateway:
     build:
@@ -160,6 +175,8 @@ services:
       eureka-server:
         condition: service_healthy
       auth-service:
+        condition: service_started
+      task-service:
         condition: service_started
       user-service:
         condition: service_started
