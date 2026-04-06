@@ -9,4 +9,6 @@ public interface AuthAccountRepository {
     AuthAccount save(AuthAccount authAccount);
 
     Optional<AuthAccount> findByEmail(String email);
+
+    Optional<AuthAccount> findByUserId(Long userId);
 }

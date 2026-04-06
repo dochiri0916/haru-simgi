@@ -1,12 +1,16 @@
 package com.dochiri.authservice.application;
 
 import com.dochiri.authservice.application.port.in.AuthenticateUseCase;
+import com.dochiri.authservice.application.port.in.ChangeUserRoleUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
 import com.dochiri.authservice.application.port.in.SyncAuthUserUseCase;
+import com.dochiri.authservice.application.port.in.dto.ChangeUserRoleCommand;
 import com.dochiri.authservice.application.port.in.dto.LoginCommand;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 import com.dochiri.authservice.application.port.in.dto.SyncAuthUserCommand;
 import com.dochiri.errorhandling.BaseException;
+import com.dochiri.security.jwt.JwtProvider;
+import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,7 +39,13 @@ class AuthAccountSyncIntegrationTest {
     private AuthenticateUseCase authenticateUseCase;
 
     @Autowired
+    private ChangeUserRoleUseCase changeUserRoleUseCase;
+
+    @Autowired
     private ReissueTokenUseCase reissueTokenUseCase;
+
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -47,14 +57,14 @@ class AuthAccountSyncIntegrationTest {
                 "user-public-id",
                 "alice@example.com",
                 passwordEncoder.encode("secret123"),
-                "USER"
+                UserRole.USER
         ));
         syncAuthUserUseCase.sync(new SyncAuthUserCommand(
                 1L,
                 "user-public-id",
                 "alice+updated@example.com",
                 passwordEncoder.encode("changed-secret"),
-                "USER"
+                UserRole.USER
         ));
 
         assertThatThrownBy(() -> authenticateUseCase.authenticate(new LoginCommand("alice@example.com", "secret123")))
@@ -73,7 +83,7 @@ class AuthAccountSyncIntegrationTest {
                 "user-public-id",
                 "alice@example.com",
                 passwordEncoder.encode("secret123"),
-                "USER"
+                UserRole.USER
         ));
 
         var first = authenticateUseCase.authenticate(new LoginCommand("alice@example.com", "secret123"));
@@ -84,5 +94,29 @@ class AuthAccountSyncIntegrationTest {
                 .isInstanceOf(BaseException.class);
         assertThat(reissueTokenUseCase.reissue(new RefreshTokenCommand(second.refreshToken())).accessToken())
                 .isNotBlank();
+    }
+
+    @Test
+    void 권한을_변경하면_기존_리프레시_토큰은_무효화되고_다시_로그인한_토큰에_새_role이_반영된다() {
+        syncAuthUserUseCase.sync(new SyncAuthUserCommand(
+                1L,
+                "user-public-id",
+                "alice@example.com",
+                passwordEncoder.encode("secret123"),
+                UserRole.USER
+        ));
+
+        var firstLogin = authenticateUseCase.authenticate(new LoginCommand("alice@example.com", "secret123"));
+
+        changeUserRoleUseCase.changeRole(new ChangeUserRoleCommand(1L, UserRole.ADMIN));
+
+        assertThatThrownBy(() -> reissueTokenUseCase.reissue(new RefreshTokenCommand(firstLogin.refreshToken())))
+                .isInstanceOf(BaseException.class);
+
+        var secondLogin = authenticateUseCase.authenticate(new LoginCommand("alice@example.com", "secret123"));
+        var claims = jwtProvider.parseAndValidate(secondLogin.accessToken());
+
+        assertThat(secondLogin.role()).isEqualTo(UserRole.ADMIN);
+        assertThat(jwtProvider.extractRole(claims)).isEqualTo("ADMIN");
     }
 }

@@ -1,5 +1,7 @@
 package com.dochiri.security.jwt;
 
+import com.dochiri.security.properties.JwtCookieProperties;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,9 +21,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
+    private final JwtCookieProperties jwtCookieProperties;
 
-    public JwtAuthenticationFilter(JwtAuthenticationConverter jwtAuthenticationConverter) {
+    public JwtAuthenticationFilter(
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            JwtCookieProperties jwtCookieProperties
+    ) {
         this.jwtAuthenticationConverter = jwtAuthenticationConverter;
+        this.jwtCookieProperties = jwtCookieProperties;
     }
 
     @Override
@@ -44,11 +51,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
 
-        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
             return null;
         }
 
-        return bearerToken.substring(7);
+        for (Cookie cookie : cookies) {
+            if (jwtCookieProperties.accessTokenName().equals(cookie.getName())
+                    && StringUtils.hasText(cookie.getValue())) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 
 }

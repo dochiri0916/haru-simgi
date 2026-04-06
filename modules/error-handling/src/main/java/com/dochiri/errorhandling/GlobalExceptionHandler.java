@@ -7,6 +7,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -17,6 +19,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
+    public ResponseEntity<Object> handleAccessDenied(Exception exception, HttpServletRequest request) {
+        log.warn("접근이 거부되었습니다. uri={}, method={}, message={}",
+                request.getRequestURI(), request.getMethod(), exception.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(createProblemDetail(
+                        exception,
+                        HttpStatus.FORBIDDEN,
+                        "접근 권한이 없습니다.",
+                        null, null,
+                        new ServletWebRequest(request)
+                ));
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUncaughtException(Exception exception, HttpServletRequest request) {

@@ -33,4 +33,10 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
         return authAccountJpaRepository.findByEmail(email)
                 .map(authAccountMapper::toDomain);
     }
+
+    @Override
+    public Optional<AuthAccount> findByUserId(Long userId) {
+        return authAccountJpaRepository.findByUserId(userId)
+                .map(authAccountMapper::toDomain);
+    }
 }

@@ -3,6 +3,7 @@ package com.dochiri.security.autoconfigure;
 import com.dochiri.security.jwt.JwtAuthenticationConverter;
 import com.dochiri.security.jwt.JwtAuthenticationFilter;
 import com.dochiri.security.properties.JwtProperties;
+import com.dochiri.security.properties.JwtCookieProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
 import com.dochiri.security.jwt.RefreshTokenVerifier;
@@ -16,7 +17,7 @@ import java.time.Clock;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(prefix = "jwt", name = {"secret", "access-expiration", "refresh-expiration"})
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, JwtCookieProperties.class})
 class JwtAutoConfiguration {
 
     @Bean
@@ -30,8 +31,11 @@ class JwtAutoConfiguration {
     }
 
     @Bean
-    JwtAuthenticationFilter jwtAuthenticationFilter(JwtAuthenticationConverter jwtAuthenticationConverter) {
-        return new JwtAuthenticationFilter(jwtAuthenticationConverter);
+    JwtAuthenticationFilter jwtAuthenticationFilter(
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            JwtCookieProperties jwtCookieProperties
+    ) {
+        return new JwtAuthenticationFilter(jwtAuthenticationConverter, jwtCookieProperties);
     }
 
     @Bean

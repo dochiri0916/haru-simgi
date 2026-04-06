@@ -13,10 +13,24 @@ spring:
               uri: lb://auth-service
               predicates:
                 - Path=/api/auth/**
+            - id: auth-admin-service
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/admin/**
             - id: user-service
               uri: lb://user-service
               predicates:
                 - Path=/api/users/**
+            - id: task-service
+              uri: lb://task-service
+              predicates:
+                - Path=/api/tasks/**
+
+cors:
+  allowed-origins:
+    - ${CORS_ALLOWED_ORIGIN_0:http://localhost:3000}
+    - ${CORS_ALLOWED_ORIGIN_1:http://localhost:5173}
+  allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
 
 eureka:
   client:

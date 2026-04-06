@@ -1,6 +1,8 @@
 package com.dochiri.security.jwt;
 
 import com.dochiri.security.properties.JwtProperties;
+import com.dochiri.security.properties.JwtCookieProperties;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +29,7 @@ class JwtAuthenticationFilterTest {
     void setUp() {
         jwtProvider = new JwtProvider(new JwtProperties(SECRET, 3600000L, 604800000L));
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter(jwtProvider);
-        filter = new JwtAuthenticationFilter(converter);
+        filter = new JwtAuthenticationFilter(converter, new JwtCookieProperties(null, null, null, null, null, null, false));
         filterChain = mock(FilterChain.class);
         SecurityContextHolder.clearContext();
     }
@@ -57,6 +59,21 @@ class JwtAuthenticationFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
         verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void Authorization_헤더가_없어도_access_token_쿠키가_있으면_인증된다() throws ServletException, IOException {
+        String token = jwtProvider.generateAccessToken(1L, "USER");
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(new Cookie("access_token", token));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        JwtPrincipal principal = (JwtPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        assertThat(principal.userId()).isEqualTo(1L);
+        assertThat(principal.role()).isEqualTo("USER");
     }
 
     @Test
@@ -99,7 +116,10 @@ class JwtAuthenticationFilterTest {
     @Test
     void 예상하지_못한_런타임_예외는_전파된다() {
         JwtAuthenticationConverter converter = mock(JwtAuthenticationConverter.class);
-        JwtAuthenticationFilter exceptionalFilter = new JwtAuthenticationFilter(converter);
+        JwtAuthenticationFilter exceptionalFilter = new JwtAuthenticationFilter(
+                converter,
+                new JwtCookieProperties(null, null, null, null, null, null, false)
+        );
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer unexpected-error-token");
         MockHttpServletResponse response = new MockHttpServletResponse();

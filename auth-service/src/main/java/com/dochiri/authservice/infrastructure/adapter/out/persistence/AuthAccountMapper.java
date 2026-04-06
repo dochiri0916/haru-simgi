@@ -2,6 +2,7 @@ package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.infrastructure.AuthAccountEntity;
+import com.dochiri.security.role.UserRole;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +14,7 @@ public class AuthAccountMapper {
                 entity.getPublicId(),
                 entity.getEmail(),
                 entity.getPasswordHash(),
-                entity.getRole()
+                UserRole.from(entity.getRole())
         );
     }
 

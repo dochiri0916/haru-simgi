@@ -6,3 +6,30 @@ spring:
     name: user-service
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://adbin:adbin@config-server:9000}
+
+security:
+  public-endpoints:
+    - /api/users
+
+cors:
+  allowed-origins:
+    - ${CORS_ALLOWED_ORIGIN_0:http://localhost:3000}
+    - ${CORS_ALLOWED_ORIGIN_1:http://localhost:5173}
+  allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+
+app:
+  auth-service:
+    base-url: ${AUTH_SERVICE_BASE_URL:http://localhost:8082}
+
+jwt:
+  secret: ${JWT_SECRET:12345678901234567890123456789012}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+  cookie:
+    access-token-name: ${JWT_COOKIE_ACCESS_TOKEN_NAME:access_token}
+    refresh-token-name: ${JWT_COOKIE_REFRESH_TOKEN_NAME:refresh_token}
+    access-token-path: ${JWT_COOKIE_ACCESS_TOKEN_PATH:/}
+    refresh-token-path: ${JWT_COOKIE_REFRESH_TOKEN_PATH:/api/auth}
+    domain: ${JWT_COOKIE_DOMAIN:}
+    same-site: ${JWT_COOKIE_SAME_SITE:Lax}
+    secure: ${JWT_COOKIE_SECURE:false}

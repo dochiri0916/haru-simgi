@@ -1,13 +1,16 @@
 package com.dochiri.authservice.application;
 
+import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.application.service.ReissueTokenService;
+import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
+import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 class ReissueTokenServiceTest {
 
+    private final AuthAccountRepository authAccountRepository = mock(AuthAccountRepository.class);
     private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
     private final JwtProvider jwtProvider = new JwtProvider(new JwtProperties(
             "12345678901234567890123456789012",
@@ -35,7 +39,7 @@ class ReissueTokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        reissueTokenService = new ReissueTokenService(jwtProvider, jwtTokenGenerator, refreshTokenRepository);
+        reissueTokenService = new ReissueTokenService(jwtProvider, jwtTokenGenerator, authAccountRepository, refreshTokenRepository);
     }
 
     @Test
@@ -46,6 +50,8 @@ class ReissueTokenServiceTest {
 
         when(refreshTokenRepository.findByTokenId(tokenId))
                 .thenReturn(Optional.of(RefreshToken.create(tokenId, 1L, Instant.now().plusSeconds(60))));
+        when(authAccountRepository.findByUserId(1L))
+                .thenReturn(Optional.of(new AuthAccount(1L, "user-public-id", "alice@example.com", "password-hash", UserRole.USER)));
         when(refreshTokenRepository.save(any(RefreshToken.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -53,6 +59,7 @@ class ReissueTokenServiceTest {
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
+        assertThat(result.role()).isEqualTo(UserRole.USER);
         verify(refreshTokenRepository).deleteByUserId(1L);
         verify(refreshTokenRepository).save(any(RefreshToken.class));
     }

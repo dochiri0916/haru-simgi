@@ -6,7 +6,8 @@ import java.util.List;
 
 @ConfigurationProperties(prefix = "cors")
 public record CorsProperties(
-        List<String> allowedOrigins
+        List<String> allowedOrigins,
+        boolean allowCredentials
 ) {
     public CorsProperties {
         if (allowedOrigins == null) {

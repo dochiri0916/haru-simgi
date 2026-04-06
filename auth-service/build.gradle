@@ -1,7 +1,6 @@
 dependencies {
     implementation project(':modules:error-handling')
     implementation project(':modules:jpa')
-    implementation project(':modules:kafka')
     implementation project(':modules:security')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -20,7 +19,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'org.springframework.boot:spring-boot-webmvc-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

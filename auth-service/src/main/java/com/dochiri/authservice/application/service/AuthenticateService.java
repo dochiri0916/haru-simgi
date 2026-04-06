@@ -38,10 +38,10 @@ public class AuthenticateService implements AuthenticateUseCase {
             throw new BaseException(AuthErrorCode.INVALID_CREDENTIALS);
         }
 
-        JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(account.userId(), account.role());
+        JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(account.userId(), account.role().name());
         storeRefreshToken(tokenResult);
 
-        return AuthTokenResult.from(tokenResult);
+        return AuthTokenResult.from(tokenResult, account.role());
     }
 
     private void storeRefreshToken(JwtTokenResult tokenResult) {

@@ -12,12 +12,12 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class User {
 
-    private final String id;
+    private final String publicId;
     private final String email;
 
     public static User create(String email) {
         return new User(
-                generateId(),
+                generatePublicId(),
                 requireNonNull(email)
         );
     }
@@ -29,7 +29,7 @@ public final class User {
         );
     }
 
-    private static String generateId() {
+    private static String generatePublicId() {
         return UUID.randomUUID().toString();
     }
 

@@ -1,6 +1,7 @@
 package com.dochiri.authservice.infrastructure;
 
 import com.dochiri.jpa.entity.BaseEntity;
+import com.dochiri.security.role.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -38,21 +39,21 @@ public class AuthAccountEntity extends BaseEntity {
     @Column(nullable = false)
     private String role;
 
-    public static AuthAccountEntity from(Long userId, String publicId, String email, String passwordHash, String role) {
+    public static AuthAccountEntity from(Long userId, String publicId, String email, String passwordHash, UserRole role) {
         AuthAccountEntity entity = new AuthAccountEntity();
         entity.userId = requireNonNull(userId);
         entity.publicId = requireNonNull(publicId);
         entity.email = requireNonNull(email);
         entity.passwordHash = requireNonNull(passwordHash);
-        entity.role = requireNonNull(role);
+        entity.role = requireNonNull(role).name();
         return entity;
     }
 
-    public void update(String publicId, String email, String passwordHash, String role) {
+    public void update(String publicId, String email, String passwordHash, UserRole role) {
         this.publicId = requireNonNull(publicId);
         this.email = requireNonNull(email);
         this.passwordHash = requireNonNull(passwordHash);
-        this.role = requireNonNull(role);
+        this.role = requireNonNull(role).name();
     }
 
 }

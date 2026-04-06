@@ -17,16 +17,15 @@ public class UserJpaAdapter implements UserRepository {
     private final UserMapper userMapper;
 
     @Override
-    public User save(User user) {
-        Optional<UserEntity> existingOptional = userJpaRepository.findByPublicId(user.getId());
+    public Long save(User user) {
+        Optional<UserEntity> existingOptional = userJpaRepository.findByPublicId(user.getPublicId());
 
-        if (existingOptional.isEmpty()) {
-            UserEntity newEntity = userMapper.toEntity(user);
-            UserEntity saved = userJpaRepository.save(newEntity);
-            return userMapper.toDomain(saved);
+        if (existingOptional.isPresent()) {
+            return existingOptional.get().getId();
         }
 
-        return userMapper.toDomain(existingOptional.get());
+        UserEntity saved = userJpaRepository.save(userMapper.toEntity(user));
+        return saved.getId();
     }
 
     @Override
@@ -36,14 +35,21 @@ public class UserJpaAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(String publicId) {
+    public Optional<User> findByPublicId(String publicId) {
         return userJpaRepository.findByPublicId(publicId)
                 .map(userMapper::toDomain);
     }
 
     @Override
-    public User loadById(String publicId) {
-        return findById(publicId)
+    public User loadByPublicId(String publicId) {
+        return findByPublicId(publicId)
+                .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    @Override
+    public User loadByUserId(Long userId) {
+        return userJpaRepository.findById(userId)
+                .map(userMapper::toDomain)
                 .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
     }
 
@@ -51,5 +57,4 @@ public class UserJpaAdapter implements UserRepository {
     public boolean existsByEmail(String email) {
         return userJpaRepository.existsByEmail(email);
     }
-
 }

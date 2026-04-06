@@ -17,10 +17,10 @@ class CorsAutoConfiguration {
     @ConditionalOnMissingBean(CorsConfigurationSource.class)
     CorsConfigurationSource corsConfigurationSource(CorsProperties corsProperties) {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(corsProperties.allowedOrigins());
+        config.setAllowedOriginPatterns(corsProperties.allowedOrigins());
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
-        config.setAllowCredentials(false);
+        config.setAllowCredentials(corsProperties.allowCredentials());
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

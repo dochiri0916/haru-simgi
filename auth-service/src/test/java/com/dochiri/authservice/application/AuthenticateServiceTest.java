@@ -10,6 +10,7 @@ import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
+import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,7 +55,7 @@ class AuthenticateServiceTest {
     void 로그인에_성공하면_토큰을_발급하고_리프레시_토큰을_저장한다() {
         String passwordHash = passwordEncoder.encode("secret123");
         when(authAccountRepository.findByEmail("alice@example.com"))
-                .thenReturn(Optional.of(new AuthAccount(1L, "user-public-id", "alice@example.com", passwordHash, "USER")));
+                .thenReturn(Optional.of(new AuthAccount(1L, "user-public-id", "alice@example.com", passwordHash, UserRole.USER)));
         when(refreshTokenRepository.save(any(RefreshToken.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -63,6 +64,7 @@ class AuthenticateServiceTest {
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
         assertThat(result.refreshTokenExpiresAt()).isAfter(Instant.now().minusSeconds(1));
+        assertThat(result.role()).isEqualTo(UserRole.USER);
         verify(refreshTokenRepository).deleteByUserId(1L);
         verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
@@ -75,7 +77,7 @@ class AuthenticateServiceTest {
                         "user-public-id",
                         "alice@example.com",
                         passwordEncoder.encode("secret123"),
-                        "USER"
+                        UserRole.USER
                 )));
 
         assertThatThrownBy(() -> authenticateService.authenticate(new LoginCommand("alice@example.com", "wrong-password")))

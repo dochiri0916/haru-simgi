@@ -17,8 +17,3 @@ spring:
 eureka:
   client:
     enabled: false
-
-app:
-  kafka:
-    topics:
-      user-registered: user.registered

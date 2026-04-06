@@ -15,7 +15,7 @@ public class UserMapper {
 
     public UserEntity toEntity(User domain) {
         requireNonNull(domain);
-        return UserEntity.from(domain.getId(), domain.getEmail());
+        return UserEntity.from(domain.getPublicId(), domain.getEmail());
     }
 
 }

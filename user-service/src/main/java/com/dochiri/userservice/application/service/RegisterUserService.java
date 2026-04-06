@@ -1,12 +1,12 @@
 package com.dochiri.userservice.application.service;
 
 import com.dochiri.errorhandling.BaseException;
+import com.dochiri.security.role.UserRole;
 import com.dochiri.userservice.application.error.UserErrorCode;
-import com.dochiri.userservice.application.event.UserRegisteredEvent;
 import com.dochiri.userservice.application.port.in.RegisterUserUseCase;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserCommand;
 import com.dochiri.userservice.application.port.in.dto.RegisterUserResult;
-import com.dochiri.userservice.application.port.out.UserEventPublisher;
+import com.dochiri.userservice.application.port.out.AuthAccountProvisioner;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RegisterUserService implements RegisterUserUseCase {
 
     private final UserRepository userRepository;
-    private final UserEventPublisher userEventPublisher;
+    private final AuthAccountProvisioner authAccountProvisioner;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -29,13 +29,12 @@ public class RegisterUserService implements RegisterUserUseCase {
         validateDuplicateEmail(command.email());
 
         User newUser = User.create(command.email());
+        String passwordHash = passwordEncoder.encode(command.password());
 
         try {
-            User saved = userRepository.save(newUser);
-            userEventPublisher.publishUserRegistered(
-                    UserRegisteredEvent.of(saved, passwordEncoder.encode(command.password()))
-            );
-            return new RegisterUserResult(saved.getId(), saved.getEmail());
+            Long userId = userRepository.save(newUser);
+            authAccountProvisioner.provision(userId, newUser.getPublicId(), newUser.getEmail(), passwordHash, UserRole.USER);
+            return new RegisterUserResult(newUser.getPublicId(), newUser.getEmail(), UserRole.USER);
         } catch (DataIntegrityViolationException exception) {
             throw new BaseException(UserErrorCode.DUPLICATE_EMAIL);
         }
