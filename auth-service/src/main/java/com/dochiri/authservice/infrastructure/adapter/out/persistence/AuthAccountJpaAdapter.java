@@ -25,7 +25,7 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
 
         AuthAccountEntity entity = existing.get();
         authAccountMapper.apply(authAccount, entity);
-        return authAccountMapper.toDomain(entity);
+        return authAccountMapper.toDomain(authAccountJpaRepository.save(entity));
     }
 
     @Override

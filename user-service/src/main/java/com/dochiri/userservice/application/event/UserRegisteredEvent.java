@@ -6,15 +6,15 @@ public record UserRegisteredEvent(
         Long userId,
         String publicId,
         String email,
-        String password,
+        String passwordHash,
         String role
 ) {
-    public static UserRegisteredEvent of(User user, String password) {
+    public static UserRegisteredEvent of(User user, String passwordHash) {
         return new UserRegisteredEvent(
-                user.getUserId(),
-                user.getId().value(),
+                null,
+                user.getId(),
                 user.getEmail(),
-                password,
+                passwordHash,
                 "USER"
         );
     }

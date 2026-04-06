@@ -11,6 +11,7 @@ import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class RegisterUserService implements RegisterUserUseCase {
 
     private final UserRepository userRepository;
     private final UserEventPublisher userEventPublisher;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -30,8 +32,10 @@ public class RegisterUserService implements RegisterUserUseCase {
 
         try {
             User saved = userRepository.save(newUser);
-            userEventPublisher.publishUserRegistered(UserRegisteredEvent.of(saved, command.password()));
-            return new RegisterUserResult(saved.getId().value(), saved.getEmail());
+            userEventPublisher.publishUserRegistered(
+                    UserRegisteredEvent.of(saved, passwordEncoder.encode(command.password()))
+            );
+            return new RegisterUserResult(saved.getId(), saved.getEmail());
         } catch (DataIntegrityViolationException exception) {
             throw new BaseException(UserErrorCode.DUPLICATE_EMAIL);
         }

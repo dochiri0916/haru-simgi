@@ -8,12 +8,16 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
+import static java.util.Objects.requireNonNull;
+
 @Entity
 @Table(
         name = "refresh_tokens",
-        uniqueConstraints = @UniqueConstraint(name = "uk_refresh_tokens_token_id", columnNames = "token_id"),
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_refresh_tokens_token_id", columnNames = "token_id"),
+                @UniqueConstraint(name = "uk_refresh_tokens_user_id", columnNames = "user_id")
+        },
         indexes = {
-                @Index(name = "idx_refresh_tokens_user_id", columnList = "user_id"),
                 @Index(name = "idx_refresh_tokens_expires_at", columnList = "expires_at")
         }
 )
@@ -25,7 +29,7 @@ public class RefreshTokenEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private Long userId;
 
     @Column(nullable = false, unique = true)
@@ -36,10 +40,15 @@ public class RefreshTokenEntity extends BaseEntity {
 
     public static RefreshTokenEntity from(Long userId, String tokenId, Instant expiresAt) {
         RefreshTokenEntity entity = new RefreshTokenEntity();
-        entity.userId = userId;
-        entity.tokenId = tokenId;
-        entity.expiresAt = expiresAt;
+        entity.userId = requireNonNull(userId);
+        entity.tokenId = requireNonNull(tokenId);
+        entity.expiresAt = requireNonNull(expiresAt);
         return entity;
+    }
+
+    public void update(String tokenId, Instant expiresAt) {
+        this.tokenId = requireNonNull(tokenId);
+        this.expiresAt = requireNonNull(expiresAt);
     }
 
 }

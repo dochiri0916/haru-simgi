@@ -6,11 +6,11 @@ public record UserRegisteredMessage(
         Long userId,
         String publicId,
         String email,
-        String password,
+        String passwordHash,
         String role
 ) {
 
     public SyncAuthUserCommand toCommand() {
-        return new SyncAuthUserCommand(userId, publicId, email, password, role);
+        return new SyncAuthUserCommand(userId, publicId, email, passwordHash, role);
     }
 }

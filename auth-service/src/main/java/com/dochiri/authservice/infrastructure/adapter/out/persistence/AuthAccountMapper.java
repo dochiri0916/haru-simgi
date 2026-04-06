@@ -28,6 +28,11 @@ public class AuthAccountMapper {
     }
 
     public void apply(AuthAccount authAccount, AuthAccountEntity entity) {
-        entity.update(authAccount.passwordHash(), authAccount.role());
+        entity.update(
+                authAccount.publicId(),
+                authAccount.email(),
+                authAccount.passwordHash(),
+                authAccount.role()
+        );
     }
 }

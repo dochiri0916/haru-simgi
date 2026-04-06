@@ -5,7 +5,6 @@ import com.dochiri.authservice.application.port.in.dto.SyncAuthUserCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.domain.AuthAccount;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class SyncAuthUserService implements SyncAuthUserUseCase {
 
     private final AuthAccountRepository authAccountRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     @Override
@@ -23,7 +21,7 @@ public class SyncAuthUserService implements SyncAuthUserUseCase {
                 command.userId(),
                 command.publicId(),
                 command.email(),
-                passwordEncoder.encode(command.password()),
+                command.passwordHash(),
                 command.role()
         ));
     }

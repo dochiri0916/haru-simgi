@@ -3,7 +3,6 @@ package com.dochiri.userservice.infrastructure.adapter.out.persistence;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.userservice.application.error.UserErrorCode;
 import com.dochiri.userservice.application.port.out.UserRepository;
-import com.dochiri.userservice.domain.Id;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,7 +18,7 @@ public class UserJpaAdapter implements UserRepository {
 
     @Override
     public User save(User user) {
-        Optional<UserEntity> existingOptional = userJpaRepository.findByPublicId(user.getId().value());
+        Optional<UserEntity> existingOptional = userJpaRepository.findByPublicId(user.getId());
 
         if (existingOptional.isEmpty()) {
             UserEntity newEntity = userMapper.toEntity(user);
@@ -37,14 +36,14 @@ public class UserJpaAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(Id id) {
-        return userJpaRepository.findByPublicId(id.value())
+    public Optional<User> findById(String publicId) {
+        return userJpaRepository.findByPublicId(publicId)
                 .map(userMapper::toDomain);
     }
 
     @Override
-    public User loadById(Id id) {
-        return findById(id)
+    public User loadById(String publicId) {
+        return findById(publicId)
                 .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
     }
 

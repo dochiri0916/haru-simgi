@@ -18,6 +18,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Duration;
 import java.util.Map;
@@ -51,6 +52,9 @@ class UserRegistrationKafkaIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private Consumer<String, String> consumer;
 
     @AfterEach
@@ -72,7 +76,8 @@ class UserRegistrationKafkaIntegrationTest {
 
         assertThat(record.key()).isNotBlank();
         assertThat(message.email()).isEqualTo("alice@example.com");
-        assertThat(message.password()).isEqualTo("secret123");
+        assertThat(message.passwordHash()).isNotEqualTo("secret123");
+        assertThat(passwordEncoder.matches("secret123", message.passwordHash())).isTrue();
         assertThat(message.role()).isEqualTo("USER");
     }
 

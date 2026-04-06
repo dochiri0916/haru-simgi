@@ -1,6 +1,5 @@
 package com.dochiri.userservice.application.port.out;
 
-import com.dochiri.userservice.domain.Id;
 import com.dochiri.userservice.domain.User;
 
 import java.util.Optional;
@@ -11,9 +10,9 @@ public interface UserRepository {
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findById(Id id);
+    Optional<User> findById(String publicId);
 
-    User loadById(Id id);
+    User loadById(String publicId);
 
     boolean existsByEmail(String email);
 }

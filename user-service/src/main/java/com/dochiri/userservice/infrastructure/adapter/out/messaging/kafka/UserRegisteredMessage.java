@@ -6,7 +6,7 @@ public record UserRegisteredMessage(
         Long userId,
         String publicId,
         String email,
-        String password,
+        String passwordHash,
         String role
 ) {
 
@@ -15,7 +15,7 @@ public record UserRegisteredMessage(
                 event.userId(),
                 event.publicId(),
                 event.email(),
-                event.password(),
+                event.passwordHash(),
                 event.role()
         );
     }

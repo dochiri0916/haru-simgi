@@ -4,7 +4,7 @@ public record SyncAuthUserCommand(
         Long userId,
         String publicId,
         String email,
-        String password,
+        String passwordHash,
         String role
 ) {
 }

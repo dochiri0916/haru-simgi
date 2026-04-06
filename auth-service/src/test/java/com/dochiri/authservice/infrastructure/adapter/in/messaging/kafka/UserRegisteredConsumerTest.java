@@ -18,14 +18,20 @@ class UserRegisteredConsumerTest {
                 1L,
                 "user-public-id",
                 "alice@example.com",
-                "secret123",
+                "$2a$10$zszJ0gQPr0K1Q8v75eA0vOq4J2Jix.vAU6YewsGQKzBSSMSmc5Qw2",
                 "USER"
         );
 
         userRegisteredConsumer.consume(message);
 
         verify(syncAuthUserUseCase).sync(
-                new SyncAuthUserCommand(1L, "user-public-id", "alice@example.com", "secret123", "USER")
+                new SyncAuthUserCommand(
+                        1L,
+                        "user-public-id",
+                        "alice@example.com",
+                        "$2a$10$zszJ0gQPr0K1Q8v75eA0vOq4J2Jix.vAU6YewsGQKzBSSMSmc5Qw2",
+                        "USER"
+                )
         );
     }
 }

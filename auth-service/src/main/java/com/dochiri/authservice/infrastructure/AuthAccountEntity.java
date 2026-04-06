@@ -48,8 +48,11 @@ public class AuthAccountEntity extends BaseEntity {
         return entity;
     }
 
-    public void update(String passwordHash, String role) {
+    public void update(String publicId, String email, String passwordHash, String role) {
+        this.publicId = requireNonNull(publicId);
+        this.email = requireNonNull(email);
         this.passwordHash = requireNonNull(passwordHash);
         this.role = requireNonNull(role);
     }
+
 }

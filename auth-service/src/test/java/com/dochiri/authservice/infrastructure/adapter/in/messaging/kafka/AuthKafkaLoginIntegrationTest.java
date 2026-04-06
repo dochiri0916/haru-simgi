@@ -17,6 +17,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -55,6 +56,9 @@ class AuthKafkaLoginIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @BeforeEach
@@ -83,7 +87,7 @@ class AuthKafkaLoginIntegrationTest {
                 1L,
                 "user-public-id",
                 "alice@example.com",
-                "secret123",
+                passwordEncoder.encode("secret123"),
                 "USER"
         ))).get();
 
