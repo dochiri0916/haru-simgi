@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
@@ -18,22 +19,26 @@ public final class Task {
     private TaskOwner owner;
     private String title;
     private boolean completed;
+    private Instant completedAt;
 
     public static Task create(TaskOwner owner, String title) {
         return new Task(
                 generateId(),
                 requireNonNull(owner),
                 validateTitle(title),
-                false
+                false,
+                null
         );
     }
 
-    public static Task from(String publicId, TaskOwner owner, String title, boolean completed) {
+    public static Task from(String publicId, TaskOwner owner, String title, boolean completed, Instant completedAt) {
+        validateCompletionState(completed, completedAt);
         return new Task(
                 requireNonNull(publicId),
                 requireNonNull(owner),
                 validateTitle(title),
-                completed
+                completed,
+                completedAt
         );
     }
 
@@ -41,12 +46,14 @@ public final class Task {
         this.title = validateTitle(title);
     }
 
-    public void complete() {
+    public void complete(Instant completedAt) {
         this.completed = true;
+        this.completedAt = requireNonNull(completedAt);
     }
 
     public void reopen() {
         this.completed = false;
+        this.completedAt = null;
     }
 
     public void migrateTo(TaskOwner newOwner) {
@@ -77,6 +84,15 @@ public final class Task {
 
     private static String generateId() {
         return UUID.randomUUID().toString();
+    }
+
+    private static void validateCompletionState(boolean completed, Instant completedAt) {
+        if (completed && completedAt == null) {
+            throw new BaseException(TaskErrorCode.TASK_COMPLETED_AT_REQUIRED);
+        }
+        if (!completed && completedAt != null) {
+            throw new BaseException(TaskErrorCode.TASK_COMPLETED_AT_MUST_BE_NULL);
+        }
     }
 
 }

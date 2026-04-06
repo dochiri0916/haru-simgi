@@ -1,17 +1,22 @@
 package com.dochiri.taskservice.domain;
 
-import static java.util.Objects.requireNonNull;
+import com.dochiri.errorhandling.BaseException;
+import com.dochiri.taskservice.application.error.TaskErrorCode;
 
 public record TaskOwner(
         OwnerType type,
         String referenceId
 ) {
     public TaskOwner {
-        requireNonNull(type);
-        requireNonNull(referenceId);
+        if (type == null) {
+            throw new BaseException(TaskErrorCode.TASK_OWNER_TYPE_MISSING);
+        }
+        if (referenceId == null) {
+            throw new BaseException(TaskErrorCode.TASK_OWNER_REFERENCE_ID_MISSING);
+        }
 
         if (referenceId.isBlank()) {
-            throw new IllegalArgumentException("referenceId is blank");
+            throw new BaseException(TaskErrorCode.TASK_OWNER_REFERENCE_ID_BLANK);
         }
     }
 

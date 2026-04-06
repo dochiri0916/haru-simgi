@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 import static java.util.Objects.requireNonNull;
 
 @Entity
@@ -35,12 +37,16 @@ public class TaskEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean completed;
 
+    @Column
+    private Instant completedAt;
+
     public static TaskEntity from(
             String publicId,
             OwnerType ownerType,
             String ownerReferenceId,
             String title,
-            boolean completed
+            boolean completed,
+            Instant completedAt
     ) {
         TaskEntity entity = new TaskEntity();
         entity.publicId = requireNonNull(publicId);
@@ -48,6 +54,21 @@ public class TaskEntity extends BaseEntity {
         entity.ownerReferenceId = requireNonNull(ownerReferenceId);
         entity.title = requireNonNull(title);
         entity.completed = completed;
+        entity.completedAt = completedAt;
         return entity;
+    }
+
+    public void updateFrom(
+            OwnerType ownerType,
+            String ownerReferenceId,
+            String title,
+            boolean completed,
+            Instant completedAt
+    ) {
+        this.ownerType = requireNonNull(ownerType);
+        this.ownerReferenceId = requireNonNull(ownerReferenceId);
+        this.title = requireNonNull(title);
+        this.completed = completed;
+        this.completedAt = completedAt;
     }
 }

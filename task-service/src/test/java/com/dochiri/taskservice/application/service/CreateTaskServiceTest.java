@@ -27,7 +27,7 @@ class CreateTaskServiceTest {
     @Test
     void 할일_생성에_성공한다() {
         CreateTaskCommand command = new CreateTaskCommand(TaskOwner.guest("guest-1"), "오늘 운동하기");
-        Task savedTask = Task.from("task-public-id", TaskOwner.guest("guest-1"), "오늘 운동하기", false);
+        Task savedTask = Task.from("task-public-id", TaskOwner.guest("guest-1"), "오늘 운동하기", false, null);
 
         when(taskRepository.save(any(Task.class))).thenReturn(savedTask);
 

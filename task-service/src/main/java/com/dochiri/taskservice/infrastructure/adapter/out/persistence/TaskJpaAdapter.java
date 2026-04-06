@@ -8,6 +8,7 @@ import com.dochiri.taskservice.domain.TaskOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,16 @@ public class TaskJpaAdapter implements TaskRepository {
             return taskMapper.toDomain(saved);
         }
 
-        return taskMapper.toDomain(existingOptional.get());
+        TaskEntity existing = existingOptional.get();
+        existing.updateFrom(
+                task.getOwner().type(),
+                task.getOwner().referenceId(),
+                task.getTitle(),
+                task.isCompleted(),
+                task.getCompletedAt()
+        );
+        TaskEntity saved = taskJpaRepository.save(existing);
+        return taskMapper.toDomain(saved);
     }
 
     @Override
@@ -46,6 +56,20 @@ public class TaskJpaAdapter implements TaskRepository {
     @Override
     public List<Task> findAllByOwner(TaskOwner owner) {
         return taskJpaRepository.findAllByOwnerTypeAndOwnerReferenceId(owner.type(), owner.referenceId()).stream()
+                .map(taskMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Task> findCompletedByOwnerBetween(TaskOwner owner, Instant fromInclusive, Instant toExclusive) {
+        return taskJpaRepository
+                .findAllByOwnerTypeAndOwnerReferenceIdAndCompletedIsTrueAndCompletedAtGreaterThanEqualAndCompletedAtLessThan(
+                        owner.type(),
+                        owner.referenceId(),
+                        fromInclusive,
+                        toExclusive
+                )
+                .stream()
                 .map(taskMapper::toDomain)
                 .toList();
     }

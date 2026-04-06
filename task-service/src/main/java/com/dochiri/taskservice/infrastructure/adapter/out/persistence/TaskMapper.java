@@ -15,7 +15,8 @@ public class TaskMapper {
                 entity.getPublicId(),
                 new TaskOwner(entity.getOwnerType(), entity.getOwnerReferenceId()),
                 entity.getTitle(),
-                entity.isCompleted()
+                entity.isCompleted(),
+                entity.getCompletedAt()
         );
     }
 
@@ -26,7 +27,8 @@ public class TaskMapper {
                 domain.getOwner().type(),
                 domain.getOwner().referenceId(),
                 domain.getTitle(),
-                domain.isCompleted()
+                domain.isCompleted(),
+                domain.getCompletedAt()
         );
     }
 }
