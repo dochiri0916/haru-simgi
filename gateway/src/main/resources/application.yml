@@ -6,8 +6,13 @@ spring:
     name: gateway
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: ${GATEWAY_CONNECT_TIMEOUT_MS:3000}
+        response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:5s}
       server:
         webflux:
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           routes:
             - id: auth-service
               uri: lb://auth-service
@@ -35,9 +40,9 @@ cors:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://adbin:adbin@localhost:8761/eureka/}
+      defaultZone: ${EUREKA_DEFAULT_ZONE:http://${EUREKA_SERVER_USERNAME:adbin}:${EUREKA_SERVER_PASSWORD:adbin}@localhost:8761/eureka/}
 
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.web.reactive: DEBUG
+    org.springframework.cloud.gateway: ${GATEWAY_LOG_LEVEL:INFO}
+    org.springframework.web.reactive: ${WEB_REACTIVE_LOG_LEVEL:INFO}
