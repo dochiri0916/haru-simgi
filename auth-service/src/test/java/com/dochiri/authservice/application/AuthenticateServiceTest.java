@@ -3,8 +3,10 @@ package com.dochiri.authservice.application;
 import com.dochiri.authservice.application.port.in.dto.LoginCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
+import com.dochiri.authservice.application.service.AuthTokenIssuer;
 import com.dochiri.authservice.application.service.AuthenticateService;
 import com.dochiri.authservice.domain.AuthAccount;
+import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtProperties;
@@ -35,6 +37,8 @@ class AuthenticateServiceTest {
             1_209_600_000L
     ));
     private final JwtTokenGenerator jwtTokenGenerator = new JwtTokenGenerator(jwtProvider);
+    private final AuthTokenIssuer authTokenIssuer =
+            new AuthTokenIssuer(jwtTokenGenerator, jwtProvider, refreshTokenRepository);
 
     private AuthenticateService authenticateService;
 
@@ -43,9 +47,7 @@ class AuthenticateServiceTest {
         authenticateService = new AuthenticateService(
                 authAccountRepository,
                 passwordEncoder,
-                jwtTokenGenerator,
-                jwtProvider,
-                refreshTokenRepository
+                authTokenIssuer
         );
     }
 
@@ -53,7 +55,7 @@ class AuthenticateServiceTest {
     void 로그인에_성공하면_토큰을_발급하고_리프레시_토큰을_저장한다() {
         String passwordHash = passwordEncoder.encode("secret123");
         when(authAccountRepository.loadByEmail("alice@example.com"))
-                .thenReturn(new AuthAccount(1L, "user-public-id", "alice@example.com", passwordHash, UserRole.USER));
+                .thenReturn(new AuthAccount(1L, AuthProvider.LOCAL, null, "alice@example.com", passwordHash, UserRole.USER));
         when(refreshTokenRepository.replaceByUserId(any(RefreshToken.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -71,7 +73,8 @@ class AuthenticateServiceTest {
         when(authAccountRepository.loadByEmail("alice@example.com"))
                 .thenReturn(new AuthAccount(
                         1L,
-                        "user-public-id",
+                        AuthProvider.LOCAL,
+                        null,
                         "alice@example.com",
                         passwordEncoder.encode("secret123"),
                         UserRole.USER

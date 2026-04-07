@@ -23,6 +23,11 @@ public class UserJpaAdapter implements UserRepository {
     }
 
     @Override
+    public Optional<Long> findIdByEmail(String email) {
+        return userJpaRepository.findIdByEmail(email);
+    }
+
+    @Override
     public Optional<User> findByEmail(String email) {
         return userJpaRepository.findByEmail(email)
                 .map(userMapper::toDomain);

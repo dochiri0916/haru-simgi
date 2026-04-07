@@ -5,7 +5,7 @@ spring:
   application:
     name: auth-service
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://adbin:adbin@config-server:9000}
+    import: optional:configserver:${CONFIG_SERVER_URL:http://${CONFIG_SERVER_USERNAME:adbin}:${CONFIG_SERVER_PASSWORD:adbin}@config-server:9000}
   threads:
     virtual:
       enabled: true
@@ -13,13 +13,25 @@ spring:
 security:
   public-endpoints:
     - /api/auth/**
-    - /internal/auth-users
 
 cors:
   allowed-origins:
     - ${CORS_ALLOWED_ORIGIN_0:http://localhost:3000}
     - ${CORS_ALLOWED_ORIGIN_1:http://localhost:5173}
   allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
+
+app:
+  kakao:
+    enabled: ${KAKAO_LOGIN_ENABLED:true}
+    rest-api-key: ${KAKAO_REST_API_KEY:09dc96009afac78785a9c28588a39af8}
+    client-secret: ${KAKAO_CLIENT_SECRET:fBHSKSGs1au36iAlj3BzlDECjkSvNAsF}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/auth/login/kakao/callback}
+    frontend-redirect-uri: ${KAKAO_FRONTEND_REDIRECT_URI:http://localhost:5173/}
+    authorize-uri: ${KAKAO_AUTHORIZE_URI:https://kauth.kakao.com/oauth/authorize}
+    token-uri: ${KAKAO_TOKEN_URI:https://kauth.kakao.com/oauth/token}
+    user-info-uri: ${KAKAO_USER_INFO_URI:https://kapi.kakao.com/v2/user/me}
+  user-service:
+    base-url: ${USER_SERVICE_BASE_URL:http://localhost:8081}
 
 jwt:
   secret: ${JWT_SECRET:12345678901234567890123456789012}

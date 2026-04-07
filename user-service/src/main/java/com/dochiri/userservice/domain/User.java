@@ -14,18 +14,33 @@ public final class User {
 
     private final String publicId;
     private final String email;
+    private final String nickname;
+    private final String profileImageUrl;
 
     public static User create(String email) {
         return new User(
                 generatePublicId(),
-                requireNonNull(email)
+                requireNonNull(email),
+                null,
+                null
         );
     }
 
-    public static User from(String publicId, String email) {
+    public static User createSocial(String email, String nickname, String profileImageUrl) {
+        return new User(
+                generatePublicId(),
+                email,
+                nickname,
+                profileImageUrl
+        );
+    }
+
+    public static User from(String publicId, String email, String nickname, String profileImageUrl) {
         return new User(
                 requireNonNull(publicId),
-                requireNonNull(email)
+                email,
+                nickname,
+                profileImageUrl
         );
     }
 

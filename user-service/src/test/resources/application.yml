@@ -17,3 +17,13 @@ spring:
 eureka:
   client:
     enabled: false
+
+security:
+  public-endpoints:
+    - /internal/users
+    - /internal/users/social
+
+jwt:
+  secret: 12345678901234567890123456789012
+  access-expiration: 1800000
+  refresh-expiration: 1209600000

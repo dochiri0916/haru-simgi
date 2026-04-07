@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface AuthAccountRepository {
 
-    AuthAccount upsertByUserId(AuthAccount authAccount);
+    AuthAccount save(AuthAccount authAccount);
 
     default AuthAccount loadByEmail(String email) {
         return findByEmail(email)
@@ -16,6 +16,8 @@ public interface AuthAccountRepository {
     }
 
     Optional<AuthAccount> findByEmail(String email);
+
+    Optional<AuthAccount> findByProviderAndProviderUserId(String provider, String providerUserId);
 
     Optional<AuthAccount> findByUserId(Long userId);
 }

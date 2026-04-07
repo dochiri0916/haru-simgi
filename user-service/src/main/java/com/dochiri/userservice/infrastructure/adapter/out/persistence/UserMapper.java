@@ -10,12 +10,22 @@ public class UserMapper {
 
     public User toDomain(UserEntity entity) {
         requireNonNull(entity);
-        return User.from(entity.getPublicId(), entity.getEmail());
+        return User.from(
+                entity.getPublicId(),
+                entity.getEmail(),
+                entity.getNickname(),
+                entity.getProfileImageUrl()
+        );
     }
 
     public UserEntity toEntity(User domain) {
         requireNonNull(domain);
-        return UserEntity.from(domain.getPublicId(), domain.getEmail());
+        return UserEntity.from(
+                domain.getPublicId(),
+                domain.getEmail(),
+                domain.getNickname(),
+                domain.getProfileImageUrl()
+        );
     }
 
 }

@@ -16,7 +16,6 @@ eureka:
 security:
   public-endpoints:
     - /api/auth/**
-    - /internal/auth-users
 
 jwt:
   secret: 12345678901234567890123456789012

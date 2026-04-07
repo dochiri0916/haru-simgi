@@ -24,9 +24,10 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
         AuthAccount account = authAccountRepository.findByUserId(command.userId())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND));
 
-        authAccountRepository.upsertByUserId(new AuthAccount(
+        authAccountRepository.save(new AuthAccount(
                 account.userId(),
-                account.publicId(),
+                account.provider(),
+                account.providerUserId(),
                 account.email(),
                 account.passwordHash(),
                 command.role()
@@ -34,4 +35,5 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
 
         refreshTokenRepository.deleteByUserId(command.userId());
     }
+
 }

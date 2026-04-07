@@ -5,24 +5,21 @@ spring:
   application:
     name: user-service
   config:
-    import: optional:configserver:${CONFIG_SERVER_URL:http://adbin:adbin@config-server:9000}
+    import: optional:configserver:${CONFIG_SERVER_URL:http://${CONFIG_SERVER_USERNAME:adbin}:${CONFIG_SERVER_PASSWORD:adbin}@config-server:9000}
   threads:
     virtual:
       enabled: true
 
 security:
   public-endpoints:
-    - /api/users
+    - /internal/users
+    - /internal/users/social
 
 cors:
   allowed-origins:
     - ${CORS_ALLOWED_ORIGIN_0:http://localhost:3000}
     - ${CORS_ALLOWED_ORIGIN_1:http://localhost:5173}
   allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
-
-app:
-  auth-service:
-    base-url: ${AUTH_SERVICE_BASE_URL:http://localhost:8082}
 
 jwt:
   secret: ${JWT_SECRET:12345678901234567890123456789012}

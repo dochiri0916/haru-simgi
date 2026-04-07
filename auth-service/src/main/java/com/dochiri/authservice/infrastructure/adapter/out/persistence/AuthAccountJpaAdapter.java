@@ -19,7 +19,7 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
     private final AuthAccountMapper authAccountMapper;
 
     @Override
-    public AuthAccount upsertByUserId(AuthAccount authAccount) {
+    public AuthAccount save(AuthAccount authAccount) {
         try {
             return persist(authAccount);
         } catch (DataIntegrityViolationException exception) {
@@ -34,13 +34,19 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
     }
 
     @Override
+    public Optional<AuthAccount> findByProviderAndProviderUserId(String provider, String providerUserId) {
+        return authAccountJpaRepository.findByProviderAndProviderUserId(provider, providerUserId)
+                .map(authAccountMapper::toDomain);
+    }
+
+    @Override
     public Optional<AuthAccount> findByUserId(Long userId) {
-        return authAccountJpaRepository.findByUserId(userId)
+        return authAccountJpaRepository.findById(userId)
                 .map(authAccountMapper::toDomain);
     }
 
     private AuthAccount persist(AuthAccount authAccount) {
-        AuthAccountEntity entity = authAccountJpaRepository.findByUserId(authAccount.userId())
+        AuthAccountEntity entity = authAccountJpaRepository.findById(authAccount.userId())
                 .map(existing -> {
                     authAccountMapper.apply(authAccount, existing);
                     return existing;
@@ -55,7 +61,7 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
             AuthAccount authAccount,
             DataIntegrityViolationException originalException
     ) {
-        return authAccountJpaRepository.findByUserId(authAccount.userId())
+        return authAccountJpaRepository.findById(authAccount.userId())
                 .map(existing -> {
                     authAccountMapper.apply(authAccount, existing);
 
