@@ -5,12 +5,14 @@ spring:
   application:
     name: eureka-server
 
+security:
+  username: ${EUREKA_SERVER_USERNAME}
+  password: ${EUREKA_SERVER_PASSWORD}
+
 eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
-    service-url:
-      defaultZone: ${EUREKA_DEFAULT_ZONE:http://adbin:adbin@eureka-server:8761/eureka/}
 
 management:
   endpoints:
