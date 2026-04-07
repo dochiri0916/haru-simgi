@@ -31,14 +31,7 @@ public class CompleteTaskService implements CompleteTaskUseCase {
         task.complete(completedAt);
         Task saved = taskRepository.save(task);
 
-        return new CompleteTaskResult(
-                saved.getId(),
-                saved.getOwner().type().name(),
-                saved.getOwner().referenceId(),
-                saved.getTitle(),
-                saved.isCompleted(),
-                saved.getCompletedAt()
-        );
+        return CompleteTaskResult.from(saved);
     }
 
     private void validateTaskOwner(Task task, String requesterUserId) {

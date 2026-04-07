@@ -35,4 +35,5 @@ public record TaskOwner(
     public boolean isUser() {
         return type == OwnerType.USER;
     }
+
 }
