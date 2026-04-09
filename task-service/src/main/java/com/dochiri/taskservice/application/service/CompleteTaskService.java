@@ -42,4 +42,5 @@ public class CompleteTaskService implements CompleteTaskUseCase {
             throw new BaseException(TaskErrorCode.TASK_OWNER_FORBIDDEN);
         }
     }
+
 }

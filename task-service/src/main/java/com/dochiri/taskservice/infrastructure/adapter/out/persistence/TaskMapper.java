@@ -31,4 +31,5 @@ public class TaskMapper {
                 domain.getCompletedAt()
         );
     }
+
 }

@@ -37,7 +37,6 @@ public class TaskEntity extends BaseEntity {
     @Column(nullable = false)
     private boolean completed;
 
-    @Column
     private Instant completedAt;
 
     public static TaskEntity from(

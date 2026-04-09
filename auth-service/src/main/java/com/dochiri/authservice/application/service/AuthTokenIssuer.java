@@ -11,6 +11,7 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+// TODO: Service Layer에 있으면 안될 거 같음.
 @Component
 @RequiredArgsConstructor
 public class AuthTokenIssuer {

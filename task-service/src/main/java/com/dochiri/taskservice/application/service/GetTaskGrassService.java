@@ -73,4 +73,5 @@ public class GetTaskGrassService implements GetTaskGrassUseCase {
 
         return countsByDate;
     }
+
 }
