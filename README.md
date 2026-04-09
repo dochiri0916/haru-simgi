@@ -7,7 +7,7 @@ JWT 기반 인증 서버를 직접 구현한 MSA 학습 프로젝트다. `auth-s
 ## 서비스 구성
 
 - `gateway`: `/api/auth/**`, `/api/users/**`, `/api/tasks/**` 라우팅
-- `auth-service`: 회원가입, 이메일/비밀번호 로그인, access token 발급, refresh token 재발급, 로그아웃, 사용자 권한 변경
+- `auth-service`: 카카오 소셜 로그인, access token 발급, refresh token 재발급, 로그아웃, 사용자 권한 변경
 - `user-service`: 현재 로그인 사용자 조회와 사용자 프로필 생성/조회
 - `task-service`: 인증 사용자 기준 할 일 생성, 완료, 잔디 조회
 - `eureka-server`, `config-server`: 서비스 디스커버리와 설정 관리
@@ -44,12 +44,13 @@ JWT 기반 인증 서버를 직접 구현한 MSA 학습 프로젝트다. `auth-s
 
 ## 인증 흐름
 
-1. `POST /api/auth/register`로 회원가입
-2. `auth-service`가 비밀번호를 해시하고 `user-service` 내부 API를 동기 호출해 사용자 프로필 생성
-3. `auth-service`가 인증 계정을 저장하고 access token, refresh token을 발급하며 HttpOnly 쿠키를 설정
-4. 보호 API 호출 시 `Authorization: Bearer <accessToken>` 또는 access token 쿠키 사용
-5. access token 만료 시 `POST /api/auth/refresh`로 재발급하고 쿠키 갱신
-6. `POST /api/auth/logout`으로 refresh token 폐기와 인증 쿠키 삭제
+1. `GET /api/auth/login/kakao/authorize`로 카카오 인가 URL을 조회하거나 `GET /api/auth/login/kakao/callback`으로 로그인 완료
+2. `auth-service`가 카카오 사용자 식별자 기준으로 인증 계정을 조회하거나 새로 생성
+3. 최초 로그인 시 `user-service` 내부 API를 동기 호출해 소셜 사용자 프로필을 생성
+4. `auth-service`가 access token, refresh token을 발급하며 HttpOnly 쿠키를 설정
+5. 보호 API 호출 시 `Authorization: Bearer <accessToken>` 또는 access token 쿠키 사용
+6. access token 만료 시 `POST /api/auth/refresh`로 재발급하고 쿠키 갱신
+7. `POST /api/auth/logout`으로 refresh token 폐기와 인증 쿠키 삭제
 
 ## 토큰 전략
 
@@ -68,8 +69,9 @@ JWT 기반 인증 서버를 직접 구현한 MSA 학습 프로젝트다. `auth-s
 
 ### 공개 API
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
+- `GET /api/auth/login/kakao/authorize`
+- `POST /api/auth/login/kakao`
+- `GET /api/auth/login/kakao/callback`
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 
@@ -83,26 +85,20 @@ JWT 기반 인증 서버를 직접 구현한 MSA 학습 프로젝트다. `auth-s
 
 ## 예시 호출
 
-### 회원가입
+### 카카오 로그인 URL 조회
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/register \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "email": "alice@example.com",
-    "password": "secret123!"
-  }'
+curl "http://localhost:8080/api/auth/login/kakao/authorize?state=test-state"
 ```
 
-### 로그인
+### 카카오 로그인
 
 ```bash
-curl -X POST http://localhost:8080/api/auth/login \
+curl -X POST http://localhost:8080/api/auth/login/kakao \
   -c cookies.txt \
   -H 'Content-Type: application/json' \
   -d '{
-    "email": "alice@example.com",
-    "password": "secret123!"
+    "code": "kakao-authorization-code"
   }'
 ```
 
@@ -167,5 +163,5 @@ curl -X POST http://localhost:8080/api/auth/logout \
 - Refresh Token 저장소 관리
 - `USER`, `ADMIN` 역할 모델과 관리자 전용 권한 변경 API
 - Gateway, Auth Service, Resource Service 책임 분리
-- 회원가입 데이터와 인증 데이터 분리
+- 소셜 로그인 사용자 프로필과 인증 데이터 분리
 - 사용자 본인 소유의 리소스만 수정 가능하도록 서비스 레벨 권한 검증
