@@ -26,11 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+
+    static final String AUTH_TRANSPORT_HEADER = "X-Auth-Transport";
 
     private final KakaoLoginUseCase kakaoLoginUseCase;
     private final ReissueTokenUseCase reissueTokenUseCase;
@@ -46,20 +49,26 @@ public class AuthController {
     }
 
     @PostMapping("/login/kakao")
-    public ResponseEntity<AuthTokenResponse> kakaoLogin(@Valid @RequestBody KakaoLoginRequest request) {
+    public ResponseEntity<AuthTokenResponse> kakaoLogin(
+            @Valid @RequestBody KakaoLoginRequest request,
+            HttpServletRequest httpServletRequest
+    ) {
         var result = kakaoLoginUseCase.login(request.toCommand());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, authTokenCookieManager.createAuthCookieHeaders(result).toArray(String[]::new))
-                .body(AuthTokenResponse.from(result));
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
+        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
+        return responseBuilder.body(AuthTokenResponse.from(result));
     }
 
     @GetMapping("/login/kakao/callback")
-    public ResponseEntity<Void> kakaoLoginCallback(@RequestParam String code) {
+    public ResponseEntity<Void> kakaoLoginCallback(
+            @RequestParam String code,
+            HttpServletRequest httpServletRequest
+    ) {
         var result = kakaoLoginUseCase.login(new KakaoLoginCommand(code));
-        return ResponseEntity.status(302)
-                .location(URI.create(kakaoLoginProperties.frontendRedirectUri()))
-                .header(HttpHeaders.SET_COOKIE, authTokenCookieManager.createAuthCookieHeaders(result).toArray(String[]::new))
-                .build();
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(302)
+                .location(URI.create(kakaoLoginProperties.frontendRedirectUri()));
+        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
+        return responseBuilder.build();
     }
 
     @PostMapping("/refresh")
@@ -76,9 +85,9 @@ public class AuthController {
                 )
         );
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, authTokenCookieManager.createAuthCookieHeaders(result).toArray(String[]::new))
-                .body(AuthTokenResponse.from(result));
+        ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
+        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
+        return responseBuilder.body(AuthTokenResponse.from(result));
     }
 
     @PostMapping("/logout")
@@ -101,8 +110,18 @@ public class AuthController {
             }
         }
 
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, authTokenCookieManager.clearAuthCookieHeaders().toArray(String[]::new))
-                .build();
+        ResponseEntity.HeadersBuilder<?> responseBuilder = ResponseEntity.noContent();
+        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.clearAuthCookieHeaders());
+        return responseBuilder.build();
+    }
+
+    private void applyAuthCookiesIfNeeded(
+            ResponseEntity.HeadersBuilder<?> responseBuilder,
+            HttpServletRequest request,
+            List<String> cookieHeaders
+    ) {
+        if (AuthTransport.from(request).usesCookies()) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, cookieHeaders.toArray(String[]::new));
+        }
     }
 }
