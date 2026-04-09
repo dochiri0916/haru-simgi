@@ -1,13 +1,9 @@
-package com.dochiri.authservice.infrastructure;
+package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.jpa.entity.BaseEntity;
 import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.security.role.UserRole;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +37,7 @@ public class AuthAccountEntity extends BaseEntity {
     @Column(nullable = false)
     private String passwordHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String role;
 

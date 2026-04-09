@@ -1,4 +1,4 @@
-package com.dochiri.eurekaserver.config;
+package com.dochiri.eurekaserver.configuration;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -19,11 +19,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @Configuration
 @EnableConfigurationProperties(SecurityProperties.class)
-public class SecurityConfig {
+public class SecurityConfiguration {
 
     private final SecurityProperties properties;
 
-    public SecurityConfig(SecurityProperties properties) {
+    public SecurityConfiguration(SecurityProperties properties) {
         this.properties = properties;
     }
 

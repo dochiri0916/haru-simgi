@@ -1,4 +1,4 @@
-package com.dochiri.authservice.infrastructure;
+package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.jpa.entity.BaseEntity;
 import jakarta.persistence.*;

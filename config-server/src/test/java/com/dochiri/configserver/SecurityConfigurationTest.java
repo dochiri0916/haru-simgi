@@ -1,4 +1,4 @@
-package com.dochiri.eurekaserver;
+package com.dochiri.configserver;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,10 +14,12 @@ import java.util.Base64;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+        "spring.profiles.active=native",
+        "spring.cloud.config.server.native.search-locations=classpath:/test-config",
         "security.username=test-admin",
         "security.password=test-password"
 })
-class SecurityConfigTest {
+class SecurityConfigurationTest {
 
     @LocalServerPort
     private int port;
@@ -25,19 +27,34 @@ class SecurityConfigTest {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Test
-    void given_커스텀_Eureka_자격증명이_주어지면_when_헬스체크에_기본인증을_요청할_때_then_설정값으로만_인증된다() throws Exception {
-        HttpResponse<String> successResponse = sendHealthRequest("test-admin", "test-password");
-        HttpResponse<String> failureResponse = sendHealthRequest("adbin", "adbin");
+    void Config_서버_자격증명으로_헬스체크_인증을_검증한다() throws Exception {
 
+        // given
+        String correctUsername = "test-admin";
+        String correctPassword = "test-password";
+        String wrongUsername = "adbin";
+        String wrongPassword = "adbin";
+
+        // when
+        HttpResponse<String> successResponse = sendHealthRequest(correctUsername, correctPassword);
+        HttpResponse<String> failureResponse = sendHealthRequest(wrongUsername, wrongPassword);
+
+        // then
         assertThat(successResponse.statusCode()).isEqualTo(200);
         assertThat(successResponse.body()).contains("\"status\":\"UP\"");
         assertThat(failureResponse.statusCode()).isEqualTo(401);
     }
 
     @Test
-    void given_인증정보가_없으면_when_헬스체크를_호출할_때_then_세션없이_401을_반환한다() throws Exception {
+    void 인증정보없이_헬스체크_호출시_401을_반환한다() throws Exception {
+
+        // given
+        // 인증 정보 없음
+
+        // when
         HttpResponse<String> response = sendHealthRequest(null, null);
 
+        // then
         assertThat(response.statusCode()).isEqualTo(401);
         assertThat(response.headers().firstValue("Set-Cookie")).isEmpty();
     }

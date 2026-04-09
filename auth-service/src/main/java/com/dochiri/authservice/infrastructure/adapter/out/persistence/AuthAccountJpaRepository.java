@@ -1,6 +1,5 @@
 package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
-import com.dochiri.authservice.infrastructure.AuthAccountEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

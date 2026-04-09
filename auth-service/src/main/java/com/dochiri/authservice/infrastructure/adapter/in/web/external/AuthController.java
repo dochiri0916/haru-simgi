@@ -15,7 +15,7 @@ import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.Re
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.RegisterRequest;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.AuthTokenResponse;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.KakaoAuthorizeUrlResponse;
-import com.dochiri.authservice.infrastructure.config.KakaoLoginProperties;
+import com.dochiri.authservice.infrastructure.configuration.KakaoLoginProperties;
 import com.dochiri.errorhandling.BaseException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

@@ -1,4 +1,4 @@
-package com.dochiri.authservice.infrastructure.config;
+package com.dochiri.authservice.infrastructure.configuration;
 
 import jakarta.validation.constraints.AssertTrue;
 import org.springframework.boot.context.properties.ConfigurationProperties;

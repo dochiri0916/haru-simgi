@@ -1,4 +1,4 @@
-package com.dochiri.configserver.config;
+package com.dochiri.configserver.configuration;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;

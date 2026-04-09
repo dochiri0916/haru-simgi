@@ -2,7 +2,6 @@ package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.domain.RefreshToken;
-import com.dochiri.authservice.infrastructure.RefreshTokenEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

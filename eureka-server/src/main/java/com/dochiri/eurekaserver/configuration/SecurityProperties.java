@@ -1,4 +1,4 @@
-package com.dochiri.eurekaserver.config;
+package com.dochiri.eurekaserver.configuration;
 
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.boot.context.properties.ConfigurationProperties;
