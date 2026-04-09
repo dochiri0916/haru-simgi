@@ -55,7 +55,19 @@ public class TaskJpaAdapter implements TaskRepository {
 
     @Override
     public List<Task> findAllByOwner(TaskOwner owner) {
-        return taskJpaRepository.findAllByOwnerTypeAndOwnerReferenceId(owner.type(), owner.referenceId()).stream()
+        return taskJpaRepository.findAllByOwnerTypeAndOwnerReferenceIdOrderByCreatedAtDesc(owner.type(), owner.referenceId()).stream()
+                .map(taskMapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<Task> findAllByOwnerAndCompleted(TaskOwner owner, boolean completed) {
+        return taskJpaRepository
+                .findAllByOwnerTypeAndOwnerReferenceIdAndCompletedOrderByCreatedAtDesc(
+                        owner.type(),
+                        owner.referenceId(),
+                        completed
+                ).stream()
                 .map(taskMapper::toDomain)
                 .toList();
     }
@@ -77,5 +89,11 @@ public class TaskJpaAdapter implements TaskRepository {
     @Override
     public int migrateOwner(TaskOwner sourceOwner, TaskOwner targetOwner) {
         return 0;
+    }
+
+    @Override
+    public void delete(Task task) {
+        taskJpaRepository.findByPublicId(task.getId())
+                .ifPresent(taskJpaRepository::delete);
     }
 }

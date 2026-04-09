@@ -17,7 +17,11 @@ public interface TaskRepository {
 
     List<Task> findAllByOwner(TaskOwner owner);
 
+    List<Task> findAllByOwnerAndCompleted(TaskOwner owner, boolean completed);
+
     List<Task> findCompletedByOwnerBetween(TaskOwner owner, Instant fromInclusive, Instant toExclusive);
+
+    void delete(Task task);
 
     int migrateOwner(TaskOwner sourceOwner, TaskOwner targetOwner);
 }

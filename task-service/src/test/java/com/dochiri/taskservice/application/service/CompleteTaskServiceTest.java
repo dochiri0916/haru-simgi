@@ -23,12 +23,13 @@ class CompleteTaskServiceTest {
 
     private final TaskRepository taskRepository = mock(TaskRepository.class);
     private final Clock clock = Clock.fixed(Instant.parse("2026-04-06T12:34:56Z"), ZoneOffset.UTC);
+    private final TaskOwnerGuard taskOwnerGuard = new TaskOwnerGuard();
 
     private CompleteTaskService completeTaskService;
 
     @BeforeEach
     void setUp() {
-        completeTaskService = new CompleteTaskService(taskRepository, clock);
+        completeTaskService = new CompleteTaskService(taskRepository, clock, taskOwnerGuard);
     }
 
     @Test
