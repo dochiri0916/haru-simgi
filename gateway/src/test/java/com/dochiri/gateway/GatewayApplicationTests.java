@@ -30,8 +30,10 @@ class GatewayApplicationTests {
     private CorsWebFilter corsWebFilter;
 
     @Test
-    void given_게이트웨이_라우트가_주어지면_when_라우트_정의를_로딩할_때_then_기대한_라우트_ID를_포함한다() {
+    void 게이트웨이_라우트_ID를_검증한다() {
+
         // given
+        // Gateway가 정상적으로 기동되어 라우트가 등록된 상태
 
         // when
         List<String> routeIds = routeLocator.getRoutes()
@@ -45,8 +47,10 @@ class GatewayApplicationTests {
     }
 
     @Test
-    void given_로컬_프론트엔드_CORS_설정이_주어지면_when_게이트웨이_CORS_프로퍼티를_바인딩할_때_then_자격증명과_허용_출처가_구성된다() {
+    void CORS_프로퍼티_바인딩과_필터_생성을_검증한다() {
+
         // given
+        // application.yml에 정의된 CORS 설정이 존재
 
         // when
         List<String> allowedOrigins = gatewayCorsProperties.allowedOrigins();
