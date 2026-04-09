@@ -1,7 +1,7 @@
 services:
   kafka:
     image: apache/kafka:3.9.0
-    container_name: msa-todo-kafka
+    container_name: haru-simgi-kafka
     ports:
       - "9092:9092"
     environment:
@@ -21,7 +21,7 @@ services:
 
   auth-mysql:
     image: mysql:8.4
-    container_name: msa-todo-auth-mysql
+    container_name: haru-simgi-auth-mysql
     ports:
       - "3307:3306"
     environment:
@@ -37,7 +37,7 @@ services:
 
   user-mysql:
     image: mysql:8.4
-    container_name: msa-todo-user-mysql
+    container_name: haru-simgi-user-mysql
     ports:
       - "3308:3306"
     environment:
@@ -57,7 +57,7 @@ services:
       dockerfile: Dockerfile.service
       args:
         MODULE_NAME: config-server
-    container_name: msa-todo-config-server
+    container_name: haru-simgi-config-server
     depends_on:
       - kafka
     ports:
@@ -80,7 +80,7 @@ services:
       dockerfile: Dockerfile.service
       args:
         MODULE_NAME: eureka-server
-    container_name: msa-todo-eureka-server
+    container_name: haru-simgi-eureka-server
     depends_on:
       config-server:
         condition: service_healthy
@@ -103,7 +103,7 @@ services:
       dockerfile: Dockerfile.service
       args:
         MODULE_NAME: auth-service
-    container_name: msa-todo-auth-service
+    container_name: haru-simgi-auth-service
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -131,7 +131,7 @@ services:
       dockerfile: Dockerfile.service
       args:
         MODULE_NAME: user-service
-    container_name: msa-todo-user-service
+    container_name: haru-simgi-user-service
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -157,7 +157,7 @@ services:
       dockerfile: Dockerfile.service
       args:
         MODULE_NAME: task-service
-    container_name: msa-todo-task-service
+    container_name: haru-simgi-task-service
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -176,7 +176,7 @@ services:
       dockerfile: Dockerfile.service
       args:
         MODULE_NAME: gateway
-    container_name: msa-todo-gateway
+    container_name: haru-simgi-gateway
     depends_on:
       eureka-server:
         condition: service_healthy

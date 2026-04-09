@@ -1,4 +1,4 @@
-rootProject.name = 'msa-todo'
+rootProject.name = 'haru-simgi'
 
 include(
         'config-server',

@@ -16,7 +16,7 @@ pipeline {
         )
         string(
             name: 'IMAGE_REPOSITORY',
-            defaultValue: 'dochiri0916/msa-todo',
+            defaultValue: 'dochiri0916/haru-simgi',
             description: 'Docker Hub repository'
         )
     }
