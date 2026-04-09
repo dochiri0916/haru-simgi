@@ -2,10 +2,10 @@ package com.dochiri.userservice.application.port.in.dto;
 
 import org.springframework.util.Assert;
 
-public record ProvisionUserCommand(
+public record CreateUserCommand(
         String email
 ) {
-    public ProvisionUserCommand {
+    public CreateUserCommand {
         Assert.hasText(email, "email must not be blank");
     }
 }

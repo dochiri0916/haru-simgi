@@ -1,8 +1,8 @@
 package com.dochiri.userservice.infrastructure.adapter.in.web.internal;
 
-import com.dochiri.userservice.application.port.in.ProvisionSocialUserUseCase;
-import com.dochiri.userservice.infrastructure.adapter.in.web.internal.request.ProvisionSocialUserRequest;
-import com.dochiri.userservice.infrastructure.adapter.in.web.internal.response.ProvisionSocialUserResponse;
+import com.dochiri.userservice.application.port.in.CreateSocialUserUseCase;
+import com.dochiri.userservice.infrastructure.adapter.in.web.internal.request.CreateSocialUserRequest;
+import com.dochiri.userservice.infrastructure.adapter.in.web.internal.response.CreateSocialUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class InternalSocialUserController {
 
-    private final ProvisionSocialUserUseCase provisionSocialUserUseCase;
+    private final CreateSocialUserUseCase createSocialUserUseCase;
 
     @PostMapping
-    public ResponseEntity<ProvisionSocialUserResponse> provision(@Valid @RequestBody ProvisionSocialUserRequest request) {
+    public ResponseEntity<CreateSocialUserResponse> create(@Valid @RequestBody CreateSocialUserRequest request) {
         return ResponseEntity.ok(
-                ProvisionSocialUserResponse.from(
-                        provisionSocialUserUseCase.provision(request.toCommand())
+                CreateSocialUserResponse.from(
+                        createSocialUserUseCase.create(request.toCommand())
                 )
         );
     }

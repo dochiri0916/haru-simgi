@@ -1,6 +1,6 @@
 package com.dochiri.userservice.application.service;
 
-import com.dochiri.userservice.application.port.in.dto.ProvisionSocialUserCommand;
+import com.dochiri.userservice.application.port.in.dto.CreateSocialUserCommand;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import org.junit.jupiter.api.Test;
@@ -15,17 +15,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ProvisionSocialUserServiceTest {
+class CreateSocialUserServiceTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);
-    private final ProvisionSocialUserService provisionSocialUserService = new ProvisionSocialUserService(userRepository);
+    private final CreateSocialUserService createSocialUserService = new CreateSocialUserService(userRepository);
 
     @Test
     void 이메일이_있고_이미_가입된_경우_기존_사용자_ID를_반환한다() {
         when(userRepository.findIdByEmail("alice@example.com"))
                 .thenReturn(Optional.of(1L));
 
-        var result = provisionSocialUserService.provision(new ProvisionSocialUserCommand(
+        var result = createSocialUserService.create(new CreateSocialUserCommand(
                 "alice@example.com",
                 "alice",
                 "https://example.com/alice.png"
@@ -45,7 +45,7 @@ class ProvisionSocialUserServiceTest {
         when(userRepository.create(any(User.class)))
                 .thenReturn(2L);
 
-        var result = provisionSocialUserService.provision(new ProvisionSocialUserCommand(
+        var result = createSocialUserService.create(new CreateSocialUserCommand(
                 "new-user@example.com",
                 "new-user",
                 "https://example.com/new-user.png"
@@ -65,7 +65,7 @@ class ProvisionSocialUserServiceTest {
         when(userRepository.create(any(User.class)))
                 .thenThrow(new DataIntegrityViolationException("duplicate email"));
 
-        var result = provisionSocialUserService.provision(new ProvisionSocialUserCommand(
+        var result = createSocialUserService.create(new CreateSocialUserCommand(
                 "race@example.com",
                 "race",
                 "https://example.com/race.png"
@@ -82,7 +82,7 @@ class ProvisionSocialUserServiceTest {
         when(userRepository.create(any(User.class)))
                 .thenReturn(4L);
 
-        var result = provisionSocialUserService.provision(new ProvisionSocialUserCommand(
+        var result = createSocialUserService.create(new CreateSocialUserCommand(
                 null,
                 "social-only",
                 "https://example.com/social-only.png"

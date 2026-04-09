@@ -1,10 +1,11 @@
 package com.dochiri.authservice.infrastructure.adapter.out.http;
 
 import com.dochiri.authservice.application.error.AuthErrorCode;
-import com.dochiri.authservice.application.port.out.SocialUserProvisionPort;
-import com.dochiri.authservice.application.port.out.dto.ProvisionedSocialUser;
-import com.dochiri.authservice.infrastructure.adapter.out.http.request.ProvisionSocialUserRequest;
-import com.dochiri.authservice.infrastructure.adapter.out.http.response.ProvisionSocialUserResponse;
+import com.dochiri.authservice.application.port.out.SocialUserCreatePort;
+import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
+import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
+import com.dochiri.authservice.infrastructure.adapter.out.http.request.CreateSocialUserRequest;
+import com.dochiri.authservice.infrastructure.adapter.out.http.response.CreateSocialUserResponse;
 import com.dochiri.errorhandling.BaseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -13,11 +14,11 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 @Component
-public class UserServiceSocialUserProvisionAdapter implements SocialUserProvisionPort {
+public class UserServiceSocialUserCreateAdapter implements SocialUserCreatePort {
 
     private final RestClient restClient;
 
-    public UserServiceSocialUserProvisionAdapter(
+    public UserServiceSocialUserCreateAdapter(
             RestClient.Builder restClientBuilder,
             @Value("${app.user-service.base-url:http://localhost:8081}") String userServiceBaseUrl
     ) {
@@ -27,14 +28,14 @@ public class UserServiceSocialUserProvisionAdapter implements SocialUserProvisio
     }
 
     @Override
-    public ProvisionedSocialUser provision(String email, String nickname, String profileImageUrl) {
+    public CreateSocialUserResult create(CreateSocialUserCommand command) {
         try {
-            ProvisionSocialUserResponse response = restClient.post()
+            CreateSocialUserResponse response = restClient.post()
                     .uri("/internal/users/social")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ProvisionSocialUserRequest(email, nickname, profileImageUrl))
+                    .body(new CreateSocialUserRequest(command.email(), command.nickname(), command.profileImageUrl()))
                     .retrieve()
-                    .body(ProvisionSocialUserResponse.class);
+                    .body(CreateSocialUserResponse.class);
 
             if (response == null || response.userId() == null) {
                 throw new BaseException(AuthErrorCode.USER_SERVICE_UNAVAILABLE);

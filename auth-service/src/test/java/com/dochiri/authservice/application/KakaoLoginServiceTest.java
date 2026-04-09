@@ -4,9 +4,11 @@ import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
-import com.dochiri.authservice.application.port.out.SocialUserProvisionPort;
-import com.dochiri.authservice.application.port.out.dto.KakaoUserProfile;
-import com.dochiri.authservice.application.port.out.dto.ProvisionedSocialUser;
+import com.dochiri.authservice.application.port.out.SocialUserCreatePort;
+import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
+import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
+import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
+import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
 import com.dochiri.authservice.application.service.AuthTokenIssuer;
 import com.dochiri.authservice.application.service.KakaoLoginService;
 import com.dochiri.authservice.domain.AuthAccount;
@@ -33,7 +35,7 @@ import static org.mockito.Mockito.when;
 class KakaoLoginServiceTest {
 
     private final KakaoOAuthPort kakaoOAuthPort = mock(KakaoOAuthPort.class);
-    private final SocialUserProvisionPort socialUserProvisionPort = mock(SocialUserProvisionPort.class);
+    private final SocialUserCreatePort socialUserCreatePort = mock(SocialUserCreatePort.class);
     private final AuthAccountRepository authAccountRepository = mock(AuthAccountRepository.class);
     private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -52,7 +54,7 @@ class KakaoLoginServiceTest {
     void setUp() {
         kakaoLoginService = new KakaoLoginService(
                 kakaoOAuthPort,
-                socialUserProvisionPort,
+                socialUserCreatePort,
                 authAccountRepository,
                 passwordEncoder,
                 authTokenIssuer
@@ -63,8 +65,8 @@ class KakaoLoginServiceTest {
 
     @Test
     void 기존_카카오_계정이_있으면_그대로_로그인한다() {
-        when(kakaoOAuthPort.authenticate("auth-code"))
-                .thenReturn(new KakaoUserProfile(
+        when(kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand("auth-code")))
+                .thenReturn(new KakaoUserProfileResult(
                         100L,
                         "alice@example.com",
                         "alice",
@@ -84,14 +86,14 @@ class KakaoLoginServiceTest {
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
-        verify(socialUserProvisionPort, never()).provision(anyString(), anyString(), anyString());
+        verify(socialUserCreatePort, never()).create(any());
         verify(authAccountRepository, never()).save(any());
     }
 
     @Test
     void 처음_카카오_로그인한_사용자면_이메일이_없어도_인증_계정을_생성한다() {
-        when(kakaoOAuthPort.authenticate("auth-code"))
-                .thenReturn(new KakaoUserProfile(
+        when(kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand("auth-code")))
+                .thenReturn(new KakaoUserProfileResult(
                         200L,
                         null,
                         "kakao-user",
@@ -99,8 +101,8 @@ class KakaoLoginServiceTest {
                 ));
         when(authAccountRepository.findByProviderAndProviderUserId("KAKAO", "200"))
                 .thenReturn(java.util.Optional.empty());
-        when(socialUserProvisionPort.provision(null, "kakao-user", "https://example.com/profile.png"))
-                .thenReturn(new ProvisionedSocialUser(7L, null, "kakao-user", "https://example.com/profile.png"));
+        when(socialUserCreatePort.create(new CreateSocialUserCommand(null, "kakao-user", "https://example.com/profile.png")))
+                .thenReturn(new CreateSocialUserResult(7L, null, "kakao-user", "https://example.com/profile.png"));
         when(authAccountRepository.save(any(AuthAccount.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 

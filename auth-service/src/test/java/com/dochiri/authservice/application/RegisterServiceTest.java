@@ -3,8 +3,9 @@ package com.dochiri.authservice.application;
 import com.dochiri.authservice.application.port.in.dto.RegisterCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
-import com.dochiri.authservice.application.port.out.UserProvisionPort;
-import com.dochiri.authservice.application.port.out.dto.ProvisionedUser;
+import com.dochiri.authservice.application.port.out.UserCreatePort;
+import com.dochiri.authservice.application.port.out.dto.CreateUserCommand;
+import com.dochiri.authservice.application.port.out.dto.CreateUserResult;
 import com.dochiri.authservice.application.service.AuthTokenIssuer;
 import com.dochiri.authservice.application.service.RegisterService;
 import com.dochiri.authservice.domain.AuthAccount;
@@ -30,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 class RegisterServiceTest {
 
-    private final UserProvisionPort userProvisionPort = mock(UserProvisionPort.class);
+    private final UserCreatePort userCreatePort = mock(UserCreatePort.class);
     private final AuthAccountRepository authAccountRepository = mock(AuthAccountRepository.class);
     private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -48,7 +49,7 @@ class RegisterServiceTest {
     @BeforeEach
     void setUp() {
         registerService = new RegisterService(
-                userProvisionPort,
+                userCreatePort,
                 authAccountRepository,
                 passwordEncoder,
                 authTokenIssuer
@@ -59,8 +60,8 @@ class RegisterServiceTest {
 
     @Test
     void 회원가입에_성공하면_사용자를_생성하고_인증_계정과_토큰을_발급한다() {
-        when(userProvisionPort.provision("alice@example.com"))
-                .thenReturn(new ProvisionedUser(1L, "alice@example.com"));
+        when(userCreatePort.create(new CreateUserCommand("alice@example.com")))
+                .thenReturn(new CreateUserResult(1L, "alice@example.com"));
         when(authAccountRepository.save(any(AuthAccount.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 

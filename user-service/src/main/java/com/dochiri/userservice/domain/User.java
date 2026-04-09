@@ -20,7 +20,7 @@ public final class User {
     public static User create(String email) {
         return new User(
                 generatePublicId(),
-                requireNonNull(email),
+                email,
                 null,
                 null
         );

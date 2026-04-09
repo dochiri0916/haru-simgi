@@ -5,9 +5,11 @@ import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
-import com.dochiri.authservice.application.port.out.SocialUserProvisionPort;
-import com.dochiri.authservice.application.port.out.dto.KakaoUserProfile;
-import com.dochiri.authservice.application.port.out.dto.ProvisionedSocialUser;
+import com.dochiri.authservice.application.port.out.SocialUserCreatePort;
+import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
+import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
+import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
+import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.security.role.UserRole;
@@ -23,7 +25,7 @@ import java.util.UUID;
 public class KakaoLoginService implements KakaoLoginUseCase {
 
     private final KakaoOAuthPort kakaoOAuthPort;
-    private final SocialUserProvisionPort socialUserProvisionPort;
+    private final SocialUserCreatePort socialUserCreatePort;
     private final AuthAccountRepository authAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthTokenIssuer authTokenIssuer;
@@ -36,7 +38,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
     @Transactional
     @Override
     public AuthTokenResult login(KakaoLoginCommand command) {
-        KakaoUserProfile profile = kakaoOAuthPort.authenticate(command.code());
+        KakaoUserProfileResult profile = kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand(command.code()));
         String providerUserId = String.valueOf(profile.id());
 
         AuthAccount authAccount = authAccountRepository.findByProviderAndProviderUserId(
@@ -48,18 +50,18 @@ public class KakaoLoginService implements KakaoLoginUseCase {
         return authTokenIssuer.issue(authAccount);
     }
 
-    private AuthAccount provisionSocialAccount(KakaoUserProfile profile) {
-        ProvisionedSocialUser provisionedUser = socialUserProvisionPort.provision(
+    private AuthAccount provisionSocialAccount(KakaoUserProfileResult profile) {
+        CreateSocialUserResult createdUser = socialUserCreatePort.create(new CreateSocialUserCommand(
                 profile.email(),
                 profile.nickname(),
                 profile.profileImageUrl()
-        );
+        ));
 
         return authAccountRepository.save(new AuthAccount(
-                provisionedUser.userId(),
+                createdUser.userId(),
                 AuthProvider.KAKAO,
                 String.valueOf(profile.id()),
-                provisionedUser.email(),
+                createdUser.email(),
                 passwordEncoder.encode("kakao:" + profile.id() + ":" + UUID.randomUUID()),
                 UserRole.USER
         ));

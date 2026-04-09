@@ -1,8 +1,8 @@
 package com.dochiri.userservice.infrastructure.adapter.in.web.internal;
 
-import com.dochiri.userservice.application.port.in.ProvisionUserUseCase;
-import com.dochiri.userservice.infrastructure.adapter.in.web.internal.request.ProvisionUserRequest;
-import com.dochiri.userservice.infrastructure.adapter.in.web.internal.response.ProvisionUserResponse;
+import com.dochiri.userservice.application.port.in.CreateUserUseCase;
+import com.dochiri.userservice.infrastructure.adapter.in.web.internal.request.CreateUserRequest;
+import com.dochiri.userservice.infrastructure.adapter.in.web.internal.response.CreateUserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class InternalUserController {
 
-    private final ProvisionUserUseCase provisionUserUseCase;
+    private final CreateUserUseCase createUserUseCase;
 
     @PostMapping
-    public ResponseEntity<ProvisionUserResponse> provision(@Valid @RequestBody ProvisionUserRequest request) {
+    public ResponseEntity<CreateUserResponse> create(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.ok(
-                ProvisionUserResponse.from(
-                        provisionUserUseCase.provision(request.toCommand())
+                CreateUserResponse.from(
+                        createUserUseCase.create(request.toCommand())
                 )
         );
     }

@@ -2,13 +2,13 @@ package com.dochiri.authservice.application.port.out.dto;
 
 import static java.util.Objects.requireNonNull;
 
-public record ProvisionedSocialUser(
+public record CreateSocialUserResult(
         Long userId,
         String email,
         String nickname,
         String profileImageUrl
 ) {
-    public ProvisionedSocialUser {
+    public CreateSocialUserResult {
         requireNonNull(userId);
     }
 }

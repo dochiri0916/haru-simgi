@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.out.http.request;
 
-public record ProvisionUserRequest(
+public record CreateUserRequest(
         String email
 ) {
 }

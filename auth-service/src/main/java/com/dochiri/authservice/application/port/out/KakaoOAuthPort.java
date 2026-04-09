@@ -1,11 +1,12 @@
 package com.dochiri.authservice.application.port.out;
 
-import com.dochiri.authservice.application.port.out.dto.KakaoUserProfile;
+import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
+import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
 
 public interface KakaoOAuthPort {
 
     String buildAuthorizeUrl(String state);
 
-    KakaoUserProfile authenticate(String authorizationCode);
+    KakaoUserProfileResult authenticate(KakaoAuthenticationCommand command);
 
 }

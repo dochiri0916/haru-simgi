@@ -2,10 +2,11 @@ package com.dochiri.authservice.infrastructure.adapter.out.kakao;
 
 import com.dochiri.authservice.application.error.AuthErrorCode;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
-import com.dochiri.authservice.application.port.out.dto.KakaoUserProfile;
+import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
+import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
 import com.dochiri.authservice.infrastructure.adapter.out.kakao.response.KakaoTokenResponse;
 import com.dochiri.authservice.infrastructure.adapter.out.kakao.response.KakaoUserInfoResponse;
-import com.dochiri.authservice.infrastructure.config.KakaoLoginProperties;
+import com.dochiri.authservice.infrastructure.configuration.KakaoLoginProperties;
 import com.dochiri.errorhandling.BaseException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -46,8 +47,8 @@ public class KakaoOAuthAdapter implements KakaoOAuthPort {
     }
 
     @Override
-    public KakaoUserProfile authenticate(String authorizationCode) {
-        String accessToken = requestAccessToken(authorizationCode);
+    public KakaoUserProfileResult authenticate(KakaoAuthenticationCommand command) {
+        String accessToken = requestAccessToken(command.authorizationCode());
         return requestUserProfile(accessToken);
     }
 
@@ -82,7 +83,7 @@ public class KakaoOAuthAdapter implements KakaoOAuthPort {
         }
     }
 
-    private KakaoUserProfile requestUserProfile(String accessToken) {
+    private KakaoUserProfileResult requestUserProfile(String accessToken) {
         try {
             KakaoUserInfoResponse response = restClient.get()
                     .uri(kakaoLoginProperties.userInfoUri())
@@ -98,7 +99,7 @@ public class KakaoOAuthAdapter implements KakaoOAuthPort {
         }
     }
 
-    private KakaoUserProfile mapToProfile(KakaoUserInfoResponse response) {
+    private KakaoUserProfileResult mapToProfile(KakaoUserInfoResponse response) {
         if (response == null || response.id() == null) {
             throw new BaseException(AuthErrorCode.KAKAO_AUTHENTICATION_FAILED);
         }
@@ -109,7 +110,7 @@ public class KakaoOAuthAdapter implements KakaoOAuthPort {
         String nickname = profile != null ? profile.nickname() : null;
         String profileImageUrl = profile != null ? profile.profileImageUrl() : null;
 
-        return new KakaoUserProfile(response.id(), email, nickname, profileImageUrl);
+        return new KakaoUserProfileResult(response.id(), email, nickname, profileImageUrl);
     }
 
     private BaseException mapProviderException(RestClientResponseException exception) {

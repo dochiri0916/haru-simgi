@@ -1,6 +1,6 @@
 package com.dochiri.userservice.application.port.in.dto;
 
-public record ProvisionSocialUserCommand(
+public record CreateSocialUserCommand(
         String email,
         String nickname,
         String profileImageUrl

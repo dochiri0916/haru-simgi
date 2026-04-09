@@ -2,9 +2,9 @@ package com.dochiri.userservice.application.service;
 
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.userservice.application.error.UserErrorCode;
-import com.dochiri.userservice.application.port.in.ProvisionSocialUserUseCase;
-import com.dochiri.userservice.application.port.in.dto.ProvisionSocialUserCommand;
-import com.dochiri.userservice.application.port.in.dto.ProvisionSocialUserResult;
+import com.dochiri.userservice.application.port.in.CreateSocialUserUseCase;
+import com.dochiri.userservice.application.port.in.dto.CreateSocialUserCommand;
+import com.dochiri.userservice.application.port.in.dto.CreateSocialUserResult;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -15,20 +15,20 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class ProvisionSocialUserService implements ProvisionSocialUserUseCase {
+public class CreateSocialUserService implements CreateSocialUserUseCase {
 
     private final UserRepository userRepository;
 
     @Transactional
     @Override
-    public ProvisionSocialUserResult provision(ProvisionSocialUserCommand command) {
+    public CreateSocialUserResult create(CreateSocialUserCommand command) {
         if (!StringUtils.hasText(command.email())) {
             Long userId = userRepository.create(User.createSocial(
                     null,
                     command.nickname(),
                     command.profileImageUrl()
             ));
-            return new ProvisionSocialUserResult(
+            return new CreateSocialUserResult(
                     userId,
                     null,
                     command.nickname(),
@@ -37,7 +37,7 @@ public class ProvisionSocialUserService implements ProvisionSocialUserUseCase {
         }
 
         return userRepository.findIdByEmail(command.email())
-                .map(userId -> new ProvisionSocialUserResult(
+                .map(userId -> new CreateSocialUserResult(
                         userId,
                         command.email(),
                         command.nickname(),
@@ -46,14 +46,14 @@ public class ProvisionSocialUserService implements ProvisionSocialUserUseCase {
                 .orElseGet(() -> createOrLoad(command));
     }
 
-    private ProvisionSocialUserResult createOrLoad(ProvisionSocialUserCommand command) {
+    private CreateSocialUserResult createOrLoad(CreateSocialUserCommand command) {
         try {
             Long userId = userRepository.create(User.createSocial(
                     command.email(),
                     command.nickname(),
                     command.profileImageUrl()
             ));
-            return new ProvisionSocialUserResult(
+            return new CreateSocialUserResult(
                     userId,
                     command.email(),
                     command.nickname(),
@@ -62,7 +62,7 @@ public class ProvisionSocialUserService implements ProvisionSocialUserUseCase {
         } catch (DataIntegrityViolationException exception) {
             Long userId = userRepository.findIdByEmail(command.email())
                     .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND, exception));
-            return new ProvisionSocialUserResult(
+            return new CreateSocialUserResult(
                     userId,
                     command.email(),
                     command.nickname(),

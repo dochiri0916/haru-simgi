@@ -1,7 +1,6 @@
 package com.dochiri.authservice.application.port.out.dto;
 
-public record ProvisionedUser(
-        Long userId,
+public record CreateUserCommand(
         String email
 ) {
 }

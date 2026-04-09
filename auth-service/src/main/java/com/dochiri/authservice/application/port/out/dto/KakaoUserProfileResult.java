@@ -2,13 +2,13 @@ package com.dochiri.authservice.application.port.out.dto;
 
 import static java.util.Objects.requireNonNull;
 
-public record KakaoUserProfile(
+public record KakaoUserProfileResult(
         Long id,
         String email,
         String nickname,
         String profileImageUrl
 ) {
-    public KakaoUserProfile {
+    public KakaoUserProfileResult {
         requireNonNull(id);
     }
 }
