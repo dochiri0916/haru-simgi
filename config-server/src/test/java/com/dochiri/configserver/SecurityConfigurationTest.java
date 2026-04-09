@@ -16,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.profiles.active=native",
         "spring.cloud.config.server.native.search-locations=classpath:/test-config",
-        "security.username=test-admin",
-        "security.password=test-password"
+        "config-server.security.username=test-admin",
+        "config-server.security.password=test-password"
 })
 class SecurityConfigurationTest {
 
