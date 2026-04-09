@@ -37,7 +37,6 @@ public class AuthAccountEntity extends BaseEntity {
     @Column(nullable = false)
     private String passwordHash;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private String role;
 
