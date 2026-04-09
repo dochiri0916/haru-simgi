@@ -1,73 +1,185 @@
-# msa-todo
+# haru-simgi
 
-JWT 기반 인증 서버를 직접 구현한 MSA 학습 프로젝트다. `auth-service`가 로그인, 토큰 재발급, 로그아웃, 권한 변경을 담당하고, `gateway`는 외부 진입점, `user-service`와 `task-service`는 보호된 리소스 서버 역할을 맡는다. 웹 배포를 위해 access/refresh token을 HttpOnly 쿠키로도 내려준다.
+잔디가 쌓이는 형태의 투두 리스트를 MSA로 구현한 학습 프로젝트다. 사용자는 할 일을 만들고, 완료한 작업이 날짜별로 집계되며, 그 결과가 GitHub 컨트리뷰션 그래프처럼 `level 0~4` 강도로 표현된다. 서비스 핵심은 단순한 할 일 저장이 아니라, "오늘 무엇을 끝냈는지"를 누적해 성취를 시각화하는 데 있다.
 
-현재 단계에서는 학습용 + MVP 출시용 웹을 기준으로, 서비스 간 통신과 서버 구현을 가장 단순한 동기 HTTP MVC로 유지한다. 대신 Java 21 버추얼 스레드를 켜서 블로킹 I/O 기반 코드의 구조를 유지하면서 동시성 비용을 낮추는 방향을 선택했다.
+현재 저장소는 프론트엔드가 아니라 백엔드 중심 구조다. 외부 진입점은 `gateway`, 인증은 `auth-service`, 사용자 정보는 `user-service`, 할 일과 잔디 집계는 `task-service`가 담당한다. 여기에 `config-server`, `eureka-server`, 공통 모듈들이 붙는 전형적인 Spring Cloud 기반 MSA 구성을 학습 목적에 맞게 단순화했다.
 
-## 서비스 구성
+## 서비스 개요
 
-- `gateway`: `/api/auth/**`, `/api/users/**`, `/api/tasks/**` 라우팅
-- `auth-service`: 카카오 소셜 로그인, access token 발급, refresh token 재발급, 로그아웃, 사용자 권한 변경
-- `user-service`: 현재 로그인 사용자 조회와 사용자 프로필 생성/조회
-- `task-service`: 인증 사용자 기준 할 일 생성, 완료, 잔디 조회
-- `eureka-server`, `config-server`: 서비스 디스커버리와 설정 관리
+- 카카오 로그인으로 사용자 인증
+- JWT Access/Refresh Token 발급 및 재발급
+- 사용자별 할 일 생성과 완료 처리
+- 완료된 할 일을 날짜 단위로 집계한 잔디 데이터 조회
+- Gateway, Discovery, Config Server를 포함한 MSA 구조 학습
 
-## 현재 기술 선택
+## 핵심 사용자 경험
 
-- 외부 API와 서비스 간 호출은 우선 `HTTP + JSON`으로 구현
-- `user-service`, `auth-service`, `task-service`는 Spring MVC 기반 동기 처리
-- Java 21 버추얼 스레드를 활성화해 동기 코드의 단순함을 유지하면서 요청 대기 비용을 낮춤
-- `gateway`는 라우팅 계층이라 Spring Cloud Gateway의 WebFlux 모델을 그대로 사용
+이 서비스의 중심 흐름은 아래처럼 단순하다.
 
-## 버추얼 스레드 적용
+1. 사용자가 카카오 로그인으로 인증한다.
+2. 오늘 할 일을 등록한다.
+3. 할 일을 완료하면 완료 시각이 기록된다.
+4. `from ~ to` 기간의 완료 건수를 날짜별로 집계한다.
+5. 완료 수를 잔디 강도(`0~4`)로 변환해 클라이언트에 내려준다.
 
-- 적용 대상: `user-service`, `auth-service`, `task-service`
-- 설정: `spring.threads.virtual.enabled=true`
-- 기대 효과:
-  - JDBC, 내부 HTTP 호출, 인증 처리처럼 블로킹 I/O가 많은 API에서 동시 요청 처리 여유 증가
-  - 비동기 체인 없이 동기 코드 구조 유지
-  - 학습 초기 단계에서 디버깅과 장애 분석이 단순함
-- 한계:
-  - DB 응답 속도, 커넥션 풀, 네트워크 지연 자체를 줄여주지는 않음
-  - 리액티브 아키텍처의 backpressure 모델을 대체하지는 않음
+잔디 강도는 현재 아래 기준으로 계산된다.
 
-## 학습 로드맵
+- `0`: 완료 0건
+- `1`: 완료 1건
+- `2`: 완료 2건
+- `3`: 완료 3~4건
+- `4`: 완료 5건 이상
 
-이 프로젝트는 아래 순서로 확장하며 공부한다.
+## 아키텍처
 
-1. `HTTP`: 현재 단계. 브라우저와 서버, 서비스 간 호출을 가장 이해하기 쉬운 형태로 구현
-2. `gRPC`: 서비스 간 내부 통신을 바이너리 프로토콜과 명시적 계약 기반으로 전환하며 비교
-3. `Virtual Thread`: 동기 코드 구조를 유지하면서 JVM 레벨 동시성 비용 절감 효과 확인
-4. `Reactive`: WebFlux, 논블로킹 I/O, backpressure까지 포함한 완전한 리액티브 모델 학습
+### 서비스 구성
 
-즉 현재 목표는 "처음부터 가장 복잡한 구조"가 아니라, "출시 가능한 MVP를 유지하면서 단계별로 왜 다음 기술이 필요한지 비교 가능한 상태"를 만드는 것이다.
+- `gateway`
+  - 외부 클라이언트의 단일 진입점
+  - `/api/auth/**`, `/api/users/**`, `/api/tasks/**`, `/api/admin/**` 라우팅
+- `auth-service`
+  - 카카오 OAuth 로그인
+  - JWT 발급, 재발급, 로그아웃
+  - 소셜 계정과 내부 사용자 계정 연결
+- `user-service`
+  - 사용자 프로필 생성 및 현재 로그인 사용자 조회
+- `task-service`
+  - 할 일 생성
+  - 본인 소유 할 일 완료 처리
+  - 기간별 잔디 집계
+- `config-server`
+  - 외부 설정 저장소에서 공통 설정 로드
+- `eureka-server`
+  - 서비스 등록 및 디스커버리
+- `modules/*`
+  - 보안, JPA, Kafka, 시간, 공통 에러 처리 등 재사용 모듈
 
-## 인증 흐름
+### 아키텍처 흐름
 
-1. `GET /api/auth/login/kakao/authorize`로 카카오 인가 URL을 조회하거나 `GET /api/auth/login/kakao/callback`으로 로그인 완료
-2. `auth-service`가 카카오 사용자 식별자 기준으로 인증 계정을 조회하거나 새로 생성
-3. 최초 로그인 시 `user-service` 내부 API를 동기 호출해 소셜 사용자 프로필을 생성
-4. `auth-service`가 access token, refresh token을 발급하며 HttpOnly 쿠키를 설정
-5. 보호 API 호출 시 `Authorization: Bearer <accessToken>` 또는 access token 쿠키 사용
-6. access token 만료 시 `POST /api/auth/refresh`로 재발급하고 쿠키 갱신
-7. `POST /api/auth/logout`으로 refresh token 폐기와 인증 쿠키 삭제
+```text
+Client
+  -> Gateway
+    -> Auth Service
+    -> User Service
+    -> Task Service
 
-## 토큰 전략
+Auth Service
+  -> Kakao API
+  -> User Service (최초 로그인 시 사용자 생성)
 
-- Access Token
-  - 짧은 만료 시간
-  - `sub=userId`, `role`, `category=access`
-  - HttpOnly 쿠키로도 전달되어 브라우저에서 자동 전송 가능
-- Refresh Token
-  - 긴 만료 시간
-  - `jti`, `sub=userId`, `category=refresh`
-  - DB 저장 후 재발급과 로그아웃 시 폐기
-  - 권한 변경 시 기존 refresh token 즉시 폐기
-  - HttpOnly 쿠키로도 전달되어 `refresh/logout` 요청 본문 없이 사용 가능
+All Services
+  -> Eureka Server
+  -> Config Server
+```
 
-## 주요 API
+### 기술적 특징
 
-### 공개 API
+- Java 21
+- Spring Boot 4
+- Spring Cloud Gateway
+- Eureka Service Discovery
+- Spring Cloud Config
+- JWT 기반 인증/인가
+- MySQL 사용 (`auth-service`, `user-service`는 docker-compose 기준 확인 가능)
+- 동기 HTTP + JSON 중심의 단순한 서비스 간 통신
+- `auth-service`, `user-service`, `task-service`에 Virtual Thread 활성화
+
+## 도메인 흐름
+
+### 1. 로그인 플로우
+
+```text
+Client
+  -> GET /api/auth/login/kakao/authorize
+  -> Kakao 로그인 완료
+  -> GET /api/auth/login/kakao/callback?code=...
+Gateway
+  -> Auth Service
+Auth Service
+  -> Kakao 토큰/사용자 정보 조회
+  -> 기존 인증 계정 조회
+  -> 없으면 User Service에 소셜 사용자 생성 요청
+  -> Access/Refresh Token 발급
+  -> HttpOnly 쿠키 설정
+```
+
+핵심 포인트:
+
+- 외부 OAuth 제공자는 카카오를 사용한다.
+- 최초 로그인 시 `auth-service`가 `user-service`를 호출해 내부 사용자 프로필을 만든다.
+- 이후 보호 API는 `Authorization: Bearer <token>` 또는 쿠키 기반으로 호출할 수 있다.
+
+### 2. 할 일 생성 플로우
+
+```text
+Client
+  -> POST /api/tasks
+Gateway
+  -> Task Service
+Task Service
+  -> JWT 사용자 식별
+  -> 사용자 소유 Task 생성
+  -> 저장 후 응답 반환
+```
+
+현재 할 일은 인증된 사용자 기준으로 생성된다. 제목은 공백만 허용되지 않으며, 길이 제한도 검증한다.
+
+### 3. 할 일 완료 플로우
+
+```text
+Client
+  -> PATCH /api/tasks/{taskId}/complete
+Gateway
+  -> Task Service
+Task Service
+  -> Task 조회
+  -> 요청 사용자와 소유자 일치 검증
+  -> completedAt 기록
+  -> 완료 상태 저장
+```
+
+본인이 소유한 할 일만 완료할 수 있도록 서비스 레벨에서 검증한다.
+
+### 4. 잔디 조회 플로우
+
+```text
+Client
+  -> GET /api/tasks/grass?from=2026-04-01&to=2026-04-30
+Gateway
+  -> Task Service
+Task Service
+  -> 기간 검증
+  -> 완료된 Task 조회
+  -> 날짜별 완료 건수 집계
+  -> count -> level 변환
+  -> 잔디 응답 반환
+```
+
+응답은 전체 완료 수와 일별 데이터 목록을 포함한다.
+
+```json
+{
+  "from": "2026-04-01",
+  "to": "2026-04-30",
+  "totalCompletedCount": 12,
+  "days": [
+    {
+      "date": "2026-04-01",
+      "completedCount": 0,
+      "level": 0
+    },
+    {
+      "date": "2026-04-02",
+      "completedCount": 3,
+      "level": 3
+    }
+  ]
+}
+```
+
+## API 요약
+
+### 인증
 
 - `GET /api/auth/login/kakao/authorize`
 - `POST /api/auth/login/kakao`
@@ -75,93 +187,70 @@ JWT 기반 인증 서버를 직접 구현한 MSA 학습 프로젝트다. `auth-s
 - `POST /api/auth/refresh`
 - `POST /api/auth/logout`
 
-### 보호 API
+### 사용자
 
 - `GET /api/users/me`
+
+### 할 일 / 잔디
+
 - `POST /api/tasks`
 - `PATCH /api/tasks/{taskId}/complete`
-- `GET /api/tasks/grass`
-- `PATCH /api/admin/users/{userId}/role` (`ADMIN` 전용)
+- `GET /api/tasks/grass?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
-## 예시 호출
+### 관리자
 
-### 카카오 로그인 URL 조회
+- `PATCH /api/admin/users/{userId}/role`
 
-```bash
-curl "http://localhost:8080/api/auth/login/kakao/authorize?state=test-state"
-```
+## 토큰 전략
 
-### 카카오 로그인
+### Access Token
 
-```bash
-curl -X POST http://localhost:8080/api/auth/login/kakao \
-  -c cookies.txt \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "code": "kakao-authorization-code"
-  }'
-```
+- 짧은 만료 시간
+- 사용자 식별과 권한 정보 포함
+- `Authorization` 헤더 또는 HttpOnly 쿠키로 전달 가능
 
-### 내 정보 조회
+### Refresh Token
 
-```bash
-curl http://localhost:8080/api/users/me \
-  -b cookies.txt
-```
+- 긴 만료 시간
+- 재발급과 로그아웃에 사용
+- 저장소 기반으로 관리되어 폐기 가능
+- HttpOnly 쿠키 기반 사용 가능
 
-또는
+## 실행 구조
 
-```bash
-curl http://localhost:8080/api/users/me \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}"
-```
+루트 `docker-compose.yml` 기준으로 아래 컴포넌트가 함께 올라간다.
 
-### 사용자 권한 변경
+- `kafka`
+- `auth-mysql`
+- `user-mysql`
+- `config-server`
+- `eureka-server`
+- `auth-service`
+- `user-service`
+- `task-service`
+- `gateway`
 
-```bash
-curl -X PATCH http://localhost:8080/api/admin/users/1/role \
-  -H "Authorization: Bearer ${ADMIN_ACCESS_TOKEN}" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "role": "ADMIN"
-  }'
-```
+실행 전에 확인할 점:
 
-### 할 일 생성
+- Java 21 필요
+- `config-server`는 외부 Git 설정 저장소가 필요하므로 `CONFIG_GIT_URI` 등 환경 변수가 준비되어야 한다
+- 카카오 로그인 테스트를 하려면 `KAKAO_REST_API_KEY`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI` 설정이 맞아야 한다
+- 저장소 루트에서 `config-server.env`를 참조하므로 해당 파일 또는 동등한 환경 구성이 필요하다
+
+예시 실행:
 
 ```bash
-curl -X POST http://localhost:8080/api/tasks \
-  -b cookies.txt \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "title": "JWT 인증 서버 포트폴리오 정리"
-  }'
+docker compose up --build
 ```
 
-또는
+## 왜 이 구조인가
 
-```bash
-curl -X POST http://localhost:8080/api/tasks \
-  -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "title": "JWT 인증 서버 포트폴리오 정리"
-  }'
-```
+이 프로젝트는 단순히 투두 API를 만드는 것이 아니라, 아래를 같이 검증하기 위한 학습 저장소다.
 
-### 로그아웃
+- 인증 서버를 직접 분리했을 때의 책임 경계
+- Resource Service와 Auth Service 분리 구조
+- Gateway + Discovery + Config Server를 포함한 전형적인 MSA 운영 형태
+- 동기식 서비스 간 통신을 유지하면서도 Virtual Thread로 구조 복잡도를 낮추는 방식
+- "작업 완료 이벤트를 집계해 시각화 데이터로 바꾸는 서비스"라는 도메인 분리
 
-```bash
-curl -X POST http://localhost:8080/api/auth/logout \
-  -b cookies.txt
-```
-
-## 포트폴리오 포인트
-
-- 인증 서버를 외부 SaaS에 위임하지 않고 직접 구현
-- Access/Refresh 토큰 분리
-- Refresh Token 저장소 관리
-- `USER`, `ADMIN` 역할 모델과 관리자 전용 권한 변경 API
-- Gateway, Auth Service, Resource Service 책임 분리
-- 소셜 로그인 사용자 프로필과 인증 데이터 분리
-- 사용자 본인 소유의 리소스만 수정 가능하도록 서비스 레벨 권한 검증
+즉, 이 저장소의 핵심은 "할 일을 완료하면 잔디가 심어지는 투두 서비스"를 MSA 환경에서 어떻게 나누고 연결할지에 있다.
