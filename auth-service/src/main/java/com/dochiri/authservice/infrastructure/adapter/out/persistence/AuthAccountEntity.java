@@ -25,9 +25,6 @@ public class AuthAccountEntity extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private Long userId;
 
-    @Column(unique = true)
-    private String email;
-
     @Column(nullable = false, updatable = false, length = 20)
     private String provider;
 
@@ -44,7 +41,6 @@ public class AuthAccountEntity extends BaseEntity {
             Long userId,
             AuthProvider provider,
             String providerUserId,
-            String email,
             String passwordHash,
             UserRole role
     ) {
@@ -52,14 +48,12 @@ public class AuthAccountEntity extends BaseEntity {
         entity.userId = requireNonNull(userId);
         entity.provider = requireNonNull(provider).name();
         entity.providerUserId = providerUserId;
-        entity.email = email;
         entity.passwordHash = requireNonNull(passwordHash);
         entity.role = requireNonNull(role).name();
         return entity;
     }
 
-    public void update(String email, String passwordHash, UserRole role) {
-        this.email = email;
+    public void update(String passwordHash, UserRole role) {
         this.passwordHash = requireNonNull(passwordHash);
         this.role = requireNonNull(role).name();
     }

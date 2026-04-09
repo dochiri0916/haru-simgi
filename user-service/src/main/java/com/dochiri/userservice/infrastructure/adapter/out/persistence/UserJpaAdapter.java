@@ -23,17 +23,6 @@ public class UserJpaAdapter implements UserRepository {
     }
 
     @Override
-    public Optional<Long> findIdByEmail(String email) {
-        return userJpaRepository.findIdByEmail(email);
-    }
-
-    @Override
-    public Optional<User> findByEmail(String email) {
-        return userJpaRepository.findByEmail(email)
-                .map(userMapper::toDomain);
-    }
-
-    @Override
     public Optional<User> findByPublicId(String publicId) {
         return userJpaRepository.findByPublicId(publicId)
                 .map(userMapper::toDomain);
@@ -50,11 +39,6 @@ public class UserJpaAdapter implements UserRepository {
         return userJpaRepository.findById(userId)
                 .map(userMapper::toDomain)
                 .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return userJpaRepository.existsByEmail(email);
     }
 
 }

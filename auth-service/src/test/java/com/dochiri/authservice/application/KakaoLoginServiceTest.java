@@ -26,7 +26,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -77,7 +76,6 @@ class KakaoLoginServiceTest {
                         1L,
                         AuthProvider.KAKAO,
                         "100",
-                        "alice@example.com",
                         passwordEncoder.encode("secret123"),
                         UserRole.USER
                 )));
@@ -101,8 +99,8 @@ class KakaoLoginServiceTest {
                 ));
         when(authAccountRepository.findByProviderAndProviderUserId("KAKAO", "200"))
                 .thenReturn(java.util.Optional.empty());
-        when(socialUserCreatePort.create(new CreateSocialUserCommand(null, "kakao-user", "https://example.com/profile.png")))
-                .thenReturn(new CreateSocialUserResult(7L, null, "kakao-user", "https://example.com/profile.png"));
+        when(socialUserCreatePort.create(new CreateSocialUserCommand("kakao-user", "https://example.com/profile.png")))
+                .thenReturn(new CreateSocialUserResult(7L, "kakao-user", "https://example.com/profile.png"));
         when(authAccountRepository.save(any(AuthAccount.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -116,7 +114,6 @@ class KakaoLoginServiceTest {
         assertThat(authAccountCaptor.getValue().userId()).isEqualTo(7L);
         assertThat(authAccountCaptor.getValue().provider()).isEqualTo(AuthProvider.KAKAO);
         assertThat(authAccountCaptor.getValue().providerUserId()).isEqualTo("200");
-        assertThat(authAccountCaptor.getValue().email()).isNull();
         assertThat(authAccountCaptor.getValue().role()).isEqualTo(UserRole.USER);
         assertThat(authAccountCaptor.getValue().passwordHash()).isNotBlank();
     }

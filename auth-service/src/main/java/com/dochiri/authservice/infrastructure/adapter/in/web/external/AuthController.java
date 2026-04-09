@@ -1,18 +1,14 @@
 package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 
-import com.dochiri.authservice.application.port.in.AuthenticateUseCase;
 import com.dochiri.authservice.application.port.in.KakaoLoginUseCase;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
-import com.dochiri.authservice.application.port.in.RegisterUseCase;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.in.dto.LogoutCommand;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.KakaoLoginRequest;
-import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.LoginRequest;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.LogoutRequest;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.RefreshTokenRequest;
-import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.RegisterRequest;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.AuthTokenResponse;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.KakaoAuthorizeUrlResponse;
 import com.dochiri.authservice.infrastructure.configuration.KakaoLoginProperties;
@@ -36,29 +32,11 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticateUseCase authenticateUseCase;
-    private final RegisterUseCase registerUseCase;
     private final KakaoLoginUseCase kakaoLoginUseCase;
     private final ReissueTokenUseCase reissueTokenUseCase;
     private final LogoutUseCase logoutUseCase;
     private final AuthTokenCookieManager authTokenCookieManager;
     private final KakaoLoginProperties kakaoLoginProperties;
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthTokenResponse> register(@Valid @RequestBody RegisterRequest request) {
-        var result = registerUseCase.register(request.toCommand());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, authTokenCookieManager.createAuthCookieHeaders(result).toArray(String[]::new))
-                .body(AuthTokenResponse.from(result));
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<AuthTokenResponse> login(@Valid @RequestBody LoginRequest request) {
-        var result = authenticateUseCase.authenticate(request.toCommand());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, authTokenCookieManager.createAuthCookieHeaders(result).toArray(String[]::new))
-                .body(AuthTokenResponse.from(result));
-    }
 
     @GetMapping("/login/kakao/authorize")
     public ResponseEntity<KakaoAuthorizeUrlResponse> kakaoAuthorizeUrl(

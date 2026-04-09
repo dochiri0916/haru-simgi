@@ -26,19 +26,15 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false, updatable = false, unique = true)
     private String publicId;
 
-    @Column(updatable = false, unique = true)
-    private String email;
-
     @Column(length = 100)
     private String nickname;
 
     @Column(length = 500)
     private String profileImageUrl;
 
-    public static UserEntity from(String publicId, String email, String nickname, String profileImageUrl) {
+    public static UserEntity from(String publicId, String nickname, String profileImageUrl) {
         UserEntity entity = new UserEntity();
         entity.publicId = requireNonNull(publicId);
-        entity.email = email;
         entity.nickname = nickname;
         entity.profileImageUrl = profileImageUrl;
         return entity;

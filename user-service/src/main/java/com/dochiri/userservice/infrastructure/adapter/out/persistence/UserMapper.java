@@ -12,7 +12,6 @@ public class UserMapper {
         requireNonNull(entity);
         return User.from(
                 entity.getPublicId(),
-                entity.getEmail(),
                 entity.getNickname(),
                 entity.getProfileImageUrl()
         );
@@ -22,7 +21,6 @@ public class UserMapper {
         requireNonNull(domain);
         return UserEntity.from(
                 domain.getPublicId(),
-                domain.getEmail(),
                 domain.getNickname(),
                 domain.getProfileImageUrl()
         );

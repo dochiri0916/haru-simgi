@@ -13,32 +13,20 @@ import static java.util.Objects.requireNonNull;
 public final class User {
 
     private final String publicId;
-    private final String email;
     private final String nickname;
     private final String profileImageUrl;
 
-    public static User create(String email) {
+    public static User createSocial(String nickname, String profileImageUrl) {
         return new User(
                 generatePublicId(),
-                email,
-                null,
-                null
-        );
-    }
-
-    public static User createSocial(String email, String nickname, String profileImageUrl) {
-        return new User(
-                generatePublicId(),
-                email,
                 nickname,
                 profileImageUrl
         );
     }
 
-    public static User from(String publicId, String email, String nickname, String profileImageUrl) {
+    public static User from(String publicId, String nickname, String profileImageUrl) {
         return new User(
                 requireNonNull(publicId),
-                email,
                 nickname,
                 profileImageUrl
         );

@@ -27,12 +27,6 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
     }
 
     @Override
-    public Optional<AuthAccount> findByEmail(String email) {
-        return authAccountJpaRepository.findByEmail(email)
-                .map(authAccountMapper::toDomain);
-    }
-
-    @Override
     public Optional<AuthAccount> findByProviderAndProviderUserId(String provider, String providerUserId) {
         return authAccountJpaRepository.findByProviderAndProviderUserId(provider, providerUserId)
                 .map(authAccountMapper::toDomain);

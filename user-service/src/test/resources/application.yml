@@ -20,7 +20,6 @@ eureka:
 
 security:
   public-endpoints:
-    - /internal/users
     - /internal/users/social
 
 jwt:

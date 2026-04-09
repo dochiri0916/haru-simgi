@@ -13,7 +13,6 @@ public class AuthAccountMapper {
                 entity.getUserId(),
                 AuthProvider.valueOf(entity.getProvider()),
                 entity.getProviderUserId(),
-                entity.getEmail(),
                 entity.getPasswordHash(),
                 UserRole.from(entity.getRole())
         );
@@ -24,7 +23,6 @@ public class AuthAccountMapper {
                 authAccount.userId(),
                 authAccount.provider(),
                 authAccount.providerUserId(),
-                authAccount.email(),
                 authAccount.passwordHash(),
                 authAccount.role()
         );
@@ -32,7 +30,6 @@ public class AuthAccountMapper {
 
     public void apply(AuthAccount authAccount, AuthAccountEntity entity) {
         entity.update(
-                authAccount.email(),
                 authAccount.passwordHash(),
                 authAccount.role()
         );

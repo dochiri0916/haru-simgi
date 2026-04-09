@@ -6,7 +6,6 @@ public record AuthAccount(
         Long userId,
         AuthProvider provider,
         String providerUserId,
-        String email,
         String passwordHash,
         UserRole role
 ) {

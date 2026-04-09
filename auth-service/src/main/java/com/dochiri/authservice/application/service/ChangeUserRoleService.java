@@ -28,7 +28,6 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
                 account.userId(),
                 account.provider(),
                 account.providerUserId(),
-                account.email(),
                 account.passwordHash(),
                 command.role()
         ));

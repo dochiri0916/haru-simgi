@@ -52,7 +52,7 @@ class ReissueTokenServiceTest {
         when(refreshTokenRepository.findByTokenId(tokenId))
                 .thenReturn(Optional.of(RefreshToken.create(tokenId, 1L, Instant.now().plusSeconds(60))));
         when(authAccountRepository.findByUserId(1L))
-                .thenReturn(Optional.of(new AuthAccount(1L, AuthProvider.LOCAL, null, "alice@example.com", "password-hash", UserRole.USER)));
+                .thenReturn(Optional.of(new AuthAccount(1L, AuthProvider.KAKAO, "100", "password-hash", UserRole.USER)));
         when(refreshTokenRepository.replaceByUserId(any(RefreshToken.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 

@@ -4,7 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 public record CreateSocialUserResult(
         Long userId,
-        String email,
         String nickname,
         String profileImageUrl
 ) {

@@ -8,16 +8,10 @@ public interface UserRepository {
 
     Long create(User user);
 
-    Optional<Long> findIdByEmail(String email);
-
-    Optional<User> findByEmail(String email);
-
     Optional<User> findByPublicId(String publicId);
 
     User loadByPublicId(String publicId);
 
     User loadByUserId(Long userId);
-
-    boolean existsByEmail(String email);
 
 }

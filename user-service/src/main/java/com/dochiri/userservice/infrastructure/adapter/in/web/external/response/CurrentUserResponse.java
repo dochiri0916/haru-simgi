@@ -6,7 +6,6 @@ import com.dochiri.userservice.domain.User;
 public record CurrentUserResponse(
         Long userId,
         String publicId,
-        String email,
         String nickname,
         String profileImageUrl,
         UserRole role
@@ -16,7 +15,6 @@ public record CurrentUserResponse(
         return new CurrentUserResponse(
                 userId,
                 user.getPublicId(),
-                user.getEmail(),
                 user.getNickname(),
                 user.getProfileImageUrl(),
                 role

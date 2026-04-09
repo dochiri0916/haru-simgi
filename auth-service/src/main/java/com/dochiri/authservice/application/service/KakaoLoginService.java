@@ -52,7 +52,6 @@ public class KakaoLoginService implements KakaoLoginUseCase {
 
     private AuthAccount provisionSocialAccount(KakaoUserProfileResult profile) {
         CreateSocialUserResult createdUser = socialUserCreatePort.create(new CreateSocialUserCommand(
-                profile.email(),
                 profile.nickname(),
                 profile.profileImageUrl()
         ));
@@ -61,7 +60,6 @@ public class KakaoLoginService implements KakaoLoginUseCase {
                 createdUser.userId(),
                 AuthProvider.KAKAO,
                 String.valueOf(profile.id()),
-                createdUser.email(),
                 passwordEncoder.encode("kakao:" + profile.id() + ":" + UUID.randomUUID()),
                 UserRole.USER
         ));
