@@ -11,7 +11,7 @@ public class UserMapper {
     public User toDomain(UserEntity entity) {
         requireNonNull(entity);
         return User.from(
-                entity.getId(),
+                entity.getPublicId(),
                 entity.getNickname(),
                 entity.getProfileImageUrl()
         );
