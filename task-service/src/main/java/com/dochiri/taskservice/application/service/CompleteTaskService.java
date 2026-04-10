@@ -18,18 +18,27 @@ public class CompleteTaskService implements CompleteTaskUseCase {
 
     private final TaskRepository taskRepository;
     private final Clock clock;
-    private final TaskOwnerGuard taskOwnerGuard;
 
     @Transactional
     @Override
     public CompleteTaskResult complete(CompleteTaskCommand command) {
-        Task task = taskRepository.loadById(command.taskId());
-        taskOwnerGuard.validateUserOwner(task, command.requesterUserId());
+        Task task = taskRepository.loadById(command.id());
+
+        task.validateOwnership(command.requesterUserId());
+
         Instant completedAt = Instant.now(clock);
 
         task.complete(completedAt);
         Task saved = taskRepository.save(task);
 
-        return CompleteTaskResult.from(saved);
+        return new CompleteTaskResult(
+                saved.getId(),
+                saved.getOwner().type().name(),
+                saved.getOwner().referenceId(),
+                saved.getTitle().value(),
+                saved.isCompleted(),
+                saved.getCompletedAt()
+        );
     }
+
 }

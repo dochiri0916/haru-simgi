@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.in.web.external.response;
 
-import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.security.role.UserRole;
 
 import java.time.Instant;
@@ -12,7 +12,7 @@ public record AuthTokenResponse(
         Instant refreshTokenExpiresAt,
         UserRole role
 ) {
-    public static AuthTokenResponse from(AuthTokenResult result) {
+    public static AuthTokenResponse from(IssueAuthTokenResult result) {
         return new AuthTokenResponse(
                 "Bearer",
                 result.accessToken(),

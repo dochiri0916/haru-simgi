@@ -8,4 +8,5 @@ import java.util.List;
 public interface GetTasksUseCase {
 
     List<TaskSummaryResult> getTasks(GetTasksCommand command);
+
 }

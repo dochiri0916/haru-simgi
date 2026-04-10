@@ -18,7 +18,7 @@ class CreateSocialUserServiceTest {
 
     @Test
     void 소셜_사용자를_생성한다() {
-        when(userRepository.create(any(User.class)))
+        when(userRepository.save(any(User.class)))
                 .thenReturn(1L);
 
         var result = createSocialUserService.create(new CreateSocialUserCommand(
@@ -29,6 +29,6 @@ class CreateSocialUserServiceTest {
         assertThat(result.userId()).isEqualTo(1L);
         assertThat(result.nickname()).isEqualTo("alice");
         assertThat(result.profileImageUrl()).isEqualTo("https://example.com/alice.png");
-        verify(userRepository).create(any(User.class));
+        verify(userRepository).save(any(User.class));
     }
 }

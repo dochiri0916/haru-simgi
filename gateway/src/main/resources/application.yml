@@ -18,6 +18,10 @@ spring:
               uri: lb://auth-service
               predicates:
                 - Path=/api/auth/**
+            - id: auth-service-dev
+              uri: lb://auth-service
+              predicates:
+                - Path=/api/dev/**
             - id: auth-admin-service
               uri: lb://auth-service
               predicates:
@@ -26,10 +30,14 @@ spring:
               uri: lb://user-service
               predicates:
                 - Path=/api/users/**
+              filters:
+                - AuthRequired
             - id: task-service
               uri: lb://task-service
               predicates:
                 - Path=/api/tasks/**
+              filters:
+                - AuthRequired
 
 cors:
   allowed-origins:

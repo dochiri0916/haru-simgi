@@ -17,21 +17,14 @@ public class UserJpaAdapter implements UserRepository {
     private final UserMapper userMapper;
 
     @Override
-    public Long create(User user) {
-        UserEntity saved = userJpaRepository.saveAndFlush(userMapper.toEntity(user));
-        return saved.getId();
+    public Long save(User user) {
+        return userJpaRepository.save(userMapper.toEntity(user)).getId();
     }
 
     @Override
-    public Optional<User> findByPublicId(String publicId) {
-        return userJpaRepository.findByPublicId(publicId)
+    public Optional<User> findById(String id) {
+        return userJpaRepository.findByPublicId(id)
                 .map(userMapper::toDomain);
-    }
-
-    @Override
-    public User loadByPublicId(String publicId) {
-        return findByPublicId(publicId)
-                .orElseThrow(() -> new BaseException(UserErrorCode.USER_NOT_FOUND));
     }
 
     @Override

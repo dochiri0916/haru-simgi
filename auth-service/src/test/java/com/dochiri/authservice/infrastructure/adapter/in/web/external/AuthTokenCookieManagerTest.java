@@ -1,7 +1,7 @@
 package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 
 import com.dochiri.authservice.application.error.AuthErrorCode;
-import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtCookieProperties;
 import com.dochiri.security.properties.JwtProperties;
@@ -29,7 +29,7 @@ class AuthTokenCookieManagerTest {
 
     @Test
     void 로그인_응답용_쿠키_헤더를_생성한다() {
-        AuthTokenResult result = new AuthTokenResult(
+        IssueAuthTokenResult result = new IssueAuthTokenResult(
                 "access-token",
                 "refresh-token",
                 Instant.now().plusSeconds(60),

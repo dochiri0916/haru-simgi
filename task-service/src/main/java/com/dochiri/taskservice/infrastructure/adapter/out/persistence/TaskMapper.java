@@ -16,19 +16,19 @@ public class TaskMapper {
                 new TaskOwner(entity.getOwnerType(), entity.getOwnerReferenceId()),
                 entity.getTitle(),
                 entity.isCompleted(),
-                entity.getCompletedAt()
+                entity.getCompletedAt(),
+                entity.getDueDate()
         );
     }
 
     public TaskEntity toEntity(Task domain) {
         requireNonNull(domain);
-        return TaskEntity.from(
+        return TaskEntity.create(
                 domain.getId(),
                 domain.getOwner().type(),
                 domain.getOwner().referenceId(),
-                domain.getTitle(),
-                domain.isCompleted(),
-                domain.getCompletedAt()
+                domain.getTitle().value(),
+                domain.getDueDate()
         );
     }
 

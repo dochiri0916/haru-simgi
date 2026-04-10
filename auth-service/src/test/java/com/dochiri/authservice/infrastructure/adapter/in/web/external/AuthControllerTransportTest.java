@@ -3,7 +3,7 @@ package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 import com.dochiri.authservice.application.port.in.KakaoLoginUseCase;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
-import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,8 +135,8 @@ class AuthControllerTransportTest {
                 .andExpect(header().doesNotExist("Set-Cookie"));
     }
 
-    private AuthTokenResult tokenResult() {
-        return new AuthTokenResult(
+    private IssueAuthTokenResult tokenResult() {
+        return new IssueAuthTokenResult(
                 "access-token",
                 "refresh-token",
                 Instant.parse("2026-04-09T00:00:00Z"),

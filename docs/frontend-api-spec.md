@@ -189,7 +189,7 @@
 ```json
 {
   "userId": 1,
-  "publicId": "usr_123456",
+  "id": "usr_123456",
   "nickname": "도치리",
   "profileImageUrl": "https://...",
   "role": "USER"
@@ -232,7 +232,8 @@ GET /api/tasks?completed=true
     "ownerReferenceId": "1",
     "title": "JWT 인증 흐름 정리",
     "completed": false,
-    "completedAt": null
+    "completedAt": null,
+    "dueDate": "2026-04-10T00:00:00Z"
   },
   {
     "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
@@ -240,7 +241,8 @@ GET /api/tasks?completed=true
     "ownerReferenceId": "1",
     "title": "잔디 화면 연결",
     "completed": true,
-    "completedAt": "2026-04-09T12:00:00Z"
+    "completedAt": "2026-04-09T12:00:00Z",
+    "dueDate": "2026-04-09T00:00:00Z"
   }
 ]
 ```
@@ -260,7 +262,8 @@ GET /api/tasks?completed=true
 
 ```json
 {
-  "title": "JWT 인증 흐름 정리"
+  "title": "JWT 인증 흐름 정리",
+  "dueDate": "2026-04-10T00:00:00Z"
 }
 ```
 
@@ -272,7 +275,8 @@ GET /api/tasks?completed=true
   "ownerType": "USER",
   "ownerReferenceId": "1",
   "title": "JWT 인증 흐름 정리",
-  "completed": false
+  "completed": false,
+  "dueDate": "2026-04-10T00:00:00Z"
 }
 ```
 
@@ -281,6 +285,7 @@ GET /api/tasks?completed=true
 - `title`은 필수
 - 공백 문자열 불가
 - 최대 길이 100자
+- `dueDate`는 필수 (ISO 8601 형식)
 
 ### 3. 할 일 완료
 
@@ -324,7 +329,8 @@ Path Params:
   "ownerReferenceId": "1",
   "title": "JWT 인증 흐름 정리",
   "completed": false,
-  "completedAt": null
+  "completedAt": null,
+  "dueDate": "2026-04-10T00:00:00Z"
 }
 ```
 

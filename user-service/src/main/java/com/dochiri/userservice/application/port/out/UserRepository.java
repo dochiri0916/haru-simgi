@@ -6,11 +6,9 @@ import java.util.Optional;
 
 public interface UserRepository {
 
-    Long create(User user);
+    Long save(User user);
 
-    Optional<User> findByPublicId(String publicId);
-
-    User loadByPublicId(String publicId);
+    Optional<User> findById(String id);
 
     User loadByUserId(Long userId);
 

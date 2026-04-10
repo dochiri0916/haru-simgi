@@ -29,4 +29,5 @@ public class GetTasksService implements GetTasksUseCase {
                 .map(TaskSummaryResult::from)
                 .toList();
     }
+
 }

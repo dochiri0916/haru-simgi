@@ -24,4 +24,5 @@ public interface TaskRepository {
     void delete(Task task);
 
     int migrateOwner(TaskOwner sourceOwner, TaskOwner targetOwner);
+
 }

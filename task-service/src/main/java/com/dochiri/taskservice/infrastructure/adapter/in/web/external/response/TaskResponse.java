@@ -10,7 +10,8 @@ public record TaskResponse(
         String ownerReferenceId,
         String title,
         boolean completed,
-        Instant completedAt
+        Instant completedAt,
+        Instant dueDate
 ) {
     public static TaskResponse from(TaskSummaryResult result) {
         return new TaskResponse(
@@ -19,7 +20,8 @@ public record TaskResponse(
                 result.ownerReferenceId(),
                 result.title(),
                 result.completed(),
-                result.completedAt()
+                result.completedAt(),
+                result.dueDate()
         );
     }
 }

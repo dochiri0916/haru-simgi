@@ -11,7 +11,7 @@ public class UserMapper {
     public User toDomain(UserEntity entity) {
         requireNonNull(entity);
         return User.from(
-                entity.getPublicId(),
+                entity.getId(),
                 entity.getNickname(),
                 entity.getProfileImageUrl()
         );
@@ -20,7 +20,7 @@ public class UserMapper {
     public UserEntity toEntity(User domain) {
         requireNonNull(domain);
         return UserEntity.from(
-                domain.getPublicId(),
+                domain.getId(),
                 domain.getNickname(),
                 domain.getProfileImageUrl()
         );

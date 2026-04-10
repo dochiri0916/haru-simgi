@@ -1,9 +1,9 @@
 package com.dochiri.authservice.application.port.in;
 
-import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 
 public interface ReissueTokenUseCase {
 
-    AuthTokenResult reissue(RefreshTokenCommand command);
+    IssueAuthTokenResult reissue(RefreshTokenCommand command);
 }

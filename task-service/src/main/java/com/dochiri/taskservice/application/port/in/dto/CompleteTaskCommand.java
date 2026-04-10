@@ -1,7 +1,13 @@
 package com.dochiri.taskservice.application.port.in.dto;
 
+import static java.util.Objects.requireNonNull;
+
 public record CompleteTaskCommand(
-        String taskId,
+        String id,
         String requesterUserId
 ) {
+    public CompleteTaskCommand {
+        requireNonNull(id());
+        requireNonNull(requesterUserId());
+    }
 }

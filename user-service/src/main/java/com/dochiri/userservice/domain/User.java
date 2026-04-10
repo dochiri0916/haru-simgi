@@ -12,27 +12,27 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class User {
 
-    private final String publicId;
+    private final String id;
     private final String nickname;
     private final String profileImageUrl;
 
     public static User createSocial(String nickname, String profileImageUrl) {
         return new User(
-                generatePublicId(),
+                generateId(),
                 nickname,
                 profileImageUrl
         );
     }
 
-    public static User from(String publicId, String nickname, String profileImageUrl) {
+    public static User from(String id, String nickname, String profileImageUrl) {
         return new User(
-                requireNonNull(publicId),
+                requireNonNull(id),
                 nickname,
                 profileImageUrl
         );
     }
 
-    private static String generatePublicId() {
+    private static String generateId() {
         return UUID.randomUUID().toString();
     }
 

@@ -59,7 +59,8 @@ public class TaskController {
                         createTaskService.create(
                                 new CreateTaskCommand(
                                         authenticatedOwner(principal),
-                                        request.title()
+                                        request.title(),
+                                        request.dueDate()
                                 )
                         )
                 )
@@ -80,40 +81,40 @@ public class TaskController {
         );
     }
 
-    @PatchMapping("/{taskId}/complete")
+    @PatchMapping("/{id}/complete")
     public ResponseEntity<CompleteTaskResponse> complete(
             @AuthenticationPrincipal JwtPrincipal principal,
-            @PathVariable String taskId
+            @PathVariable String id
     ) {
         return ResponseEntity.ok().body(
                 CompleteTaskResponse.from(
                         completeTaskUseCase.complete(
-                                new CompleteTaskCommand(taskId, String.valueOf(principal.userId()))
+                                new CompleteTaskCommand(id, String.valueOf(principal.userId()))
                         )
                 )
         );
     }
 
-    @PatchMapping("/{taskId}/reopen")
+    @PatchMapping("/{id}/reopen")
     public ResponseEntity<TaskResponse> reopen(
             @AuthenticationPrincipal JwtPrincipal principal,
-            @PathVariable String taskId
+            @PathVariable String id
     ) {
         return ResponseEntity.ok(
                 TaskResponse.from(
                         reopenTaskUseCase.reopen(
-                                new ReopenTaskCommand(taskId, String.valueOf(principal.userId()))
+                                new ReopenTaskCommand(id, String.valueOf(principal.userId()))
                         )
                 )
         );
     }
 
-    @DeleteMapping("/{taskId}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal JwtPrincipal principal,
-            @PathVariable String taskId
+            @PathVariable String id
     ) {
-        deleteTaskUseCase.delete(new DeleteTaskCommand(taskId, String.valueOf(principal.userId())));
+        deleteTaskUseCase.delete(new DeleteTaskCommand(id, String.valueOf(principal.userId())));
         return ResponseEntity.noContent().build();
     }
 
@@ -135,4 +136,5 @@ public class TaskController {
     private TaskOwner authenticatedOwner(JwtPrincipal principal) {
         return TaskOwner.user(String.valueOf(principal.userId()));
     }
+
 }

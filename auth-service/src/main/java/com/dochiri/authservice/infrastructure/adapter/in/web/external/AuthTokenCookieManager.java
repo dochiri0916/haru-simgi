@@ -1,7 +1,7 @@
 package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 
 import com.dochiri.authservice.application.error.AuthErrorCode;
-import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtCookieProperties;
 import com.dochiri.security.properties.JwtProperties;
@@ -25,7 +25,7 @@ public class AuthTokenCookieManager {
         this.jwtProperties = jwtProperties;
     }
 
-    public List<String> createAuthCookieHeaders(AuthTokenResult result) {
+    public List<String> createAuthCookieHeaders(IssueAuthTokenResult result) {
         return List.of(
                 buildCookie(
                         jwtCookieProperties.accessTokenName(),

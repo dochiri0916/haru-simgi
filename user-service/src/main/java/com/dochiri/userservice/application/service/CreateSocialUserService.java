@@ -18,15 +18,10 @@ public class CreateSocialUserService implements CreateSocialUserUseCase {
     @Transactional
     @Override
     public CreateSocialUserResult create(CreateSocialUserCommand command) {
-        Long userId = userRepository.create(User.createSocial(
-                command.nickname(),
-                command.profileImageUrl()
-        ));
-        return new CreateSocialUserResult(
-                userId,
-                command.nickname(),
-                command.profileImageUrl()
-        );
+        User user = User.createSocial(command.nickname(), command.profileImageUrl());
+        Long userId = userRepository.save(user);
+
+        return new CreateSocialUserResult(userId, user.getNickname(), user.getProfileImageUrl());
     }
 
 }

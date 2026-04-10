@@ -36,4 +36,8 @@ public record TaskOwner(
         return type == OwnerType.USER;
     }
 
+    public boolean isOwnedByUser(String userId) {
+        return isUser() && referenceId.equals(userId);
+    }
+
 }

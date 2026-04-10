@@ -1,22 +1,22 @@
 package com.dochiri.userservice.infrastructure.adapter.in.web.external.response;
 
 import com.dochiri.security.role.UserRole;
-import com.dochiri.userservice.domain.User;
+import com.dochiri.userservice.application.port.in.dto.GetCurrentUserResult;
 
 public record CurrentUserResponse(
         Long userId,
-        String publicId,
+        String id,
         String nickname,
         String profileImageUrl,
         UserRole role
 ) {
 
-    public static CurrentUserResponse from(Long userId, User user, UserRole role) {
+    public static CurrentUserResponse from(Long userId, GetCurrentUserResult result, UserRole role) {
         return new CurrentUserResponse(
                 userId,
-                user.getPublicId(),
-                user.getNickname(),
-                user.getProfileImageUrl(),
+                result.id(),
+                result.nickname(),
+                result.profileImageUrl(),
                 role
         );
     }

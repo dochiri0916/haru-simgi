@@ -1,9 +1,9 @@
 package com.dochiri.userservice.application.port.in;
 
-import com.dochiri.userservice.domain.User;
+import com.dochiri.userservice.application.port.in.dto.GetCurrentUserResult;
 
 public interface GetCurrentUserUseCase {
 
-    User getCurrentUser(Long userId);
+    GetCurrentUserResult getCurrentUser(Long userId);
 
 }

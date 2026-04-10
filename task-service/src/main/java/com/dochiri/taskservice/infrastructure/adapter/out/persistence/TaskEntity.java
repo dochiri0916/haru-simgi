@@ -39,21 +39,24 @@ public class TaskEntity extends BaseEntity {
 
     private Instant completedAt;
 
-    public static TaskEntity from(
+    @Column(nullable = false)
+    private Instant dueDate;
+
+    public static TaskEntity create(
             String publicId,
             OwnerType ownerType,
             String ownerReferenceId,
             String title,
-            boolean completed,
-            Instant completedAt
+            Instant dueDate
     ) {
         TaskEntity entity = new TaskEntity();
         entity.publicId = requireNonNull(publicId);
         entity.ownerType = requireNonNull(ownerType);
         entity.ownerReferenceId = requireNonNull(ownerReferenceId);
         entity.title = requireNonNull(title);
-        entity.completed = completed;
-        entity.completedAt = completedAt;
+        entity.completed = false;
+        entity.completedAt = null;
+        entity.dueDate = requireNonNull(dueDate);
         return entity;
     }
 
@@ -62,12 +65,15 @@ public class TaskEntity extends BaseEntity {
             String ownerReferenceId,
             String title,
             boolean completed,
-            Instant completedAt
+            Instant completedAt,
+            Instant dueDate
     ) {
         this.ownerType = requireNonNull(ownerType);
         this.ownerReferenceId = requireNonNull(ownerReferenceId);
         this.title = requireNonNull(title);
         this.completed = completed;
         this.completedAt = completedAt;
+        this.dueDate = requireNonNull(dueDate);
     }
+
 }

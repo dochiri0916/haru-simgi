@@ -33,9 +33,10 @@ public class TaskJpaAdapter implements TaskRepository {
         existing.updateFrom(
                 task.getOwner().type(),
                 task.getOwner().referenceId(),
-                task.getTitle(),
+                task.getTitle().value(),
                 task.isCompleted(),
-                task.getCompletedAt()
+                task.getCompletedAt(),
+                task.getDueDate()
         );
         TaskEntity saved = taskJpaRepository.save(existing);
         return taskMapper.toDomain(saved);
@@ -96,4 +97,5 @@ public class TaskJpaAdapter implements TaskRepository {
         taskJpaRepository.findByPublicId(task.getId())
                 .ifPresent(taskJpaRepository::delete);
     }
+
 }

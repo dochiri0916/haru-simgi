@@ -1,7 +1,6 @@
 package com.dochiri.authservice.domain;
 
 import java.time.Instant;
-import java.util.Objects;
 
 import lombok.AccessLevel;
 import lombok.Getter;

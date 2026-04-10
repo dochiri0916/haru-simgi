@@ -1,6 +1,7 @@
 package com.dochiri.userservice.application.service;
 
 import com.dochiri.userservice.application.port.in.GetCurrentUserUseCase;
+import com.dochiri.userservice.application.port.in.dto.GetCurrentUserResult;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,13 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
 
     @Transactional(readOnly = true)
     @Override
-    public User getCurrentUser(Long userId) {
-        return userRepository.loadByUserId(userId);
+    public GetCurrentUserResult getCurrentUser(Long userId) {
+        User user = userRepository.loadByUserId(userId);
+        return new GetCurrentUserResult(
+                user.getId(),
+                user.getNickname(),
+                user.getProfileImageUrl()
+        );
     }
 
 }

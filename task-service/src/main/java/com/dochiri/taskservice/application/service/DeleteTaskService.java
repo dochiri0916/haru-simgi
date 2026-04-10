@@ -13,13 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class DeleteTaskService implements DeleteTaskUseCase {
 
     private final TaskRepository taskRepository;
-    private final TaskOwnerGuard taskOwnerGuard;
 
     @Transactional
     @Override
     public void delete(DeleteTaskCommand command) {
-        Task task = taskRepository.loadById(command.taskId());
-        taskOwnerGuard.validateUserOwner(task, command.requesterUserId());
+        Task task = taskRepository.loadById(command.id());
+
+        task.validateOwnership(command.requesterUserId());
+
         taskRepository.delete(task);
     }
+
 }

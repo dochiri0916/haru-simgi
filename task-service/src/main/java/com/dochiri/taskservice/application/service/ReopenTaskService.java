@@ -14,14 +14,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReopenTaskService implements ReopenTaskUseCase {
 
     private final TaskRepository taskRepository;
-    private final TaskOwnerGuard taskOwnerGuard;
 
     @Transactional
     @Override
     public TaskSummaryResult reopen(ReopenTaskCommand command) {
-        Task task = taskRepository.loadById(command.taskId());
-        taskOwnerGuard.validateUserOwner(task, command.requesterUserId());
+        Task task = taskRepository.loadById(command.id());
+
+        task.validateOwnership(command.requesterUserId());
+
         task.reopen();
-        return TaskSummaryResult.from(taskRepository.save(task));
+
+        Task saved = taskRepository.save(task);
+
+        return new TaskSummaryResult(
+                saved.getId(),
+                saved.getOwner().type().name(),
+                saved.getOwner().referenceId(),
+                saved.getTitle().value(),
+                saved.isCompleted(),
+                saved.getCompletedAt(),
+                saved.getDueDate()
+        );
     }
+
 }

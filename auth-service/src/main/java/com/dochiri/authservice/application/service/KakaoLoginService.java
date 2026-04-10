@@ -1,7 +1,9 @@
 package com.dochiri.authservice.application.service;
 
+import com.dochiri.authservice.application.port.in.AuthTokenIssueUseCase;
 import com.dochiri.authservice.application.port.in.KakaoLoginUseCase;
-import com.dochiri.authservice.application.port.in.dto.AuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenCommand;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
@@ -28,7 +30,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
     private final SocialUserCreatePort socialUserCreatePort;
     private final AuthAccountRepository authAccountRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AuthTokenIssuer authTokenIssuer;
+    private final AuthTokenIssueUseCase authTokenIssueUseCase;
 
     @Override
     public String buildAuthorizeUrl(String state) {
@@ -37,7 +39,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
 
     @Transactional
     @Override
-    public AuthTokenResult login(KakaoLoginCommand command) {
+    public IssueAuthTokenResult login(KakaoLoginCommand command) {
         KakaoUserProfileResult profile = kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand(command.code()));
         String providerUserId = String.valueOf(profile.id());
 
@@ -47,7 +49,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
                 )
                 .orElseGet(() -> provisionSocialAccount(profile));
 
-        return authTokenIssuer.issue(authAccount);
+        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(authAccount.userId(), authAccount.role()));
     }
 
     private AuthAccount provisionSocialAccount(KakaoUserProfileResult profile) {
