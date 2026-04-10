@@ -20,6 +20,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<Object> handleDomainException(DomainException exception, HttpServletRequest request) {
+        log.warn("매핑되지 않은 도메인 예외입니다. uri={}, method={}, exception={}",
+                request.getRequestURI(), request.getMethod(), exception.getClass().getSimpleName());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(createProblemDetail(
+                        exception,
+                        HttpStatus.BAD_REQUEST,
+                        exception.getMessage(),
+                        null, null,
+                        new ServletWebRequest(request)
+                ));
+    }
+
     @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
     public ResponseEntity<Object> handleAccessDenied(Exception exception, HttpServletRequest request) {
         log.warn("접근이 거부되었습니다. uri={}, method={}, message={}",
