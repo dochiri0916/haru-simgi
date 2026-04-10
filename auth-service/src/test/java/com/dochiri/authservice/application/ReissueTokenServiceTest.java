@@ -1,16 +1,16 @@
 package com.dochiri.authservice.application;
 
-import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
+import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.application.service.ReissueTokenService;
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
-import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.jwt.JwtProvider;
 import com.dochiri.security.jwt.JwtTokenGenerator;
+import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,9 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class ReissueTokenServiceTest {
 

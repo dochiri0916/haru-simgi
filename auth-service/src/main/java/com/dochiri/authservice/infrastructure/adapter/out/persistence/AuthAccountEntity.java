@@ -1,7 +1,7 @@
 package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
-import com.dochiri.jpa.entity.BaseEntity;
 import com.dochiri.authservice.domain.AuthProvider;
+import com.dochiri.jpa.entity.BaseEntity;
 import com.dochiri.security.role.UserRole;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

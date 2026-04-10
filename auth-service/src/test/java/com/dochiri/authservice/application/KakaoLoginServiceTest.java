@@ -5,10 +5,10 @@ import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.application.port.out.SocialUserCreatePort;
-import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
-import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
+import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
+import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
 import com.dochiri.authservice.application.service.AuthTokenIssuer;
 import com.dochiri.authservice.application.service.KakaoLoginService;
 import com.dochiri.authservice.domain.AuthAccount;
@@ -26,10 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class KakaoLoginServiceTest {
 

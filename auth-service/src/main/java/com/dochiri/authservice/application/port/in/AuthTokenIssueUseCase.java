@@ -1,7 +1,7 @@
 package com.dochiri.authservice.application.port.in;
 
-import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenCommand;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 
 public interface AuthTokenIssueUseCase {
 

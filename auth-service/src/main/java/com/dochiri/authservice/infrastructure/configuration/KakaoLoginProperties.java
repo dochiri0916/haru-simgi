@@ -2,8 +2,8 @@ package com.dochiri.authservice.infrastructure.configuration;
 
 import jakarta.validation.constraints.AssertTrue;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 
 @Validated
 @ConfigurationProperties(prefix = "app.kakao")

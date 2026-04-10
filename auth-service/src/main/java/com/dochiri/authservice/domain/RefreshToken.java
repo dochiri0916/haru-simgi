@@ -1,12 +1,12 @@
 package com.dochiri.authservice.domain;
 
-import java.time.Instant;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import static java.util.Objects.*;
+import java.time.Instant;
+
+import static java.util.Objects.requireNonNull;
 
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
