@@ -202,68 +202,52 @@
 - 헤더 프로필 영역
 - 관리자 기능 노출 여부 판단
 
-## 할 일 API
+## 습관 API
 
-### 1. 할 일 목록 조회
+습관(Habit)은 반복적으로 기록하는 행동 단위다. 각 습관에 기록(Record)을 남기면 잔디로 시각화된다.
+
+### 습관 타입
+
+- `COUNT`: 횟수 기반 (예: 물 8잔 마시기)
+- `DURATION`: 시간 기반 (예: 운동 30분)
+
+### 1. 습관 목록 조회
 
 - Method: `GET`
-- Path: `/api/tasks`
+- Path: `/api/habits`
 - Auth: 필요
-
-Query:
-
-- `completed?: boolean`
-
-예시:
-
-```text
-GET /api/tasks
-GET /api/tasks?completed=false
-GET /api/tasks?completed=true
-```
 
 응답:
 
 ```json
-[
-  {
-    "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-    "ownerType": "USER",
-    "ownerReferenceId": "1",
-    "title": "JWT 인증 흐름 정리",
-    "completed": false,
-    "completedAt": null,
-    "dueDate": "2026-04-10T00:00:00Z"
-  },
-  {
-    "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
-    "ownerType": "USER",
-    "ownerReferenceId": "1",
-    "title": "잔디 화면 연결",
-    "completed": true,
-    "completedAt": "2026-04-09T12:00:00Z",
-    "dueDate": "2026-04-09T00:00:00Z"
-  }
-]
+{
+  "habits": [
+    {
+      "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+      "name": "물 마시기",
+      "type": "COUNT"
+    },
+    {
+      "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
+      "name": "러닝",
+      "type": "DURATION"
+    }
+  ]
+}
 ```
 
-프론트 사용 위치:
-
-- 오늘의 할 일 목록
-- 완료/미완료 필터
-
-### 2. 할 일 생성
+### 2. 습관 생성
 
 - Method: `POST`
-- Path: `/api/tasks`
+- Path: `/api/habits`
 - Auth: 필요
 
 요청:
 
 ```json
 {
-  "title": "JWT 인증 흐름 정리",
-  "dueDate": "2026-04-10T00:00:00Z"
+  "name": "물 마시기",
+  "type": "COUNT"
 }
 ```
 
@@ -272,52 +256,15 @@ GET /api/tasks?completed=true
 ```json
 {
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "ownerType": "USER",
-  "ownerReferenceId": "1",
-  "title": "JWT 인증 흐름 정리",
-  "completed": false,
-  "dueDate": "2026-04-10T00:00:00Z"
+  "name": "물 마시기",
+  "type": "COUNT"
 }
 ```
 
-검증 규칙:
+### 3. 습관 상세 조회
 
-- `title`은 필수
-- 공백 문자열 불가
-- 최대 길이 100자
-- `dueDate`는 필수 (ISO 8601 형식)
-
-### 3. 할 일 완료
-
-- Method: `PATCH`
-- Path: `/api/tasks/{taskId}/complete`
-- Auth: 필요
-
-Path Params:
-
-- `taskId: string`
-
-응답:
-
-```json
-{
-  "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "ownerType": "USER",
-  "ownerReferenceId": "1",
-  "title": "JWT 인증 흐름 정리",
-  "completed": true,
-  "completedAt": "2026-04-09T12:00:00Z"
-}
-```
-
-제약:
-
-- 본인 소유의 할 일만 완료할 수 있다
-
-### 4. 할 일 완료 취소
-
-- Method: `PATCH`
-- Path: `/api/tasks/{taskId}/reopen`
+- Method: `GET`
+- Path: `/api/habits/{habitId}`
 - Auth: 필요
 
 응답:
@@ -325,75 +272,149 @@ Path Params:
 ```json
 {
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "ownerType": "USER",
-  "ownerReferenceId": "1",
-  "title": "JWT 인증 흐름 정리",
-  "completed": false,
-  "completedAt": null,
-  "dueDate": "2026-04-10T00:00:00Z"
+  "name": "물 마시기",
+  "type": "COUNT"
 }
 ```
 
-### 5. 할 일 삭제
+### 4. 습관 이름 수정
+
+- Method: `PATCH`
+- Path: `/api/habits/{habitId}`
+- Auth: 필요
+
+요청:
+
+```json
+{
+  "name": "물 10잔 마시기"
+}
+```
+
+응답:
+
+```json
+{
+  "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "name": "물 10잔 마시기",
+  "type": "COUNT"
+}
+```
+
+### 5. 습관 삭제
 
 - Method: `DELETE`
-- Path: `/api/tasks/{taskId}`
+- Path: `/api/habits/{habitId}`
 - Auth: 필요
 
 응답:
 
 - Status: `204 No Content`
 
-### 6. 잔디 조회
+### 6. 습관 기록 목록 조회
 
 - Method: `GET`
-- Path: `/api/tasks/grass`
+- Path: `/api/habits/{habitId}/records`
 - Auth: 필요
 
 Query:
 
-- `from: YYYY-MM-DD`
-- `to: YYYY-MM-DD`
+- `from?: YYYY-MM-DD` (기본값: 오늘 기준 1개월 전)
+- `to?: YYYY-MM-DD` (기본값: 오늘)
 
-예시:
+응답:
 
-```text
-GET /api/tasks/grass?from=2026-04-01&to=2026-04-30
+```json
+{
+  "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "records": [
+    {
+      "id": "a1b2c3d4-...",
+      "completedAt": "2026-04-10T09:00:00Z",
+      "value": 3
+    }
+  ]
+}
+```
+
+- `value`: 기록된 값 (횟수 또는 시간(분) 등)
+
+### 7. 습관 기록 생성
+
+- Method: `POST`
+- Path: `/api/habits/{habitId}/records`
+- Auth: 필요
+
+요청:
+
+```json
+{
+  "completedAt": "2026-04-10T09:00:00Z",
+  "value": 3
+}
 ```
 
 응답:
 
 ```json
 {
-  "from": "2026-04-01",
-  "to": "2026-04-30",
-  "totalCompletedCount": 12,
+  "id": "a1b2c3d4-...",
+  "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "completedAt": "2026-04-10T09:00:00Z",
+  "value": 3
+}
+```
+
+### 8. 잔디 조회
+
+- Method: `GET`
+- Path: `/api/habits/grass`
+- Auth: 필요
+
+Query:
+
+- `from?: YYYY-MM-DD` (기본값: 오늘 기준 18주 전)
+- `to?: YYYY-MM-DD` (기본값: 오늘)
+
+예시:
+
+```text
+GET /api/habits/grass?from=2026-01-01&to=2026-04-11
+```
+
+응답:
+
+```json
+{
+  "fromDate": "2026-01-01",
+  "toDate": "2026-04-11",
+  "totalValue": 42,
   "days": [
     {
-      "date": "2026-04-01",
-      "completedCount": 0,
+      "date": "2026-01-01",
+      "value": 0,
       "level": 0
     },
     {
-      "date": "2026-04-02",
-      "completedCount": 3,
+      "date": "2026-01-02",
+      "value": 3,
       "level": 3
     }
   ]
 }
 ```
 
-`level` 규칙:
+`level` 규칙 (당일 모든 습관 기록의 `value` 합산 기준):
 
-- `0`: 완료 0건
-- `1`: 완료 1건
-- `2`: 완료 2건
-- `3`: 완료 3~4건
-- `4`: 완료 5건 이상
+- `0`: 합산 0
+- `1`: 합산 1
+- `2`: 합산 2
+- `3`: 합산 3~4
+- `4`: 합산 5 이상
 
 프론트 사용 위치:
 
-- 월간 잔디 캘린더
+- 월간/전체 잔디 캘린더
 - 기간별 통계 영역
 
 ## 관리자 API
@@ -436,11 +457,12 @@ GET /api/tasks/grass?from=2026-04-01&to=2026-04-30
 ### 권장 React Query 키
 
 - `['me']`
+- `['habits']`
+- `['habits', habitId]`
+- `['habits', habitId, 'records', { from, to }]`
 - `['grass', from, to]`
-- `['tasks']`
-- `['tasks', { completed: false }]`
-- `['tasks', { completed: true }]`
 
 주의:
 
-- 생성/완료/완료 취소/삭제 후에는 `tasks`, `grass` 캐시를 함께 갱신하는 쪽이 가장 안전하다
+- 기록 생성 후에는 `['habits', habitId, 'records']`, `['grass']` 캐시를 함께 갱신하는 쪽이 가장 안전하다
+- 습관 삭제 후에는 `['habits']`, `['grass']` 캐시를 갱신한다

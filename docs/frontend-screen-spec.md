@@ -1,14 +1,14 @@
 # Frontend Screen Spec
 
-웹 프론트엔드 1차 버전 기준 화면 정의다. 목표는 "카카오 로그인 -> 투두 생성/완료 -> 잔디 확인" 흐름을 가장 빠르게 구현하는 것이다. React SPA 기준으로 작성했다.
+웹 프론트엔드 1차 버전 기준 화면 정의다. 목표는 "카카오 로그인 -> 습관 생성/기록 -> 잔디 확인" 흐름을 가장 빠르게 구현하는 것이다. React SPA 기준으로 작성했다.
 
 ## 제품 목표
 
-- 로그인한 사용자가 오늘의 할 일을 등록한다
-- 완료한 작업이 잔디로 시각화된다
+- 로그인한 사용자가 습관을 등록한다
+- 완료한 습관 기록이 잔디로 시각화된다
 - 사용자는 자신의 성취를 날짜 단위로 확인한다
 
-핵심은 기능이 많아 보이는 투두 앱이 아니라, "완료 기록이 잔디로 누적되는 경험"이다.
+핵심은 기능이 많아 보이는 앱이 아니라, "습관 기록이 잔디로 누적되는 경험"이다.
 
 ## 정보 구조
 
@@ -34,7 +34,7 @@
   - 현재 사용자 프로필
   - 로그아웃 버튼
 - 메인 콘텐츠
-  - 왼쪽 또는 상단: 오늘의 할 일 작성/리스트
+  - 왼쪽 또는 상단: 습관 목록 및 기록 입력
   - 오른쪽 또는 하단: 잔디 캘린더와 통계
 
 모바일에서는 세로 스택으로 내려가면 된다.
@@ -48,10 +48,10 @@
 
 - 서비스 이름
 - 한 줄 설명
-  - 예: "완료한 할 일이 잔디로 쌓이는 투두 리스트"
+  - 예: "습관 기록이 잔디로 쌓이는 트래커"
 - 카카오 로그인 버튼
 - 비로그인 상태 설명
-  - 로그인 후 내 투두와 잔디를 관리할 수 있음
+  - 로그인 후 내 습관과 잔디를 관리할 수 있음
 
 ### 주요 액션
 
@@ -98,7 +98,7 @@
 ## 화면 3. 메인 대시보드
 
 - Route: `/dashboard`
-- 목적: 투두 입력, 완료, 잔디 확인을 한 화면에서 처리
+- 목적: 습관 관리, 기록 입력, 잔디 확인을 한 화면에서 처리
 
 ### 섹션 구성
 
@@ -113,53 +113,52 @@
 - `GET /api/users/me`
 - `POST /api/auth/logout`
 
-#### 2. 할 일 입력 영역
+#### 2. 습관 관리 영역
 
-- 입력창
-- 추가 버튼
-
-입력 규칙:
-
-- 빈 문자열 금지
-- 최대 100자
-- `dueDate` 필수 (날짜 선택 UI 제공 권장)
-
-사용 API:
-
-- `POST /api/tasks`
-
-성공 시 처리:
-
-- 입력창 초기화
-- 오늘 할 일 UI에 즉시 반영
-- 잔디/통계 새로고침 트리거
-
-#### 3. 오늘의 할 일 영역
-
-이제 백엔드에서 목록 조회, 완료 취소, 삭제까지 지원하므로 일반적인 투두 UI를 구현할 수 있다.
+습관을 생성하고 목록을 관리하는 영역이다.
 
 표시 요소:
 
-- 할 일 제목
-- 완료 여부 배지
-- 완료 버튼
-- 완료 취소 버튼
-- 삭제 버튼
-- 완료 시각
+- 습관 목록
+- 습관 이름, 타입 배지
+- 습관 추가 버튼
+- 습관 이름 수정 버튼
+- 습관 삭제 버튼
+
+입력 규칙:
+
+- `name`은 필수
+- `type`은 `COUNT` 또는 `DURATION` 선택
 
 사용 API:
 
-- `GET /api/tasks`
-- `PATCH /api/tasks/{taskId}/complete`
-- `PATCH /api/tasks/{taskId}/reopen`
-- `DELETE /api/tasks/{taskId}`
+- `GET /api/habits`
+- `POST /api/habits`
+- `PATCH /api/habits/{habitId}`
+- `DELETE /api/habits/{habitId}`
 
-상태:
+성공 시 처리:
 
-- `empty`: 아직 등록된 할 일이 없음
-- `active`: 미완료 할 일 존재
-- `submitting`: 완료 처리 중
-- `error`: 완료 실패
+- 습관 목록 즉시 반영
+
+#### 3. 습관 기록 입력 영역
+
+선택한 습관에 오늘의 기록을 남기는 영역이다.
+
+표시 요소:
+
+- 기록할 습관 선택 (목록에서 선택)
+- 완료 시각 (기본값: 현재 시각)
+- 값 입력 (`value`: 횟수 또는 시간)
+- 기록 추가 버튼
+
+사용 API:
+
+- `POST /api/habits/{habitId}/records`
+
+성공 시 처리:
+
+- 잔디/통계 새로고침 트리거
 
 #### 4. 잔디 캘린더 영역
 
@@ -167,38 +166,37 @@
 
 표시 요소:
 
-- 월 이동 버튼
-- 현재 조회 중인 연월
+- 기간 이동 버튼 (기본: 최근 18주)
 - 잔디 셀 그리드
 - 범례
   - 연한 색: `level 0`
   - 진한 색: `level 4`
 - 합계 통계
-  - 기간 내 총 완료 수
+  - 기간 내 총 기록값 합산 (`totalValue`)
 
 사용 API:
 
-- `GET /api/tasks/grass?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/habits/grass?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
 셀 데이터 규칙:
 
 - `date`
-- `completedCount`
-- `level`
+- `value`: 해당일 모든 습관 기록 value 합산
+- `level`: 합산 기준 0~4
 
 UI 규칙:
 
-- hover 시 날짜와 완료 개수 툴팁 노출
+- hover 시 날짜와 값 툴팁 노출
 - 오늘 날짜는 테두리 강조 가능
-- 완료 0건도 빈칸이 아니라 셀로 유지
+- value 0인 날도 빈칸이 아니라 셀로 유지
 
 #### 5. 간단 통계 영역
 
-초기 버전에서는 잔디 응답만으로도 아래 값은 계산 가능하다.
+잔디 응답만으로 아래 값은 계산 가능하다.
 
-- 총 완료 수
-- 완료한 날짜 수
-- 가장 많이 완료한 날
+- 기간 총 기록값 (`totalValue`)
+- 기록이 있는 날짜 수 (`value > 0`인 날)
+- 가장 높은 value를 기록한 날
 
 별도 API 없이 프론트 계산으로 처리 가능하다.
 
@@ -250,15 +248,16 @@ UI 규칙:
 
 ### 잔디 상태
 
-- `selectedMonth`
 - `from`
 - `to`
 - `days`
-- `totalCompletedCount`
+- `totalValue`
 
-### 투두 입력 상태
+### 습관 입력 상태
 
-- `title`
+- `selectedHabitId`
+- `value`
+- `completedAt`
 - `isSubmitting`
 - `errorMessage`
 
@@ -271,9 +270,10 @@ UI 규칙:
 - `LoginPage`
 - `DashboardPage`
 - `UserMenu`
-- `TaskComposer`
-- `TaskList`
-- `TaskItem`
+- `HabitList`
+- `HabitItem`
+- `HabitForm`
+- `HabitRecordForm`
 - `GrassCalendar`
 - `GrassLegend`
 - `GrassTooltip`
@@ -284,32 +284,33 @@ UI 규칙:
 ### 필수 Query
 
 - `['me']`
+- `['habits']`
+- `['habits', habitId]`
+- `['habits', habitId, 'records', { from, to }]`
 - `['grass', from, to]`
-- `['tasks']`
 
 ### 필수 Mutation
 
 - `login`
 - `logout`
-- `createTask`
-- `completeTask`
-- `reopenTask`
-- `deleteTask`
+- `createHabit`
+- `updateHabitName`
+- `deleteHabit`
+- `createHabitRecord`
 - `refreshToken`
 
 ### invalidate 전략
 
-- `createTask` 성공 후
-  - `['tasks']` invalidate
+- `createHabit` 성공 후
+  - `['habits']` invalidate
+- `updateHabitName` 성공 후
+  - `['habits']` invalidate
+  - `['habits', habitId]` invalidate
+- `deleteHabit` 성공 후
+  - `['habits']` invalidate
   - `['grass', from, to]` invalidate
-- `completeTask` 성공 후
-  - `['tasks']` invalidate
-  - `['grass', from, to]` invalidate
-- `reopenTask` 성공 후
-  - `['tasks']` invalidate
-  - `['grass', from, to]` invalidate
-- `deleteTask` 성공 후
-  - `['tasks']` invalidate
+- `createHabitRecord` 성공 후
+  - `['habits', habitId, 'records']` invalidate
   - `['grass', from, to]` invalidate
 - `logout` 성공 후
   - `['me']` 초기화
@@ -321,31 +322,16 @@ UI 규칙:
 
 1. 로그인
 2. 내 정보 조회
-3. 할 일 목록 조회
-4. 할 일 생성
-5. 할 일 완료
-6. 할 일 완료 취소
-7. 할 일 삭제
+3. 습관 목록 조회
+4. 습관 생성
+5. 습관 이름 수정
+6. 습관 삭제
+7. 습관 기록 생성
 8. 잔디 조회
 9. 로그아웃
 
 제외 가능 항목:
 
 - 관리자 화면
-- 복잡한 필터
-- 다중 뷰
-- 할 일 수정/삭제
+- 습관 기록 목록 조회 화면
 - 다크 모드
-
-## 백엔드 기준 제약 사항
-
-현재 백엔드에는 아래 API가 아직 없다.
-
-- 할 일 수정
-- 미완료/완료 전체 목록 조회
-
-따라서 프론트가 완전한 투두 리스트 UX를 제공하려면 다음 API가 추후 추가되어야 한다.
-
-- `PATCH /api/tasks/{taskId}`
-
-지금 시점의 웹 MVP는 "잔디 중심 대시보드"로 잡는 것이 가장 맞다.
