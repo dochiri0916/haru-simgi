@@ -151,13 +151,13 @@ services:
       SPRING_DATASOURCE_PASSWORD: user_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
-  task-service:
+  habit-service:
     build:
       context: .
       dockerfile: Dockerfile.service
       args:
-        MODULE_NAME: task-service
-    container_name: haru-simgi-task-service
+        MODULE_NAME: habit-service
+    container_name: haru-simgi-habit-service
     depends_on:
       eureka-server:
         condition: service_healthy
@@ -182,7 +182,7 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_started
-      task-service:
+      habit-service:
         condition: service_started
       user-service:
         condition: service_started

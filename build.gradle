@@ -54,7 +54,7 @@ configure([
         project(':config-server'),
         project(':eureka-server'),
         project(':gateway'),
-        project(':task-service'),
+        project(':habit-service'),
         project(':user-service'),
         project(':auth-service')
 ]) {

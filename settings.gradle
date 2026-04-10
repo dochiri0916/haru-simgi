@@ -4,7 +4,7 @@ include(
         'config-server',
         'eureka-server',
         'gateway',
-        'task-service',
+        'habit-service',
         'user-service',
         'auth-service',
         'modules:error-handling',

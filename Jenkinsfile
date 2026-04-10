@@ -9,7 +9,7 @@ pipeline {
                 'config-server',
                 'eureka-server',
                 'gateway',
-                'task-service',
+                'habit-service',
                 'user-service'
             ],
             description: 'Docker image to build and push'

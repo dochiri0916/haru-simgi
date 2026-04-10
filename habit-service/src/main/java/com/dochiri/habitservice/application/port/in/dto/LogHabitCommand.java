@@ -1,0 +1,10 @@
+package com.dochiri.habitservice.application.port.in.dto;
+
+import java.time.Instant;
+
+public record LogHabitCommand(
+    String habitId,
+    Instant completedAt,
+    int value
+) {
+}
