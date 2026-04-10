@@ -1,5 +1,9 @@
 package com.dochiri.gateway.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -13,16 +17,22 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
+import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 
 @Component
 public class AuthRequiredGatewayFilterFactory extends AbstractGatewayFilterFactory<Object> {
 
-    @Value("${jwt.cookie.access-token-name:access_token}")
-    private String accessTokenCookieName;
+    private final SecretKey signingKey;
+    private final String accessTokenCookieName;
 
-    public AuthRequiredGatewayFilterFactory() {
+    public AuthRequiredGatewayFilterFactory(
+            @Value("${jwt.secret}") String jwtSecret,
+            @Value("${jwt.cookie.access-token-name:access_token}") String accessTokenCookieName
+    ) {
         super(Object.class);
+        this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        this.accessTokenCookieName = accessTokenCookieName;
     }
 
     @Override
@@ -30,27 +40,46 @@ public class AuthRequiredGatewayFilterFactory extends AbstractGatewayFilterFacto
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
 
-            String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
-                return chain.filter(exchange);
+            String token = extractToken(request);
+            if (token == null) {
+                return writeUnauthorized(exchange.getResponse(), "인증이 필요합니다.");
             }
 
-            var accessTokenCookie = request.getCookies().getFirst(accessTokenCookieName);
-            if (accessTokenCookie != null && StringUtils.hasText(accessTokenCookie.getValue())) {
-                return chain.filter(exchange);
+            try {
+                Jwts.parser()
+                        .verifyWith(signingKey)
+                        .build()
+                        .parseSignedClaims(token);
+            } catch (ExpiredJwtException e) {
+                return writeUnauthorized(exchange.getResponse(), "만료된 토큰입니다.");
+            } catch (JwtException | IllegalArgumentException e) {
+                return writeUnauthorized(exchange.getResponse(), "유효하지 않은 토큰입니다.");
             }
 
-            return writeUnauthorized(exchange.getResponse());
+            return chain.filter(exchange);
         };
     }
 
-    private Mono<Void> writeUnauthorized(ServerHttpResponse response) {
+    private String extractToken(ServerHttpRequest request) {
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        var cookie = request.getCookies().getFirst(accessTokenCookieName);
+        if (cookie != null && StringUtils.hasText(cookie.getValue())) {
+            return cookie.getValue();
+        }
+
+        return null;
+    }
+
+    private Mono<Void> writeUnauthorized(ServerHttpResponse response, String detail) {
         response.setStatusCode(HttpStatus.UNAUTHORIZED);
         response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        byte[] body = "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"인증이 필요합니다.\"}"
-                .getBytes(StandardCharsets.UTF_8);
-        DataBuffer buffer = response.bufferFactory().wrap(body);
+        String body = "{\"status\":401,\"title\":\"Unauthorized\",\"detail\":\"" + detail + "\"}";
+        DataBuffer buffer = response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8));
         return response.writeWith(Mono.just(buffer));
     }
 }

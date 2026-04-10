@@ -32,10 +32,10 @@ spring:
                 - Path=/api/users/**
               filters:
                 - AuthRequired
-            - id: task-service
-              uri: lb://task-service
+            - id: habit-service
+              uri: lb://habit-service
               predicates:
-                - Path=/api/tasks/**
+                - Path=/api/habits/**
               filters:
                 - AuthRequired
 
@@ -49,6 +49,11 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_DEFAULT_ZONE:http://${EUREKA_SERVER_USERNAME:adbin}:${EUREKA_SERVER_PASSWORD:adbin}@localhost:8761/eureka/}
+
+jwt:
+  secret: ${JWT_SECRET:12345678901234567890123456789012}
+  cookie:
+    access-token-name: ${JWT_COOKIE_ACCESS_TOKEN_NAME:access_token}
 
 logging:
   level:
