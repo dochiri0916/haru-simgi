@@ -39,7 +39,8 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
     }
 
     private AuthAccount persist(AuthAccount authAccount) {
-        AuthAccountEntity entity = authAccountJpaRepository.findById(authAccount.userId())
+        AuthAccountEntity entity = authAccountJpaRepository
+                .findByProviderAndProviderUserId(authAccount.provider().name(), authAccount.providerUserId())
                 .map(existing -> {
                     authAccountMapper.apply(authAccount, existing);
                     return existing;
@@ -54,7 +55,8 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
             AuthAccount authAccount,
             DataIntegrityViolationException originalException
     ) {
-        return authAccountJpaRepository.findById(authAccount.userId())
+        return authAccountJpaRepository
+                .findByProviderAndProviderUserId(authAccount.provider().name(), authAccount.providerUserId())
                 .map(existing -> {
                     authAccountMapper.apply(authAccount, existing);
 
