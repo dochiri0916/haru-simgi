@@ -49,7 +49,7 @@ public class HabitController {
         var result = getHabitsUseCase.execute(command);
 
         var habits = result.habits().stream()
-            .map(h -> new HabitDto(h.id(), h.name(), h.type().name()))
+            .map(h -> new HabitDto(h.id(), h.name()))
             .toList();
 
         return ResponseEntity.ok(new GetHabitsResponse(habits));
@@ -62,11 +62,10 @@ public class HabitController {
     ) {
         var command = new CreateHabitCommand(
             String.valueOf(principal.userId()),
-            request.name(),
-            request.type()
+            request.name()
         );
         var result = createHabitUseCase.execute(command);
-        return ResponseEntity.ok(new CreateHabitResponse(result.id(), result.name(), result.type().name()));
+        return ResponseEntity.ok(new CreateHabitResponse(result.id(), result.name()));
     }
 
     @GetMapping("/{habitId}")
@@ -77,7 +76,7 @@ public class HabitController {
         var command = new GetHabitDetailCommand(habitId, String.valueOf(principal.userId()));
         var result = getHabitDetailUseCase.execute(command);
 
-        return ResponseEntity.ok(new GetHabitDetailResponse(result.id(), result.name(), result.type().name()));
+        return ResponseEntity.ok(new GetHabitDetailResponse(result.id(), result.name()));
     }
 
     @PatchMapping("/{habitId}")
@@ -89,7 +88,7 @@ public class HabitController {
         var command = new UpdateHabitNameCommand(habitId, String.valueOf(principal.userId()), request.name());
         var result = updateHabitNameUseCase.execute(command);
 
-        return ResponseEntity.ok(new UpdateHabitNameResponse(result.id(), result.name(), result.type().name()));
+        return ResponseEntity.ok(new UpdateHabitNameResponse(result.id(), result.name()));
     }
 
     @DeleteMapping("/{habitId}")
@@ -162,16 +161,16 @@ public class HabitController {
     }
 
     // Request/Response DTO
-    public record CreateHabitRequest(String name, String type) {}
-    public record CreateHabitResponse(String id, String name, String type) {}
+    public record CreateHabitRequest(String name) {}
+    public record CreateHabitResponse(String id, String name) {}
 
-    public record HabitDto(String id, String name, String type) {}
+    public record HabitDto(String id, String name) {}
     public record GetHabitsResponse(java.util.List<HabitDto> habits) {}
 
-    public record GetHabitDetailResponse(String id, String name, String type) {}
+    public record GetHabitDetailResponse(String id, String name) {}
 
     public record UpdateHabitNameRequest(String name) {}
-    public record UpdateHabitNameResponse(String id, String name, String type) {}
+    public record UpdateHabitNameResponse(String id, String name) {}
 
     public record CreateHabitRecordRequest(Instant completedAt, int value) {}
     public record CreateHabitRecordResponse(String id, String habitId, Instant completedAt, int value) {}

@@ -1,6 +1,5 @@
 package com.dochiri.habitservice.infrastructure.adapter.out.persistence;
 
-import com.dochiri.habitservice.domain.HabitType;
 import com.dochiri.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -36,17 +35,16 @@ public class HabitEntity extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private HabitType type;
+    @Column
+    private Integer investedMinutes;
 
-    public static HabitEntity create(String publicId, String ownerType, String ownerReferenceId, String name, HabitType type) {
+    public static HabitEntity create(String publicId, String ownerType, String ownerReferenceId, String name, Integer investedMinutes) {
         HabitEntity entity = new HabitEntity();
         entity.publicId = requireNonNull(publicId);
         entity.ownerType = requireNonNull(ownerType);
         entity.ownerReferenceId = requireNonNull(ownerReferenceId);
         entity.name = requireNonNull(name);
-        entity.type = requireNonNull(type);
+        entity.investedMinutes = investedMinutes;
         return entity;
     }
 

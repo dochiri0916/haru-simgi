@@ -1,6 +1,8 @@
 package com.dochiri.habitservice.domain.exception;
 
-public class InvalidHabitNameException extends HabitDomainException {
+import com.dochiri.errorhandling.DomainException;
+
+public class InvalidHabitNameException extends DomainException {
 
     public InvalidHabitNameException() {
         super("유효하지 않은 습관 이름입니다.");

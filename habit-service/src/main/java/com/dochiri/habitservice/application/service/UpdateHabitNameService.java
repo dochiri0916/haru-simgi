@@ -3,11 +3,9 @@ package com.dochiri.habitservice.application.service;
 import com.dochiri.habitservice.application.port.in.UpdateHabitNameUseCase;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameCommand;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameResult;
-import com.dochiri.habitservice.application.port.out.HabitDomainExceptionMapper;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.Habit;
 import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.exception.HabitDomainException;
 import com.dochiri.habitservice.domain.exception.HabitNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,27 +16,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class UpdateHabitNameService implements UpdateHabitNameUseCase {
 
     private final HabitRepository habitRepository;
-    private final HabitDomainExceptionMapper domainExceptionMapper;
 
     @Transactional
     @Override
     public UpdateHabitNameResult execute(UpdateHabitNameCommand command) {
-        try {
-            Habit habit = habitRepository.findById(command.habitId())
-                .orElseThrow(HabitNotFoundException::new);
+        Habit habit = habitRepository.findById(command.habitId())
+            .orElseThrow(HabitNotFoundException::new);
 
-            habit.validateOwner(HabitOwner.user(command.ownerReferenceId()));
+        habit.validateOwner(HabitOwner.user(command.ownerReferenceId()));
 
-            Habit updatedHabit = habit.rename(command.newName());
-            Habit saved = habitRepository.save(updatedHabit);
+        Habit updatedHabit = habit.rename(command.newName());
+        Habit saved = habitRepository.save(updatedHabit);
 
-            return new UpdateHabitNameResult(
-                saved.getId().value(),
-                saved.getName().value()
-            );
-        } catch (HabitDomainException e) {
-            throw domainExceptionMapper.map(e);
-        }
+        return new UpdateHabitNameResult(
+            saved.getId().value(),
+            saved.getName().value()
+        );
     }
 
 }

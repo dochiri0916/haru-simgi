@@ -12,7 +12,7 @@ public class HabitMapper {
                 habit.getOwner().type().name(),
                 habit.getOwner().referenceId(),
                 habit.getName().value(),
-                habit.getType()
+                habit.getInvestedMinutes()
         );
     }
 
@@ -24,7 +24,7 @@ public class HabitMapper {
                 entity.getPublicId(),
                 owner,
                 entity.getName(),
-                entity.getType()
+                entity.getInvestedMinutes()
         );
     }
 

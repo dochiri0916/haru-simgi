@@ -14,11 +14,11 @@ public enum GrassLevel {
         return level;
     }
 
-    public static GrassLevel from(int completionCount) {
-        if (completionCount == 0) return NONE;
-        if (completionCount == 1) return LOW;
-        if (completionCount == 2) return MEDIUM;
-        if (completionCount <= 4) return HIGH;
+    public static GrassLevel from(int investedMinutes) {
+        if (investedMinutes == 0) return NONE;
+        if (investedMinutes < 30) return LOW;
+        if (investedMinutes < 60) return MEDIUM;
+        if (investedMinutes < 120) return HIGH;
         return FULL;
     }
 

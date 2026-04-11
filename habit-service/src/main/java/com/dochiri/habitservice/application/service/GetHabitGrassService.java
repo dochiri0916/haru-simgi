@@ -3,12 +3,10 @@ package com.dochiri.habitservice.application.service;
 import com.dochiri.habitservice.application.port.in.GetHabitGrassUseCase;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassResult;
-import com.dochiri.habitservice.application.port.out.HabitDomainExceptionMapper;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.domain.GrassLevel;
 import com.dochiri.habitservice.domain.HabitOwner;
 import com.dochiri.habitservice.domain.HabitRecord;
-import com.dochiri.habitservice.domain.exception.HabitDomainException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,44 +22,39 @@ import java.util.Map;
 public class GetHabitGrassService implements GetHabitGrassUseCase {
 
     private final HabitRecordRepository repository;
-    private final HabitDomainExceptionMapper domainExceptionMapper;
 
     @Override
     public GetHabitGrassResult execute(GetHabitGrassCommand command) {
-        try {
-            Instant fromInstant = command.fromDate().atStartOfDay(ZoneId.systemDefault()).toInstant();
-            Instant toInstant = command.toDate().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant fromInstant = command.fromDate().atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant toInstant = command.toDate().plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
 
-            List<HabitRecord> records = repository.findByOwnerBetweenDates(
-                    HabitOwner.user(command.ownerReferenceId()),
-                    fromInstant,
-                    toInstant
-            );
+        List<HabitRecord> records = repository.findByOwnerBetweenDates(
+                HabitOwner.user(command.ownerReferenceId()),
+                fromInstant,
+                toInstant
+        );
 
-            Map<LocalDate, Integer> valueCounts = new HashMap<>();
-            int totalValue = 0;
-            ZoneId zoneId = ZoneId.systemDefault();
-            for (HabitRecord record : records) {
-                LocalDate date = record.getCompletedAt().atZone(zoneId).toLocalDate();
-                valueCounts.merge(date, record.getValue(), Integer::sum);
-                totalValue += record.getValue();
-            }
-
-            List<GetHabitGrassResult.HabitGrassDayResult> days = initializeDaysWithValues(
-                    command.fromDate(),
-                    command.toDate(),
-                    valueCounts
-            );
-
-            return new GetHabitGrassResult(
-                    command.fromDate(),
-                    command.toDate(),
-                    totalValue,
-                    days
-            );
-        } catch (HabitDomainException e) {
-            throw domainExceptionMapper.map(e);
+        Map<LocalDate, Integer> valueCounts = new HashMap<>();
+        int totalValue = 0;
+        ZoneId zoneId = ZoneId.systemDefault();
+        for (HabitRecord record : records) {
+            LocalDate date = record.getCompletedAt().atZone(zoneId).toLocalDate();
+            valueCounts.merge(date, record.getValue(), Integer::sum);
+            totalValue += record.getValue();
         }
+
+        List<GetHabitGrassResult.HabitGrassDayResult> days = initializeDaysWithValues(
+                command.fromDate(),
+                command.toDate(),
+                valueCounts
+        );
+
+        return new GetHabitGrassResult(
+                command.fromDate(),
+                command.toDate(),
+                totalValue,
+                days
+        );
     }
 
     private List<GetHabitGrassResult.HabitGrassDayResult> initializeDaysWithValues(

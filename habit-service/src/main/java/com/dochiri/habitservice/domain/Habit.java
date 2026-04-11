@@ -12,23 +12,23 @@ public final class Habit {
     private final HabitId id;
     private final HabitOwner owner;
     private final HabitName name;
-    private final HabitType type;
+    private final Integer investedMinutes;
 
-    public static Habit create(HabitOwner owner, String name, HabitType type) {
+    public static Habit create(HabitOwner owner, String name) {
         return new Habit(
                 HabitId.newId(),
                 owner,
                 HabitName.of(name),
-                type
+                null
         );
     }
 
-    public static Habit from(String id, HabitOwner owner, String name, HabitType type) {
+    public static Habit from(String id, HabitOwner owner, String name, Integer investedMinutes) {
         return new Habit(
                 HabitId.of(id),
                 owner,
                 HabitName.of(name),
-                type
+                investedMinutes
         );
     }
 
@@ -49,7 +49,7 @@ public final class Habit {
                 id,
                 owner,
                 newHabitName,
-                type
+                investedMinutes
         );
     }
 
