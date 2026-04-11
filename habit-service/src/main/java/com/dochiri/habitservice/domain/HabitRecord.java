@@ -13,23 +13,26 @@ public final class HabitRecord {
     private final HabitRecordId id;
     private final HabitId habitId;
     private final Instant completedAt;
-    private final HabitRecordValue value;
+    private final boolean completed;
+    private final HabitDuration duration;
 
-    public static HabitRecord create(HabitId habitId, Instant completedAt, int value) {
+    public static HabitRecord create(HabitId habitId, Instant completedAt, boolean completed, Integer minutes) {
         return new HabitRecord(
                 HabitRecordId.newId(),
                 habitId,
                 completedAt,
-                HabitRecordValue.of(value)
+                completed,
+                minutes != null ? HabitDuration.of(minutes) : null
         );
     }
 
-    public static HabitRecord from(HabitRecordId id, HabitId habitId, Instant completedAt, HabitRecordValue value) {
+    public static HabitRecord from(HabitRecordId id, HabitId habitId, Instant completedAt, boolean completed, HabitDuration duration) {
         return new HabitRecord(
                 id,
                 habitId,
                 completedAt,
-                value
+                completed,
+                duration
         );
     }
 

@@ -1,18 +1,21 @@
 package com.dochiri.habitservice.domain;
 
-import com.dochiri.habitservice.domain.exception.InvalidHabitRecordValueException;
+import com.dochiri.habitservice.domain.exception.InvalidHabitDurationException;
 
-public record HabitRecordValue(
-        int value
-) {
-    public HabitRecordValue {
-        if (value < 0) {
-            throw new InvalidHabitRecordValueException(value);
+public record HabitDuration(int minutes) {
+
+    public HabitDuration {
+        if (minutes < 0) {
+            throw new InvalidHabitDurationException(minutes);
+        }
+
+        if (minutes > 24 * 60) {
+            throw new InvalidHabitDurationException(minutes);
         }
     }
 
-    public static HabitRecordValue of(int value) {
-        return new HabitRecordValue(value);
+    public static HabitDuration of(int value) {
+        return new HabitDuration(value);
     }
 
 }

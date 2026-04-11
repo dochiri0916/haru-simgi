@@ -53,8 +53,22 @@ public final class Habit {
         );
     }
 
-    public HabitRecord createRecord(Instant completedAt, int value) {
-        return HabitRecord.create(this.id, completedAt, value);
+    public HabitRecord complete(Instant completedAt) {
+        return HabitRecord.create(
+                this.id,
+                completedAt,
+                true,
+                null
+        );
+    }
+
+    public HabitRecord completeWithDuration(Instant completedAt, int minutes) {
+        return HabitRecord.create(
+                this.id,
+                completedAt,
+                true,
+                minutes
+        );
     }
 
 }
