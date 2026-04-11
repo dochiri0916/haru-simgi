@@ -1,6 +1,11 @@
-package com.dochiri.habitservice.infrastructure.adapter.in.web.request;
+package com.dochiri.habitservice.infrastructure.adapter.in.web.external.request;
 
-public record CreateHabitRequest(
-        String name
-) {
+import com.dochiri.habitservice.application.port.in.dto.CreateHabitCommand;
+
+public record CreateHabitRequest(String name) {
+
+    public CreateHabitCommand toCommand(String userId) {
+        return new CreateHabitCommand(userId, name);
+    }
+
 }
