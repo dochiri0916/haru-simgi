@@ -23,14 +23,15 @@ public class DeleteHabitService implements DeleteHabitUseCase {
     @Override
     public void execute(DeleteHabitCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
+        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
 
-        Habit habit = habitRepository.findById(command.habitId())
-                .orElseThrow(() -> new HabitNotFoundException(habitId));
+        Habit habit = habitRepository.loadById(habitId);
 
-        habit.assertOwner(HabitOwner.user(command.ownerReferenceId()));
+        habit.assertOwner(owner);
 
-        habitRecordRepository.deleteByHabitId(command.habitId());
-        habitRepository.delete(command.habitId());
+        habitRecordRepository.deleteByHabitId(habitId);
+
+        habitRepository.delete(habitId);
     }
 
 }

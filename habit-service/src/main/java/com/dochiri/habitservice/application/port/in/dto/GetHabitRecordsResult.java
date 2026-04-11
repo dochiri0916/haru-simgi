@@ -4,13 +4,13 @@ import java.time.Instant;
 import java.util.List;
 
 public record GetHabitRecordsResult(
-    String habitId,
-    List<RecordDto> records
+        String habitId,
+        List<RecordDto> records
 ) {
     public record RecordDto(
-        String id,
-        Instant completedAt,
-        int value
+            String id,
+            Instant completedAt,
+            Integer minutes
     ) {
     }
 }

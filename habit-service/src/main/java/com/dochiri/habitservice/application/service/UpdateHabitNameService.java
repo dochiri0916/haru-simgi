@@ -5,6 +5,8 @@ import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameCommand;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.Habit;
+import com.dochiri.habitservice.domain.HabitId;
+import com.dochiri.habitservice.domain.HabitName;
 import com.dochiri.habitservice.domain.HabitOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,17 +21,25 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
     @Transactional
     @Override
     public UpdateHabitNameResult execute(UpdateHabitNameCommand command) {
-        Habit habit = habitRepository.findById(command.habitId())
-            .orElseThrow(HabitNotFoundException::new);
+        HabitId habitId = HabitId.of(command.habitId());
+        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitName newName = HabitName.of(command.newName());
 
-        habit.assertOwner(HabitOwner.user(command.ownerReferenceId()));
+        Habit habit = habitRepository.loadById(habitId);
 
-        Habit updatedHabit = habit.rename(command.newName());
+        habit.assertOwner(owner);
+
+        Habit updatedHabit = habit.rename(newName);
+
         Habit saved = habitRepository.save(updatedHabit);
 
+        return toResult(saved);
+    }
+
+    private UpdateHabitNameResult toResult(Habit habit) {
         return new UpdateHabitNameResult(
-            saved.getId().value(),
-            saved.getName().value()
+                habit.getId().value(),
+                habit.getName().value()
         );
     }
 

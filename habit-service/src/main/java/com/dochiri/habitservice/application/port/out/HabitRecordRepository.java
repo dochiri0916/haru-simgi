@@ -1,7 +1,9 @@
 package com.dochiri.habitservice.application.port.out;
 
+import com.dochiri.habitservice.domain.HabitId;
 import com.dochiri.habitservice.domain.HabitRecord;
 import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.HabitRecordId;
 
 import java.time.Instant;
 import java.util.List;
@@ -11,16 +13,18 @@ public interface HabitRecordRepository {
 
     HabitRecord save(HabitRecord record);
 
-    Optional<HabitRecord> findById(String id);
+    Optional<HabitRecord> findById(HabitRecordId id);
 
-    Optional<HabitRecord> findByHabitIdAndCompletedAt(String habitId, Instant completedAt);
+    HabitRecord loadById(HabitRecordId id);
 
-    List<HabitRecord> findByHabitIdBetweenDates(String habitId, Instant fromDate, Instant toDate);
+    Optional<HabitRecord> findByHabitIdAndCompletedAt(HabitId habitId, Instant completedAt);
 
-    List<HabitRecord> findByOwnerBetweenDates(HabitOwner owner, Instant fromDate, Instant toDate);
+    List<HabitRecord> findByHabitIdAndCompletedAtBetween(HabitId habitId, Instant from, Instant to);
 
-    void delete(String id);
+    List<HabitRecord> findByOwnerAndCompletedAtBetween(HabitOwner owner, Instant from, Instant to);
 
-    void deleteByHabitId(String habitId);
+    void delete(HabitRecordId id);
+
+    void deleteByHabitId(HabitId habitId);
 
 }

@@ -8,6 +8,7 @@ import com.dochiri.habitservice.domain.Habit;
 import com.dochiri.habitservice.domain.HabitOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,16 +18,27 @@ public class GetHabitsService implements GetHabitsUseCase {
 
     private final HabitRepository habitRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public GetHabitsResult execute(GetHabitsCommand command) {
-        List<Habit> habits = habitRepository.findByOwner(HabitOwner.user(command.ownerReferenceId()));
 
-        return new GetHabitsResult(habits.stream()
-                .map(h -> new GetHabitsResult.HabitDto(
-                        h.getId().value(),
-                        h.getName().value()
-                ))
-                .toList());
+        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+
+        List<Habit> habits = habitRepository.findByOwner(owner);
+
+        List<GetHabitsResult.HabitDto> dtos = habits.stream()
+                .map(this::toDto)
+                .toList();
+
+        return new GetHabitsResult(dtos);
+    }
+
+
+    private GetHabitsResult.HabitDto toDto(Habit habit) {
+        return new GetHabitsResult.HabitDto(
+                habit.getId().value(),
+                habit.getName().value()
+        );
     }
 
 }

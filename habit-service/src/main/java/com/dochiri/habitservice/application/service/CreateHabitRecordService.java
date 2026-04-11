@@ -5,13 +5,12 @@ import com.dochiri.habitservice.application.port.in.dto.CreateHabitRecordCommand
 import com.dochiri.habitservice.application.port.in.dto.CreateHabitRecordResult;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitId;
-import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.HabitRecord;
+import com.dochiri.habitservice.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +22,7 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
     @Transactional
     @Override
     public CreateHabitRecordResult execute(CreateHabitRecordCommand command) {
+
         HabitId habitId = HabitId.of(command.habitId());
         HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
 
@@ -30,18 +30,28 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
 
         habit.assertOwner(owner);
 
-        HabitRecord record = habit.createRecord(
-                command.completedAt(),
-                command.value()
-        );
+        HabitRecord record = Optional.ofNullable(command.minutes())
+                .map(minutes -> habit.completeWithDuration(
+                        command.completedAt(),
+                        minutes
+                ))
+                .orElseGet(() -> habit.complete(
+                        command.completedAt()
+                ));
 
         HabitRecord saved = habitRecordRepository.save(record);
 
+        return toResult(saved);
+    }
+
+    private CreateHabitRecordResult toResult(HabitRecord saved) {
         return new CreateHabitRecordResult(
                 saved.getId().value(),
                 saved.getHabitId().value(),
                 saved.getCompletedAt(),
-                saved.getValue().value()
+                Optional.ofNullable(saved.getDuration())
+                        .map(HabitDuration::minutes)
+                        .orElse(null)
         );
     }
 
