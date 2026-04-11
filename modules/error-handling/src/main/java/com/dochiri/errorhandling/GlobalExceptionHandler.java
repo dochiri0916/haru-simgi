@@ -22,14 +22,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<Object> handleDomainException(DomainException exception, HttpServletRequest request) {
-        log.warn("매핑되지 않은 도메인 예외입니다. uri={}, method={}, exception={}",
-                request.getRequestURI(), request.getMethod(), exception.getClass().getSimpleName());
+        log.error("매핑되지 않은 도메인 예외입니다. uri={}, method={}, exception={}",
+                request.getRequestURI(), request.getMethod(), exception.getClass().getSimpleName(), exception);
         return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(createProblemDetail(
                         exception,
-                        HttpStatus.BAD_REQUEST,
-                        exception.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "일시적인 오류가 발생했습니다.",
                         null, null,
                         new ServletWebRequest(request)
                 ));
