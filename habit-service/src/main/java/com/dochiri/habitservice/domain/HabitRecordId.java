@@ -1,7 +1,5 @@
 package com.dochiri.habitservice.domain;
 
-import com.dochiri.habitservice.domain.exception.InvalidHabitRecordIdException;
-
 import java.util.UUID;
 
 public record HabitRecordId(

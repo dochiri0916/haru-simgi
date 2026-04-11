@@ -1,7 +1,5 @@
 package com.dochiri.habitservice.domain;
 
-import com.dochiri.habitservice.domain.exception.InvalidHabitOwnerException;
-
 public record HabitOwner(
         OwnerType type,
         String referenceId

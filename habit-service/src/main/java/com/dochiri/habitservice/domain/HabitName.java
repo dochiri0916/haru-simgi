@@ -1,7 +1,5 @@
 package com.dochiri.habitservice.domain;
 
-import com.dochiri.habitservice.domain.exception.InvalidHabitNameException;
-
 public record HabitName(
         String value
 ) {

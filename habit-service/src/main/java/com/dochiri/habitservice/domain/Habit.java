@@ -5,6 +5,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.time.Instant;
+
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Habit {
@@ -12,45 +14,47 @@ public final class Habit {
     private final HabitId id;
     private final HabitOwner owner;
     private final HabitName name;
-    private final Integer investedMinutes;
 
-    public static Habit create(HabitOwner owner, String name) {
+    public static Habit create(HabitOwner owner, HabitName name) {
         return new Habit(
                 HabitId.newId(),
                 owner,
-                HabitName.of(name),
-                null
+                name
         );
     }
 
-    public static Habit from(String id, HabitOwner owner, String name, Integer investedMinutes) {
+    public static Habit from(HabitId id, HabitOwner owner, HabitName name) {
         return new Habit(
-                HabitId.of(id),
+                id,
                 owner,
-                HabitName.of(name),
-                investedMinutes
+                name
         );
     }
 
-    public void validateOwner(HabitOwner requestOwner) {
+    public void assertOwner(HabitOwner requestOwner) {
         if (!this.owner.equals(requestOwner)) {
-            throw new HabitAccessDeniedException();
+            throw new HabitAccessDeniedException(
+                    this.id,
+                    this.owner,
+                    requestOwner
+            );
         }
     }
 
-    public Habit rename(String newName) {
-        HabitName newHabitName = HabitName.of(newName);
-
-        if (this.name.equals(newHabitName)) {
+    public Habit rename(HabitName newName) {
+        if (this.name.equals(newName)) {
             return this;
         }
 
         return new Habit(
-                id,
-                owner,
-                newHabitName,
-                investedMinutes
+                this.id,
+                this.owner,
+                newName
         );
+    }
+
+    public HabitRecord createRecord(Instant completedAt, int value) {
+        return HabitRecord.create(this.id, completedAt, value);
     }
 
 }
