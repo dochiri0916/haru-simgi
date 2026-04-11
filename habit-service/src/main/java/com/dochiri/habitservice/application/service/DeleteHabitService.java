@@ -5,6 +5,7 @@ import com.dochiri.habitservice.application.port.in.dto.DeleteHabitCommand;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.Habit;
+import com.dochiri.habitservice.domain.HabitId;
 import com.dochiri.habitservice.domain.HabitOwner;
 import com.dochiri.habitservice.domain.exception.HabitNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,12 @@ public class DeleteHabitService implements DeleteHabitUseCase {
     @Transactional
     @Override
     public void execute(DeleteHabitCommand command) {
-        Habit habit = habitRepository.findById(command.habitId())
-                .orElseThrow(HabitNotFoundException::new);
+        HabitId habitId = HabitId.of(command.habitId());
 
-        habit.validateOwner(HabitOwner.user(command.ownerReferenceId()));
+        Habit habit = habitRepository.findById(command.habitId())
+                .orElseThrow(() -> new HabitNotFoundException(habitId));
+
+        habit.assertOwner(HabitOwner.user(command.ownerReferenceId()));
 
         habitRecordRepository.deleteByHabitId(command.habitId());
         habitRepository.delete(command.habitId());

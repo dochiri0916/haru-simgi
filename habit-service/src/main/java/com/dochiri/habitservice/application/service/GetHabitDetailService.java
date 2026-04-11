@@ -6,7 +6,6 @@ import com.dochiri.habitservice.application.port.in.dto.GetHabitDetailResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.Habit;
 import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.exception.HabitNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,7 @@ public class GetHabitDetailService implements GetHabitDetailUseCase {
         Habit habit = habitRepository.findById(command.habitId())
             .orElseThrow(HabitNotFoundException::new);
 
-        habit.validateOwner(HabitOwner.user(command.ownerReferenceId()));
+        habit.assertOwner(HabitOwner.user(command.ownerReferenceId()));
 
         return new GetHabitDetailResult(
             habit.getId().value(),

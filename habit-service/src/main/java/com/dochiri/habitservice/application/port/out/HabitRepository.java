@@ -1,6 +1,7 @@
 package com.dochiri.habitservice.application.port.out;
 
 import com.dochiri.habitservice.domain.Habit;
+import com.dochiri.habitservice.domain.HabitId;
 import com.dochiri.habitservice.domain.HabitOwner;
 
 import java.util.List;
@@ -10,10 +11,12 @@ public interface HabitRepository {
 
     Habit save(Habit habit);
 
-    Optional<Habit> findById(String id);
+    Optional<Habit> findById(HabitId id);
+
+    Habit loadById(HabitId id);
 
     List<Habit> findByOwner(HabitOwner owner);
 
-    void delete(String id);
+    void delete(HabitId id);
 
 }

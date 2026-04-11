@@ -6,7 +6,6 @@ import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.Habit;
 import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.exception.HabitNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,7 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
         Habit habit = habitRepository.findById(command.habitId())
             .orElseThrow(HabitNotFoundException::new);
 
-        habit.validateOwner(HabitOwner.user(command.ownerReferenceId()));
+        habit.assertOwner(HabitOwner.user(command.ownerReferenceId()));
 
         Habit updatedHabit = habit.rename(command.newName());
         Habit saved = habitRepository.save(updatedHabit);
