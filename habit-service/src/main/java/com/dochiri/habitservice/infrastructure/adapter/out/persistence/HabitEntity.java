@@ -1,5 +1,6 @@
 package com.dochiri.habitservice.infrastructure.adapter.out.persistence;
 
+import com.dochiri.habitservice.domain.OwnerType;
 import com.dochiri.jpa.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -12,7 +13,10 @@ import static java.util.Objects.requireNonNull;
 @Table(
         name = "habits",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_owner_public_id", columnNames = {"owner_type", "owner_reference_id", "public_id"})
+                @UniqueConstraint(
+                        name = "uk_owner_public_id",
+                        columnNames = {"owner_type", "owner_reference_id", "public_id"}
+                )
         }
 )
 @Getter
@@ -23,11 +27,12 @@ public class HabitEntity extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 36)
+    @Column(nullable = false, length = 36, unique = true)
     private String publicId;
 
+    @Enumerated(EnumType.STRING) // 🔥 핵심
     @Column(nullable = false, length = 20)
-    private String ownerType;
+    private OwnerType ownerType;
 
     @Column(nullable = false)
     private String ownerReferenceId;
@@ -35,17 +40,20 @@ public class HabitEntity extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column
-    private Integer investedMinutes;
+    public HabitEntity(
+            String publicId,
+            OwnerType ownerType,
+            String ownerReferenceId,
+            String name
+    ) {
+        this.publicId = requireNonNull(publicId);
+        this.ownerType = requireNonNull(ownerType);
+        this.ownerReferenceId = requireNonNull(ownerReferenceId);
+        this.name = requireNonNull(name);
+    }
 
-    public static HabitEntity create(String publicId, String ownerType, String ownerReferenceId, String name, Integer investedMinutes) {
-        HabitEntity entity = new HabitEntity();
-        entity.publicId = requireNonNull(publicId);
-        entity.ownerType = requireNonNull(ownerType);
-        entity.ownerReferenceId = requireNonNull(ownerReferenceId);
-        entity.name = requireNonNull(name);
-        entity.investedMinutes = investedMinutes;
-        return entity;
+    public void changeName(String name) {
+        this.name = requireNonNull(name);
     }
 
 }

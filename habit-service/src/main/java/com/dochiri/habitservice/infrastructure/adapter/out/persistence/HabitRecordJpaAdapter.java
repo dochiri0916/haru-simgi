@@ -1,8 +1,11 @@
 package com.dochiri.habitservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
-import com.dochiri.habitservice.domain.HabitRecord;
+import com.dochiri.habitservice.domain.HabitId;
 import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.HabitRecord;
+import com.dochiri.habitservice.domain.HabitRecordId;
+import com.dochiri.habitservice.domain.exception.HabitRecordNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,42 +27,65 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     }
 
     @Override
-    public Optional<HabitRecord> findById(String id) {
-        return habitRecordJpaRepository.findByPublicId(id)
+    public Optional<HabitRecord> findById(HabitRecordId id) {
+        return habitRecordJpaRepository.findByPublicId(id.value())
                 .map(HabitRecordMapper::toDomain);
     }
 
     @Override
-    public Optional<HabitRecord> findByHabitIdAndCompletedAt(String habitId, Instant completedAt) {
-        return habitRecordJpaRepository.findByHabitIdAndCompletedAt(habitId, completedAt)
+    public HabitRecord loadById(HabitRecordId id) {
+        return findById(id)
+                .orElseThrow(() -> new HabitRecordNotFoundException(id));
+    }
+
+    @Override
+    public Optional<HabitRecord> findByHabitIdAndCompletedAt(
+            HabitId habitId,
+            Instant completedAt
+    ) {
+        return habitRecordJpaRepository
+                .findByHabitIdAndCompletedAt(habitId.value(), completedAt)
                 .map(HabitRecordMapper::toDomain);
     }
 
     @Override
-    public List<HabitRecord> findByHabitIdBetweenDates(String habitId, Instant fromDate, Instant toDate) {
-        return habitRecordJpaRepository.findByHabitIdAndCompletedAtBetween(habitId, fromDate, toDate)
+    public List<HabitRecord> findByHabitIdAndCompletedAtBetween(
+            HabitId habitId,
+            Instant from,
+            Instant to
+    ) {
+        return habitRecordJpaRepository
+                .findByHabitIdAndCompletedAtBetween(habitId.value(), from, to)
                 .stream()
                 .map(HabitRecordMapper::toDomain)
                 .toList();
     }
 
     @Override
-    public List<HabitRecord> findByOwnerBetweenDates(HabitOwner owner, Instant fromDate, Instant toDate) {
-        return habitRecordJpaRepository.findCompletionsForOwnerBetweenDates(owner.type().name(), owner.referenceId(), fromDate, toDate)
+    public List<HabitRecord> findByOwnerAndCompletedAtBetween(HabitOwner owner, Instant from, Instant to) {
+        return habitRecordJpaRepository
+                .findCompletionsForOwnerBetweenDates(
+                        owner.type().name(),
+                        owner.referenceId(),
+                        from,
+                        to
+                )
                 .stream()
                 .map(HabitRecordMapper::toDomain)
                 .toList();
     }
 
     @Override
-    public void delete(String id) {
-        habitRecordJpaRepository.findByPublicId(id)
-                .ifPresent(habitRecordJpaRepository::delete);
+    public void delete(HabitRecordId id) {
+        HabitRecordEntity entity = habitRecordJpaRepository.findByPublicId(id.value())
+                .orElseThrow(() -> new HabitRecordNotFoundException(id));
+
+        habitRecordJpaRepository.delete(entity);
     }
 
     @Override
-    public void deleteByHabitId(String habitId) {
-        habitRecordJpaRepository.deleteByHabitId(habitId);
+    public void deleteByHabitId(HabitId habitId) {
+        habitRecordJpaRepository.deleteByHabitId(habitId.value());
     }
 
 }

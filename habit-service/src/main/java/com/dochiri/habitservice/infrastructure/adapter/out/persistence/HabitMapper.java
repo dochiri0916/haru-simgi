@@ -1,30 +1,28 @@
 package com.dochiri.habitservice.infrastructure.adapter.out.persistence;
 
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.OwnerType;
+import com.dochiri.habitservice.domain.*;
 
 public class HabitMapper {
 
     public static HabitEntity toEntity(Habit habit) {
-        return HabitEntity.create(
+        return new HabitEntity(
                 habit.getId().value(),
-                habit.getOwner().type().name(),
+                habit.getOwner().type(),
                 habit.getOwner().referenceId(),
-                habit.getName().value(),
-                habit.getInvestedMinutes()
+                habit.getName().value()
         );
     }
 
     public static Habit toDomain(HabitEntity entity) {
-        OwnerType ownerType = OwnerType.valueOf(entity.getOwnerType());
-        HabitOwner owner = new HabitOwner(ownerType, entity.getOwnerReferenceId());
+        HabitOwner owner = new HabitOwner(
+                entity.getOwnerType(),
+                entity.getOwnerReferenceId()
+        );
 
         return Habit.from(
-                entity.getPublicId(),
+                HabitId.of(entity.getPublicId()),
                 owner,
-                entity.getName(),
-                entity.getInvestedMinutes()
+                HabitName.of(entity.getName())
         );
     }
 

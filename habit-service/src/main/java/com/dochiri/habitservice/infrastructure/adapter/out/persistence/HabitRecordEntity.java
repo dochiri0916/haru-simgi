@@ -17,7 +17,10 @@ import static java.util.Objects.requireNonNull;
                 @Index(name = "idx_completed_at", columnList = "completed_at")
         },
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_habit_completion_date", columnNames = {"habit_id", "completed_at"})
+                @UniqueConstraint(
+                        name = "uk_habit_completion_date",
+                        columnNames = {"habit_id", "completed_at"}
+                )
         }
 )
 @Getter
@@ -38,18 +41,23 @@ public class HabitRecordEntity extends BaseEntity {
     private Instant completedAt;
 
     @Column(nullable = false)
-    private int value;
+    private boolean completed;
 
-    public static HabitRecordEntity create(String publicId, String habitId, Instant completedAt, int value) {
-        HabitRecordEntity entity = new HabitRecordEntity();
-        entity.publicId = requireNonNull(publicId);
-        entity.habitId = requireNonNull(habitId);
-        entity.completedAt = requireNonNull(completedAt);
-        entity.value = value;
-        return entity;
+    @Column
+    private Integer durationMinutes;
+
+    public HabitRecordEntity(
+            String publicId,
+            String habitId,
+            Instant completedAt,
+            boolean completed,
+            Integer durationMinutes
+    ) {
+        this.publicId = requireNonNull(publicId);
+        this.habitId = requireNonNull(habitId);
+        this.completedAt = requireNonNull(completedAt);
+        this.completed = completed;
+        this.durationMinutes = durationMinutes;
     }
 
-    public void setValue(int value) {
-        this.value = value;
-    }
 }
