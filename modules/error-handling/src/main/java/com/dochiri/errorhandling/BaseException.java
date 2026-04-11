@@ -1,5 +1,6 @@
 package com.dochiri.errorhandling;
 
+import org.slf4j.MDC;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
 
@@ -25,14 +26,8 @@ public class BaseException extends ErrorResponseException {
     }
 
     public BaseException(ErrorCode errorCode, Map<String, Object> properties, Throwable cause) {
-        super(requireErrorCode(errorCode).getHttpStatus(), createBody(errorCode), cause);
+        super(requireErrorCode(errorCode).getHttpStatus(), createBody(errorCode, properties), cause);
         this.errorCode = errorCode;
-
-        getBody().setProperty("code", errorCode.name());
-
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            getBody().setProperty(entry.getKey(), entry.getValue());
-        }
     }
 
     public static BaseException of(ErrorCode errorCode, Object... keyValues) {
@@ -43,10 +38,24 @@ public class BaseException extends ErrorResponseException {
         return errorCode;
     }
 
-    private static ProblemDetail createBody(ErrorCode errorCode) {
-        ProblemDetail body = ProblemDetail.forStatusAndDetail(errorCode.getHttpStatus(), errorCode.getMessage());
+    private static ProblemDetail createBody(ErrorCode errorCode, Map<String, Object> properties) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(
+                errorCode.getHttpStatus(),
+                errorCode.getMessage()
+        );
+
         body.setType(URI.create("/errors/" + toKebabCase(errorCode.name())));
         body.setTitle(errorCode.name());
+
+        body.setProperty("code", errorCode.name());
+
+        String traceId = MDC.get("traceId");
+        if (traceId != null) {
+            body.setProperty("traceId", traceId);
+        }
+
+        properties.forEach(body::setProperty);
+
         return body;
     }
 
@@ -59,19 +68,15 @@ public class BaseException extends ErrorResponseException {
     }
 
     private static Map<String, Object> mapArgs(Object[] args) {
-        if (args == null || args.length == 0) {
-            return Map.of();
-        }
+        if (args == null || args.length == 0) return Map.of();
 
         if (args.length % 2 != 0) {
             throw new IllegalArgumentException("args는 키/값 쌍이어야 합니다.");
         }
 
         Map<String, Object> mapped = new LinkedHashMap<>();
-        for (int index = 0; index < args.length; index += 2) {
-            String key = String.valueOf(args[index]);
-            Object value = args[index + 1];
-            mapped.put(key, value);
+        for (int i = 0; i < args.length; i += 2) {
+            mapped.put(String.valueOf(args[i]), args[i + 1]);
         }
         return Map.copyOf(mapped);
     }

@@ -1,4 +1,4 @@
 package com.dochiri.habitservice.domain.exception;
 
-public class HabitNotFoundException {
+public class HabitRecordNotFoundException {
 }
