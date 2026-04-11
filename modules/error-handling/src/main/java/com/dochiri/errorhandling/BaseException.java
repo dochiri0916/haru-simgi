@@ -68,7 +68,9 @@ public class BaseException extends ErrorResponseException {
     }
 
     private static Map<String, Object> mapArgs(Object[] args) {
-        if (args == null || args.length == 0) return Map.of();
+        if (args == null || args.length == 0) {
+            return Map.of();
+        }
 
         if (args.length % 2 != 0) {
             throw new IllegalArgumentException("args는 키/값 쌍이어야 합니다.");

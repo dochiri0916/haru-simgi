@@ -16,6 +16,8 @@ import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitRecordsCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitsCommand;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameCommand;
+import com.dochiri.habitservice.infrastructure.adapter.in.web.request.CreateHabitRequest;
+import com.dochiri.habitservice.infrastructure.adapter.in.web.response.CreateHabitResponse;
 import com.dochiri.security.jwt.JwtPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -159,10 +161,6 @@ public class HabitController {
 
         return ResponseEntity.ok(new GetHabitGrassResponse(result.fromDate(), result.toDate(), result.totalValue(), days));
     }
-
-    // Request/Response DTO
-    public record CreateHabitRequest(String name) {}
-    public record CreateHabitResponse(String id, String name) {}
 
     public record HabitDto(String id, String name) {}
     public record GetHabitsResponse(java.util.List<HabitDto> habits) {}

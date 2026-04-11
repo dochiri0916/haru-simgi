@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
                 e
         );
 
-        BaseException baseException = new BaseException(e.getErrorCode(), e);
+        BaseException baseException = new BaseException(e.getErrorCode(), e.getProperties(), e);
 
         return ResponseEntity
                 .status(baseException.getStatusCode())
