@@ -1,16 +1,11 @@
 package com.dochiri.habitservice.domain.exception;
 
 import com.dochiri.errorhandling.DomainException;
-import lombok.Getter;
 
-@Getter
-public class InvalidHabitRecordValueException extends DomainException {
+public class InvalidHabitRecordIdException extends DomainException {
 
-    private final int value;
-
-    public InvalidHabitRecordValueException(int value) {
-        super(HabitRecordErrorCode.INVALID_HABIT_RECORD_VALUE);
-        this.value = value;
+    public InvalidHabitRecordIdException(String value) {
+        super(HabitRecordErrorCode.INVALID_HABIT_RECORD_ID, "value", value);
     }
 
 }

@@ -1,5 +1,7 @@
 package com.dochiri.habitservice.domain;
 
+import com.dochiri.habitservice.domain.exception.InvalidHabitIdException;
+
 import java.util.UUID;
 
 public record HabitId(
@@ -19,13 +21,13 @@ public record HabitId(
 
     private static void validate(String value) {
         if (value == null || value.isBlank()) {
-            throw new InvalidHabitIdException();
+            throw new InvalidHabitIdException(value);
         }
 
         try {
             UUID.fromString(value);
         } catch (IllegalArgumentException e) {
-            throw new InvalidHabitIdException();
+            throw new InvalidHabitIdException(value);
         }
     }
 }
