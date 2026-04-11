@@ -2,7 +2,9 @@ package com.dochiri.habitservice.infrastructure.adapter.out.persistence;
 
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.Habit;
+import com.dochiri.habitservice.domain.HabitId;
 import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.exception.HabitNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -23,9 +25,15 @@ public class HabitJpaAdapter implements HabitRepository {
     }
 
     @Override
-    public Optional<Habit> findById(String id) {
-        return habitJpaRepository.findByPublicId(id)
+    public Optional<Habit> findById(HabitId id) {
+        return habitJpaRepository.findByPublicId(id.value())
                 .map(HabitMapper::toDomain);
+    }
+
+    @Override
+    public Habit loadById(HabitId id) {
+        return findById(id)
+                .orElseThrow(() -> new HabitNotFoundException(id));
     }
 
     @Override
@@ -37,9 +45,11 @@ public class HabitJpaAdapter implements HabitRepository {
     }
 
     @Override
-    public void delete(String id) {
-        habitJpaRepository.findByPublicId(id)
-                .ifPresent(habitJpaRepository::delete);
+    public void delete(HabitId id) {
+        HabitEntity entity = habitJpaRepository.findByPublicId(id.value())
+                .orElseThrow(() -> new HabitNotFoundException(id));
+
+        habitJpaRepository.delete(entity);
     }
 
 }
