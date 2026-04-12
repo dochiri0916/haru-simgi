@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.out.kakao;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
 import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
 import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
@@ -8,8 +8,10 @@ import com.dochiri.authservice.infrastructure.adapter.out.kakao.response.KakaoTo
 import com.dochiri.authservice.infrastructure.adapter.out.kakao.response.KakaoUserInfoResponse;
 import com.dochiri.authservice.infrastructure.configuration.KakaoLoginProperties;
 import com.dochiri.errorhandling.BaseException;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.StringUtils;
@@ -28,7 +30,12 @@ public class KakaoOAuthAdapter implements KakaoOAuthPort {
             RestClient.Builder restClientBuilder,
             KakaoLoginProperties kakaoLoginProperties
     ) {
-        this.restClient = restClientBuilder.build();
+        var httpClient = HttpClients.custom()
+                .disableAutomaticRetries()
+                .build();
+        this.restClient = restClientBuilder
+                .requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient))
+                .build();
         this.kakaoLoginProperties = kakaoLoginProperties;
     }
 

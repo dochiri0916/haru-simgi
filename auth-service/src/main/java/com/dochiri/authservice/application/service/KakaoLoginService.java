@@ -32,11 +32,6 @@ public class KakaoLoginService implements KakaoLoginUseCase {
     private final PasswordEncoder passwordEncoder;
     private final AuthTokenIssueUseCase authTokenIssueUseCase;
 
-    @Override
-    public String buildAuthorizeUrl(String state) {
-        return kakaoOAuthPort.buildAuthorizeUrl(state);
-    }
-
     @Transactional
     @Override
     public IssueAuthTokenResult login(KakaoLoginCommand command) {
