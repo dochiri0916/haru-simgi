@@ -15,34 +15,7 @@ security:
     - /api/auth/**
     - /api/dev/**
 
-cors:
-  allowed-origins:
-    - ${CORS_ALLOWED_ORIGIN_0:http://localhost:3000}
-    - ${CORS_ALLOWED_ORIGIN_1:http://localhost:5173}
-  allow-credentials: ${CORS_ALLOW_CREDENTIALS:true}
-
-app:
-  kakao:
-    enabled: ${KAKAO_LOGIN_ENABLED:true}
-    rest-api-key: ${KAKAO_REST_API_KEY:09dc96009afac78785a9c28588a39af8}
-    client-secret: ${KAKAO_CLIENT_SECRET:fBHSKSGs1au36iAlj3BzlDECjkSvNAsF}
-    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/api/auth/login/kakao/callback}
-    frontend-redirect-uri: ${KAKAO_FRONTEND_REDIRECT_URI:http://localhost:5173/}
-    authorize-uri: ${KAKAO_AUTHORIZE_URI:https://kauth.kakao.com/oauth/authorize}
-    token-uri: ${KAKAO_TOKEN_URI:https://kauth.kakao.com/oauth/token}
-    user-info-uri: ${KAKAO_USER_INFO_URI:https://kapi.kakao.com/v2/user/me}
-  user-service:
-    base-url: ${USER_SERVICE_BASE_URL:http://localhost:8081}
-
 jwt:
-  secret: ${JWT_SECRET:12345678901234567890123456789012}
+  secret: ${JWT_SECRET}
   access-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
-  cookie:
-    access-token-name: ${JWT_COOKIE_ACCESS_TOKEN_NAME:access_token}
-    refresh-token-name: ${JWT_COOKIE_REFRESH_TOKEN_NAME:refresh_token}
-    access-token-path: ${JWT_COOKIE_ACCESS_TOKEN_PATH:/}
-    refresh-token-path: ${JWT_COOKIE_REFRESH_TOKEN_PATH:/}
-    domain: ${JWT_COOKIE_DOMAIN:}
-    same-site: ${JWT_COOKIE_SAME_SITE:Lax}
-    secure: ${JWT_COOKIE_SECURE:false}
