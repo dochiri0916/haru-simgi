@@ -119,11 +119,13 @@ services:
       APP_USER_SERVICE_BASE_URL: http://user-service:8081
       USER_SERVICE_BASE_URL: http://user-service:8081
       SECURITY_PUBLIC_ENDPOINTS_0: /api/auth/**
+      SECURITY_PUBLIC_ENDPOINTS_1: /api/dev/**
       JWT_SECRET: "12345678901234567890123456789012"
       SPRING_DATASOURCE_URL: jdbc:mysql://auth-mysql:3306/auth_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
       SPRING_DATASOURCE_USERNAME: auth_user
       SPRING_DATASOURCE_PASSWORD: auth_password
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_PROFILES_ACTIVE: dev
 
   user-service:
     build:

@@ -13,6 +13,7 @@ spring:
 security:
   public-endpoints:
     - /api/auth/**
+    - /api/dev/**
 
 cors:
   allowed-origins:
@@ -41,7 +42,7 @@ jwt:
     access-token-name: ${JWT_COOKIE_ACCESS_TOKEN_NAME:access_token}
     refresh-token-name: ${JWT_COOKIE_REFRESH_TOKEN_NAME:refresh_token}
     access-token-path: ${JWT_COOKIE_ACCESS_TOKEN_PATH:/}
-    refresh-token-path: ${JWT_COOKIE_REFRESH_TOKEN_PATH:/api/auth}
+    refresh-token-path: ${JWT_COOKIE_REFRESH_TOKEN_PATH:/}
     domain: ${JWT_COOKIE_DOMAIN:}
     same-site: ${JWT_COOKIE_SAME_SITE:Lax}
     secure: ${JWT_COOKIE_SECURE:false}

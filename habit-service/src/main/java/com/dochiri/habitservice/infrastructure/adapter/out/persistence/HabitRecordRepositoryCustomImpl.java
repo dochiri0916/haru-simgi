@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import java.time.Instant;
 import java.util.List;
 
+import static com.dochiri.habitservice.domain.OwnerType.*;
 import static com.dochiri.habitservice.infrastructure.adapter.out.persistence.QHabitEntity.habitEntity;
 import static com.dochiri.habitservice.infrastructure.adapter.out.persistence.QHabitRecordEntity.habitRecordEntity;
 
@@ -29,7 +30,7 @@ public class HabitRecordRepositoryCustomImpl implements HabitRecordRepositoryCus
                                                 .select(habitEntity.publicId)
                                                 .from(habitEntity)
                                                 .where(
-                                                        habitEntity.ownerType.eq(ownerType)
+                                                        habitEntity.ownerType.eq(valueOf(ownerType))
                                                                 .and(habitEntity.ownerReferenceId.eq(ownerReferenceId))
                                                 )
                                 )

@@ -36,7 +36,7 @@ Docker Compose 실행 전 루트에 `config-server.env` 파일이 필요하다. 
 | `gateway` | 8080 | 단일 진입점, 라우팅 |
 | `auth-service` | 8082 | 카카오 OAuth, JWT 발급/재발급/로그아웃 |
 | `user-service` | 8081 | 사용자 프로필 관리 |
-| `task-service` | 8083 | 할 일 CRUD, 잔디 집계 |
+| `habit-service` | 8083 | 습관 CRUD, 잔디 집계 |
 | `config-server` | 9000 | 외부 Git에서 설정 로드 |
 | `eureka-server` | 8761 | 서비스 등록/디스커버리 |
 
@@ -69,7 +69,7 @@ Docker Compose 실행 전 루트에 `config-server.env` 파일이 필요하다. 
 
 ## 기술 스택
 
-- Java 21 (Virtual Thread 활성화: auth/user/task-service)
+- Java 21 (Virtual Thread 활성화: auth/user/habit-service)
 - Spring Boot 4.0.5, Spring Cloud 2025.1.1
 - Spring Cloud Gateway, Eureka, Config Server
 - JJWT 0.12.6, QueryDSL 5.1.0, SpringDoc OpenAPI 3.0.0
@@ -87,9 +87,13 @@ POST /api/auth/logout
 
 GET  /api/users/me
 
-POST   /api/tasks
-PATCH  /api/tasks/{taskId}/complete
-GET    /api/tasks/grass?from=YYYY-MM-DD&to=YYYY-MM-DD
+GET    /api/habits
+POST   /api/habits
+GET    /api/habits/{habitId}
+PATCH  /api/habits/{habitId}
+GET    /api/habits/{habitId}/records
+POST   /api/habits/{habitId}/records
+GET    /api/habits/grass
 
 PATCH  /api/admin/users/{userId}/role
 ```
