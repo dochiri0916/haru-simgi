@@ -51,6 +51,22 @@ services:
       timeout: 5s
       retries: 20
 
+  habit-mysql:
+    image: mysql:8.4
+    container_name: haru-simgi-habit-mysql
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_DATABASE: habit_service
+      MYSQL_USER: habit_user
+      MYSQL_PASSWORD: habit_password
+      MYSQL_ROOT_PASSWORD: root_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot_password"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   config-server:
     build:
       context: .
@@ -163,6 +179,8 @@ services:
     depends_on:
       eureka-server:
         condition: service_healthy
+      habit-mysql:
+        condition: service_healthy
     ports:
       - "8083:8083"
     environment:
@@ -171,6 +189,10 @@ services:
       EUREKA_DEFAULT_ZONE: http://${EUREKA_SERVER_USERNAME:-adbin}:${EUREKA_SERVER_PASSWORD:-adbin}@eureka-server:8761/eureka/
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://${EUREKA_SERVER_USERNAME:-adbin}:${EUREKA_SERVER_PASSWORD:-adbin}@eureka-server:8761/eureka/
       JWT_SECRET: "12345678901234567890123456789012"
+      SPRING_DATASOURCE_URL: jdbc:mysql://habit-mysql:3306/habit_service?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+      SPRING_DATASOURCE_USERNAME: habit_user
+      SPRING_DATASOURCE_PASSWORD: habit_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
   gateway:
     build:
