@@ -12,7 +12,7 @@ spring:
 
 security:
   public-endpoints:
-    - /internal/users/social
+    - /internal/users
 
 jwt:
   secret: ${JWT_SECRET}

@@ -2,11 +2,11 @@ package com.dochiri.userservice.application.port.in.dto;
 
 import static java.util.Objects.requireNonNull;
 
-public record CreateSocialUserCommand(
+public record CreateUserCommand(
         String nickname,
         String profileImageUrl
 ) {
-    public CreateSocialUserCommand {
+    public CreateUserCommand {
         requireNonNull(nickname);
         requireNonNull(profileImageUrl);
     }

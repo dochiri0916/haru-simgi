@@ -1,6 +1,6 @@
 package com.dochiri.userservice.application.port.in.dto;
 
-public record CreateSocialUserResult(
+public record CreateUserResult(
         Long userId,
         String nickname,
         String profileImageUrl

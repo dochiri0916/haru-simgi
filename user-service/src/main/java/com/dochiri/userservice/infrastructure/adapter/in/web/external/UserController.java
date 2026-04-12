@@ -22,9 +22,9 @@ public class UserController {
     public ResponseEntity<CurrentUserResponse> me(@AuthenticationPrincipal JwtPrincipal principal) {
         return ResponseEntity.ok(
                 CurrentUserResponse.from(
-                        principal.userId(),
-                        getCurrentUserUseCase.getCurrentUser(principal.userId()),
-                        UserRole.from(principal.role())
+                        getCurrentUserUseCase.getCurrentUser(
+                                principal.userId()
+                        )
                 )
         );
     }

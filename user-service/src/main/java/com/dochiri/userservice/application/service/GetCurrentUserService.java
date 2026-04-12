@@ -19,7 +19,7 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
     public GetCurrentUserResult getCurrentUser(Long userId) {
         User user = userRepository.loadByUserId(userId);
         return new GetCurrentUserResult(
-                user.getId(),
+                user.getId().value(),
                 user.getNickname(),
                 user.getProfileImageUrl()
         );

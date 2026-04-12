@@ -1,10 +1,10 @@
 package com.dochiri.userservice.application.port.in;
 
-import com.dochiri.userservice.application.port.in.dto.CreateSocialUserCommand;
-import com.dochiri.userservice.application.port.in.dto.CreateSocialUserResult;
+import com.dochiri.userservice.application.port.in.dto.CreateUserCommand;
+import com.dochiri.userservice.application.port.in.dto.CreateUserResult;
 
-public interface CreateSocialUserUseCase {
+public interface CreateUserUseCase {
 
-    CreateSocialUserResult create(CreateSocialUserCommand command);
+    CreateUserResult execute(CreateUserCommand command);
 
 }

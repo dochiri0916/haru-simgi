@@ -27,12 +27,14 @@ public class UserEntity extends BaseEntity {
     @Column(length = 500)
     private String profileImageUrl;
 
-    public static UserEntity from(String publicId, String nickname, String profileImageUrl) {
-        UserEntity entity = new UserEntity();
-        entity.publicId = requireNonNull(publicId);
-        entity.nickname = nickname;
-        entity.profileImageUrl = profileImageUrl;
-        return entity;
+    public UserEntity(
+            String publicId,
+            String nickname,
+            String profileImageUrl
+    ) {
+        this.publicId = requireNonNull(publicId);
+        this.nickname = requireNonNull(nickname);
+        this.profileImageUrl = requireNonNull(profileImageUrl);
     }
 
 }
