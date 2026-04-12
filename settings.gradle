@@ -11,5 +11,6 @@ include(
         'modules:jpa',
         'modules:kafka',
         'modules:security',
+        'modules:swagger',
         'modules:time'
 )
