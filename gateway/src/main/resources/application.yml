@@ -38,6 +38,24 @@ spring:
                 - Path=/api/habits/**
               filters:
                 - AuthRequired
+            - id: auth-service-docs
+              uri: lb://auth-service
+              predicates:
+                - Path=/v3/api-docs/auth-service
+              filters:
+                - RewritePath=/v3/api-docs/auth-service, /v3/api-docs
+            - id: user-service-docs
+              uri: lb://user-service
+              predicates:
+                - Path=/v3/api-docs/user-service
+              filters:
+                - RewritePath=/v3/api-docs/user-service, /v3/api-docs
+            - id: habit-service-docs
+              uri: lb://habit-service
+              predicates:
+                - Path=/v3/api-docs/habit-service
+              filters:
+                - RewritePath=/v3/api-docs/habit-service, /v3/api-docs
 
 cors:
   allowed-origins:
@@ -54,6 +72,16 @@ jwt:
   secret: ${JWT_SECRET:12345678901234567890123456789012}
   cookie:
     access-token-name: ${JWT_COOKIE_ACCESS_TOKEN_NAME:access_token}
+
+springdoc:
+  swagger-ui:
+    urls:
+      - name: auth-service
+        url: /v3/api-docs/auth-service
+      - name: user-service
+        url: /v3/api-docs/user-service
+      - name: habit-service
+        url: /v3/api-docs/habit-service
 
 logging:
   level:
