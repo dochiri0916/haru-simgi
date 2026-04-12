@@ -1,8 +1,8 @@
 # haru-simgi
 
-잔디가 쌓이는 형태의 투두 리스트를 MSA로 구현한 학습 프로젝트다. 사용자는 할 일을 만들고, 완료한 작업이 날짜별로 집계되며, 그 결과가 GitHub 컨트리뷰션 그래프처럼 `level 0~4` 강도로 표현된다. 서비스 핵심은 단순한 할 일 저장이 아니라, "오늘 무엇을 끝냈는지"를 누적해 성취를 시각화하는 데 있다.
+잔디가 쌓이는 형태의 투두 리스트를 MSA로 구현한 학습 프로젝트다. 사용자는 습관을 만들고, 완료한 작업이 날짜별로 집계되며, 그 결과가 GitHub 컨트리뷰션 그래프처럼 `level 0~4` 강도로 표현된다. 서비스 핵심은 단순한 습관 저장이 아니라, "오늘 무엇을 끝냈는지"를 누적해 성취를 시각화하는 데 있다.
 
-현재 저장소는 프론트엔드가 아니라 백엔드 중심 구조다. 외부 진입점은 `gateway`, 인증은 `auth-service`, 사용자 정보는 `user-service`, 할 일과 잔디 집계는 `task-service`가 담당한다. 여기에 `config-server`, `eureka-server`, 공통 모듈들이 붙는 전형적인 Spring Cloud 기반 MSA 구성을 학습 목적에 맞게 단순화했다.
+현재 저장소는 프론트엔드가 아니라 백엔드 중심 구조다. 외부 진입점은 `gateway`, 인증은 `auth-service`, 사용자 정보는 `user-service`, 습관과 잔디 집계는 `habit-service`가 담당한다. 여기에 `config-server`, `eureka-server`, 공통 모듈들이 붙는 전형적인 Spring Cloud 기반 MSA 구성을 학습 목적에 맞게 단순화했다.
 
 ## 서비스 개요
 
@@ -17,10 +17,10 @@
 이 서비스의 중심 흐름은 아래처럼 단순하다.
 
 1. 사용자가 카카오 로그인으로 인증한다.
-2. 오늘 할 일을 등록한다.
-3. 할 일을 완료하면 완료 시각이 기록된다.
-4. `from ~ to` 기간의 완료 건수를 날짜별로 집계한다.
-5. 완료 수를 잔디 강도(`0~4`)로 변환해 클라이언트에 내려준다.
+2. 습관을 등록한다.
+3. 습관 기록을 생성하면 완료 시각이 기록된다.
+4. `from ~ to` 기간의 기록 건수를 날짜별로 집계한다.
+5. 기록 수를 잔디 강도(`0~4`)로 변환해 클라이언트에 내려준다.
 
 잔디 강도는 현재 아래 기준으로 계산된다.
 
@@ -36,16 +36,16 @@
 
 - `gateway`
   - 외부 클라이언트의 단일 진입점
-  - `/api/auth/**`, `/api/users/**`, `/api/tasks/**`, `/api/admin/**` 라우팅
+  - `/api/auth/**`, `/api/users/**`, `/api/habits/**`, `/api/admin/**` 라우팅
 - `auth-service`
   - 카카오 OAuth 로그인
   - JWT 발급, 재발급, 로그아웃
   - 소셜 계정과 내부 사용자 계정 연결
 - `user-service`
   - 사용자 프로필 생성 및 현재 로그인 사용자 조회
-- `task-service`
-  - 할 일 생성
-  - 본인 소유 할 일 완료 처리
+- `habit-service`
+  - 습관 생성
+  - 본인 소유 습관 기록 생성
   - 기간별 잔디 집계
 - `config-server`
   - 외부 설정 저장소에서 공통 설정 로드
@@ -61,7 +61,7 @@ Client
   -> Gateway
     -> Auth Service
     -> User Service
-    -> Task Service
+    -> Habit Service
 
 Auth Service
   -> Kakao API
@@ -82,7 +82,7 @@ All Services
 - JWT 기반 인증/인가
 - MySQL 사용 (`auth-service`, `user-service`는 docker-compose 기준 확인 가능)
 - 동기 HTTP + JSON 중심의 단순한 서비스 간 통신
-- `auth-service`, `user-service`, `task-service`에 Virtual Thread 활성화
+- `auth-service`, `user-service`, `habit-service`에 Virtual Thread 활성화
 
 ## 도메인 흐름
 
@@ -109,68 +109,68 @@ Auth Service
 - 최초 로그인 시 `auth-service`가 `user-service`를 호출해 내부 사용자 프로필을 만든다.
 - 이후 보호 API는 `Authorization: Bearer <token>` 또는 쿠키 기반으로 호출할 수 있다.
 
-### 2. 할 일 생성 플로우
+### 2. 습관 생성 플로우
 
 ```text
 Client
-  -> POST /api/tasks
+  -> POST /api/habits
 Gateway
-  -> Task Service
-Task Service
+  -> Habit Service
+Habit Service
   -> JWT 사용자 식별
-  -> 사용자 소유 Task 생성
+  -> 사용자 소유 Habit 생성
   -> 저장 후 응답 반환
 ```
 
-현재 할 일은 인증된 사용자 기준으로 생성된다. 제목은 공백만 허용되지 않으며, 길이 제한도 검증한다.
+습관은 인증된 사용자 기준으로 생성된다. 이름은 공백만 허용되지 않으며, 길이 제한도 검증한다.
 
-### 3. 할 일 완료 플로우
+### 3. 습관 기록 생성 플로우
 
 ```text
 Client
-  -> PATCH /api/tasks/{taskId}/complete
+  -> POST /api/habits/{habitId}/records
 Gateway
-  -> Task Service
-Task Service
-  -> Task 조회
+  -> Habit Service
+Habit Service
+  -> 습관 조회
   -> 요청 사용자와 소유자 일치 검증
   -> completedAt 기록
-  -> 완료 상태 저장
+  -> 기록 저장
 ```
 
-본인이 소유한 할 일만 완료할 수 있도록 서비스 레벨에서 검증한다.
+본인이 소유한 습관에만 기록을 생성할 수 있도록 서비스 레벨에서 검증한다.
 
 ### 4. 잔디 조회 플로우
 
 ```text
 Client
-  -> GET /api/tasks/grass?from=2026-04-01&to=2026-04-30
+  -> GET /api/habits/grass?from=2026-04-01&to=2026-04-30
 Gateway
-  -> Task Service
-Task Service
+  -> Habit Service
+Habit Service
   -> 기간 검증
-  -> 완료된 Task 조회
-  -> 날짜별 완료 건수 집계
+  -> 기록된 습관 조회
+  -> 날짜별 기록 값 집계
   -> count -> level 변환
   -> 잔디 응답 반환
 ```
 
-응답은 전체 완료 수와 일별 데이터 목록을 포함한다.
+응답은 전체 기록 값과 일별 데이터 목록을 포함한다.
 
 ```json
 {
-  "from": "2026-04-01",
-  "to": "2026-04-30",
-  "totalCompletedCount": 12,
+  "fromDate": "2026-04-01",
+  "toDate": "2026-04-30",
+  "totalValue": 42,
   "days": [
     {
       "date": "2026-04-01",
-      "completedCount": 0,
+      "value": 0,
       "level": 0
     },
     {
       "date": "2026-04-02",
-      "completedCount": 3,
+      "value": 3,
       "level": 3
     }
   ]
@@ -191,11 +191,15 @@ Task Service
 
 - `GET /api/users/me`
 
-### 할 일 / 잔디
+### 습관 / 잔디
 
-- `POST /api/tasks`
-- `PATCH /api/tasks/{taskId}/complete`
-- `GET /api/tasks/grass?from=YYYY-MM-DD&to=YYYY-MM-DD`
+- `GET /api/habits`
+- `POST /api/habits`
+- `GET /api/habits/{habitId}`
+- `PATCH /api/habits/{habitId}`
+- `GET /api/habits/{habitId}/records`
+- `POST /api/habits/{habitId}/records`
+- `GET /api/habits/grass?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
 ### 관리자
 
@@ -227,7 +231,7 @@ Task Service
 - `eureka-server`
 - `auth-service`
 - `user-service`
-- `task-service`
+- `habit-service`
 - `gateway`
 
 실행 전에 확인할 점:
@@ -253,4 +257,4 @@ docker compose up --build
 - 동기식 서비스 간 통신을 유지하면서도 Virtual Thread로 구조 복잡도를 낮추는 방식
 - "작업 완료 이벤트를 집계해 시각화 데이터로 바꾸는 서비스"라는 도메인 분리
 
-즉, 이 저장소의 핵심은 "할 일을 완료하면 잔디가 심어지는 투두 서비스"를 MSA 환경에서 어떻게 나누고 연결할지에 있다.
+즉, 이 저장소의 핵심은 "습관을 기록하면 잔디가 심어지는 투두 서비스"를 MSA 환경에서 어떻게 나누고 연결할지에 있다.

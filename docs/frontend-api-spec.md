@@ -16,6 +16,8 @@
 웹에서는 아래 방식으로 동작한다.
 
 - 로그인 성공 시 서버가 `access_token`, `refresh_token` 쿠키를 내려준다
+  - 두 쿠키 모두 `Path=/`로 설정되어 모든 API 경로에서 자동으로 전송됨
+  - `HttpOnly` 속성으로 JavaScript에서 접근 불가 (XSS 방지)
 - 이후 보호 API는 쿠키로 자동 인증된다
 - 프론트는 앱 초기 진입 시 `GET /api/users/me` 호출로 로그인 상태를 확인하면 된다
 
@@ -23,6 +25,7 @@
 
 - `X-Auth-Transport: bearer`는 앱 클라이언트용이다
 - 웹 프론트에서는 기본값을 그대로 사용하면 되므로 이 헤더를 보낼 필요가 없다
+- fetch나 axios 사용 시 `credentials: 'include'` / `withCredentials: true` 설정이 필수
 
 ## 에러 응답 형식
 
@@ -175,6 +178,43 @@
 
 1. 성공 여부와 무관하게 로컬 사용자 상태 초기화
 2. 로그인 화면 또는 랜딩 화면 이동
+
+### 6. [Dev] 테스트용 토큰 발급
+
+**개발 환경(`dev` 프로필)에서만 사용 가능**
+
+- Method: `POST`
+- Path: `/api/dev/token`
+- Query:
+  - `userId: number` (필수)
+  - `role?: string` (기본값: `USER`)
+- Auth: 불필요
+
+쿼리 예시:
+
+```
+POST /api/dev/token?userId=1&role=USER
+```
+
+응답:
+
+```json
+{
+  "tokenType": "Bearer",
+  "accessToken": "...",
+  "refreshToken": "...",
+  "refreshTokenExpiresAt": "2026-04-26T07:00:00Z",
+  "role": "USER"
+}
+```
+
+프론트 개발 시 사용 목적:
+
+- 카카오 로그인 없이 바로 토큰 발급 받기
+- 특정 역할(ADMIN 등)로 테스트하기
+- 자동화 테스트 시 세션 설정
+
+**주의**: 프로덕션에서는 이 엔드포인트가 비활성화되어 있음
 
 ## 사용자 API
 
