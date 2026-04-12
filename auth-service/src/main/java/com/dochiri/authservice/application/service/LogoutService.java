@@ -1,6 +1,6 @@
 package com.dochiri.authservice.application.service;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.dto.LogoutCommand;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;

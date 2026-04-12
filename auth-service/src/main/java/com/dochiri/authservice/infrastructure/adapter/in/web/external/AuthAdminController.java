@@ -21,4 +21,5 @@ public class AuthAdminController {
         changeUserRoleUseCase.changeRole(request.toCommand(userId));
         return ResponseEntity.noContent().build();
     }
+
 }

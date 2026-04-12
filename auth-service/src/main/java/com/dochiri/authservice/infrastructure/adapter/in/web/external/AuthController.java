@@ -1,5 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 
+import com.dochiri.authservice.application.port.in.KakaoAuthorizeUseCase;
 import com.dochiri.authservice.application.port.in.KakaoLoginUseCase;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
@@ -30,6 +31,7 @@ public class AuthController {
 
     static final String AUTH_TRANSPORT_HEADER = "X-Auth-Transport";
 
+    private final KakaoAuthorizeUseCase kakaoAuthorizeUseCase;
     private final KakaoLoginUseCase kakaoLoginUseCase;
     private final ReissueTokenUseCase reissueTokenUseCase;
     private final LogoutUseCase logoutUseCase;
@@ -40,7 +42,7 @@ public class AuthController {
     public ResponseEntity<KakaoAuthorizeUrlResponse> kakaoAuthorizeUrl(
             @RequestParam(required = false) String state
     ) {
-        return ResponseEntity.ok(new KakaoAuthorizeUrlResponse(kakaoLoginUseCase.buildAuthorizeUrl(state)));
+        return ResponseEntity.ok(new KakaoAuthorizeUrlResponse(kakaoAuthorizeUseCase.buildAuthorizeUrl(state)));
     }
 
     @PostMapping("/login/kakao")

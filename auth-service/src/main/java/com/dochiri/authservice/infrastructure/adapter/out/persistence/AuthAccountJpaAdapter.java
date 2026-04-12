@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.errorhandling.BaseException;

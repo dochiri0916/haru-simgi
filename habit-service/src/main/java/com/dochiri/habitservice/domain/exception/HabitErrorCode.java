@@ -15,17 +15,7 @@ public enum HabitErrorCode implements ErrorCode {
     INVALID_HABIT_OWNER(HttpStatus.BAD_REQUEST, "유효하지 않은 습관 소유자입니다."),
     HABIT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근할 수 없습니다.");
 
-    private final HttpStatus status;
+    private final HttpStatus httpStatus;
     private final String message;
-
-    @Override
-    public HttpStatus getHttpStatus() {
-        return status;
-    }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
 
 }

@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.out.jwt;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.out.TokenGeneratePort;
 import com.dochiri.authservice.application.port.out.TokenParsePort;
 import com.dochiri.authservice.application.port.out.dto.IssuedTokenResult;

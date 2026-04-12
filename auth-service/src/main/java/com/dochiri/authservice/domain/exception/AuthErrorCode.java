@@ -1,4 +1,4 @@
-package com.dochiri.authservice.application.error;
+package com.dochiri.authservice.domain.exception;
 
 import com.dochiri.errorhandling.ErrorCode;
 import lombok.Getter;

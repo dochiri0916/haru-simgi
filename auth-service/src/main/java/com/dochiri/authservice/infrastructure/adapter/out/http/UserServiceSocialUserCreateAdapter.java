@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.out.http;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.out.SocialUserCreatePort;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;

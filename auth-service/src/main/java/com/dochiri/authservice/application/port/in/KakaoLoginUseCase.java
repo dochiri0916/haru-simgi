@@ -5,8 +5,6 @@ import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 
 public interface KakaoLoginUseCase {
 
-    String buildAuthorizeUrl(String state);
-
     IssueAuthTokenResult login(KakaoLoginCommand command);
 
 }

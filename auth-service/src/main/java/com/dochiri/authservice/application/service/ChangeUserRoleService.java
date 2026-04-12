@@ -1,6 +1,6 @@
 package com.dochiri.authservice.application.service;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.ChangeUserRoleUseCase;
 import com.dochiri.authservice.application.port.in.dto.ChangeUserRoleCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;

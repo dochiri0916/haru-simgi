@@ -1,6 +1,6 @@
 package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 
-import com.dochiri.authservice.application.error.AuthErrorCode;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.properties.JwtCookieProperties;
