@@ -38,7 +38,7 @@ public class HabitJpaAdapter implements HabitRepository {
 
     @Override
     public List<Habit> findByOwner(HabitOwner owner) {
-        return habitJpaRepository.findByOwnerTypeAndOwnerReferenceId(owner.type().name(), owner.referenceId())
+        return habitJpaRepository.findByOwnerTypeAndOwnerReferenceId(owner.type(), owner.referenceId())
                 .stream()
                 .map(HabitMapper::toDomain)
                 .toList();

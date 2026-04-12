@@ -4,12 +4,12 @@ import com.dochiri.habitservice.domain.*;
 
 public class HabitMapper {
 
-    public static HabitEntity toEntity(Habit habit) {
+    public static HabitEntity toEntity(Habit domain) {
         return new HabitEntity(
-                habit.getId().value(),
-                habit.getOwner().type(),
-                habit.getOwner().referenceId(),
-                habit.getName().value()
+                domain.getId().value(),
+                domain.getOwner().type(),
+                domain.getOwner().referenceId(),
+                domain.getName().value()
         );
     }
 
