@@ -1,28 +1,25 @@
 package com.dochiri.authservice.application;
 
+import com.dochiri.authservice.application.port.in.AuthTokenIssueUseCase;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenCommand;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.KakaoOAuthPort;
-import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
 import com.dochiri.authservice.application.port.out.SocialUserCreatePort;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
 import com.dochiri.authservice.application.port.out.dto.KakaoAuthenticationCommand;
 import com.dochiri.authservice.application.port.out.dto.KakaoUserProfileResult;
-import com.dochiri.authservice.application.service.AuthTokenIssuer;
 import com.dochiri.authservice.application.service.KakaoLoginService;
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.AuthProvider;
-import com.dochiri.authservice.domain.RefreshToken;
-import com.dochiri.security.jwt.JwtProvider;
-import com.dochiri.security.jwt.JwtTokenGenerator;
-import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,16 +30,7 @@ class KakaoLoginServiceTest {
     private final KakaoOAuthPort kakaoOAuthPort = mock(KakaoOAuthPort.class);
     private final SocialUserCreatePort socialUserCreatePort = mock(SocialUserCreatePort.class);
     private final AuthAccountRepository authAccountRepository = mock(AuthAccountRepository.class);
-    private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final JwtProvider jwtProvider = new JwtProvider(new JwtProperties(
-            "12345678901234567890123456789012",
-            1_800_000L,
-            1_209_600_000L
-    ));
-    private final JwtTokenGenerator jwtTokenGenerator = new JwtTokenGenerator(jwtProvider);
-    private final AuthTokenIssuer authTokenIssuer =
-            new AuthTokenIssuer(jwtTokenGenerator, jwtProvider, refreshTokenRepository);
+    private final AuthTokenIssueUseCase authTokenIssueUseCase = mock(AuthTokenIssueUseCase.class);
 
     private KakaoLoginService kakaoLoginService;
 
@@ -52,11 +40,10 @@ class KakaoLoginServiceTest {
                 kakaoOAuthPort,
                 socialUserCreatePort,
                 authAccountRepository,
-                passwordEncoder,
-                authTokenIssuer
+                authTokenIssueUseCase
         );
-        when(refreshTokenRepository.replaceByUserId(any(RefreshToken.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(authTokenIssueUseCase.issue(any(IssueAuthTokenCommand.class)))
+                .thenReturn(new IssueAuthTokenResult("access-token", "refresh-token", Instant.now().plusSeconds(3600), UserRole.USER));
     }
 
     @Test
@@ -68,12 +55,12 @@ class KakaoLoginServiceTest {
                         "alice",
                         "https://example.com/alice.png"
                 ));
-        when(authAccountRepository.findByProviderAndProviderUserId("KAKAO", "100"))
+        when(authAccountRepository.findByProviderAndProviderId("KAKAO", "100"))
                 .thenReturn(java.util.Optional.of(new AuthAccount(
                         1L,
+                        "public-id-1",
                         AuthProvider.KAKAO,
                         "100",
-                        passwordEncoder.encode("secret123"),
                         UserRole.USER
                 )));
 
@@ -94,10 +81,10 @@ class KakaoLoginServiceTest {
                         "kakao-user",
                         "https://example.com/profile.png"
                 ));
-        when(authAccountRepository.findByProviderAndProviderUserId("KAKAO", "200"))
+        when(authAccountRepository.findByProviderAndProviderId("KAKAO", "200"))
                 .thenReturn(java.util.Optional.empty());
         when(socialUserCreatePort.create(new CreateSocialUserCommand("kakao-user", "https://example.com/profile.png")))
-                .thenReturn(new CreateSocialUserResult(7L, "kakao-user", "https://example.com/profile.png"));
+                .thenReturn(new CreateSocialUserResult(7L, "public-id-7", "kakao-user", "https://example.com/profile.png"));
         when(authAccountRepository.save(any(AuthAccount.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -110,8 +97,7 @@ class KakaoLoginServiceTest {
         assertThat(result.refreshToken()).isNotBlank();
         assertThat(authAccountCaptor.getValue().userId()).isEqualTo(7L);
         assertThat(authAccountCaptor.getValue().provider()).isEqualTo(AuthProvider.KAKAO);
-        assertThat(authAccountCaptor.getValue().providerUserId()).isEqualTo("200");
+        assertThat(authAccountCaptor.getValue().providerId()).isEqualTo("200");
         assertThat(authAccountCaptor.getValue().role()).isEqualTo(UserRole.USER);
-        assertThat(authAccountCaptor.getValue().passwordHash()).isNotBlank();
     }
 }
