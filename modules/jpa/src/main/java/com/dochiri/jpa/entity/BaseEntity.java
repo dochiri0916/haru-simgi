@@ -24,10 +24,10 @@ public abstract class BaseEntity {
 
     @CreatedBy
     @Column(nullable = false, updatable = false)
-    private Long createdBy;
+    private String createdBy;
 
     @LastModifiedBy
-    private Long updatedBy;
+    private String updatedBy;
 
     public Instant getCreatedAt() {
         return createdAt;
@@ -37,11 +37,11 @@ public abstract class BaseEntity {
         return updatedAt;
     }
 
-    public Long getCreatedBy() {
+    public String getCreatedBy() {
         return createdBy;
     }
 
-    public Long getUpdatedBy() {
+    public String getUpdatedBy() {
         return updatedBy;
     }
 

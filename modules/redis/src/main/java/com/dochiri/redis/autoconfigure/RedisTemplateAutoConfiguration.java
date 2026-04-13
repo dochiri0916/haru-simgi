@@ -12,4 +12,5 @@ public class RedisTemplateAutoConfiguration {
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
         return new StringRedisTemplate(redisConnectionFactory);
     }
+
 }

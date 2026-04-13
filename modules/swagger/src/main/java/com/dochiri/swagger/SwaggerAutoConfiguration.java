@@ -26,4 +26,5 @@ public class SwaggerAutoConfiguration {
                 )
                 .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME));
     }
+
 }
