@@ -18,7 +18,9 @@ COPY --chown=gradle:gradle habit-service/build.gradle ./habit-service/build.grad
 COPY --chown=gradle:gradle modules/error-handling/build.gradle ./modules/error-handling/build.gradle
 COPY --chown=gradle:gradle modules/jpa/build.gradle ./modules/jpa/build.gradle
 COPY --chown=gradle:gradle modules/kafka/build.gradle ./modules/kafka/build.gradle
+COPY --chown=gradle:gradle modules/redis/build.gradle ./modules/redis/build.gradle
 COPY --chown=gradle:gradle modules/security/build.gradle ./modules/security/build.gradle
+COPY --chown=gradle:gradle modules/swagger/build.gradle ./modules/swagger/build.gradle
 COPY --chown=gradle:gradle modules/time/build.gradle ./modules/time/build.gradle
 
 RUN --mount=type=cache,target=/home/gradle/.gradle \
