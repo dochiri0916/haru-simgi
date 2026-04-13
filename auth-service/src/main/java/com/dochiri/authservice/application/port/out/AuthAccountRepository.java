@@ -8,7 +8,7 @@ public interface AuthAccountRepository {
 
     AuthAccount save(AuthAccount authAccount);
 
-    Optional<AuthAccount> findByProviderAndProviderUserId(String provider, String providerUserId);
+    Optional<AuthAccount> findByProviderAndProviderId(String provider, String providerId);
 
     Optional<AuthAccount> findByUserId(Long userId);
 

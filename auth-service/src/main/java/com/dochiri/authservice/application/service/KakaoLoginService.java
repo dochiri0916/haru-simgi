@@ -16,11 +16,8 @@ import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.security.role.UserRole;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +26,6 @@ public class KakaoLoginService implements KakaoLoginUseCase {
     private final KakaoOAuthPort kakaoOAuthPort;
     private final SocialUserCreatePort socialUserCreatePort;
     private final AuthAccountRepository authAccountRepository;
-    private final PasswordEncoder passwordEncoder;
     private final AuthTokenIssueUseCase authTokenIssueUseCase;
 
     @Transactional
@@ -38,7 +34,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
         KakaoUserProfileResult profile = kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand(command.code()));
         String providerUserId = String.valueOf(profile.id());
 
-        AuthAccount authAccount = authAccountRepository.findByProviderAndProviderUserId(
+        AuthAccount authAccount = authAccountRepository.findByProviderAndProviderId(
                         AuthProvider.KAKAO.name(),
                         providerUserId
                 )
@@ -58,7 +54,6 @@ public class KakaoLoginService implements KakaoLoginUseCase {
                 createdUser.publicId(),
                 AuthProvider.KAKAO,
                 String.valueOf(profile.id()),
-                passwordEncoder.encode("kakao:" + profile.id() + ":" + UUID.randomUUID()),
                 UserRole.USER
         ));
     }

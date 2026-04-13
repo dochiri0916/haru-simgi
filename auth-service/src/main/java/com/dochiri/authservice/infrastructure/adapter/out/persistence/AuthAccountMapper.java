@@ -13,8 +13,7 @@ public class AuthAccountMapper {
                 entity.getUserId(),
                 entity.getPublicId(),
                 AuthProvider.valueOf(entity.getProvider()),
-                entity.getProviderUserId(),
-                entity.getPasswordHash(),
+                entity.getProviderId(),
                 UserRole.from(entity.getRole())
         );
     }
@@ -24,17 +23,13 @@ public class AuthAccountMapper {
                 authAccount.userId(),
                 authAccount.publicId(),
                 authAccount.provider(),
-                authAccount.providerUserId(),
-                authAccount.passwordHash(),
+                authAccount.providerId(),
                 authAccount.role()
         );
     }
 
     public void apply(AuthAccount authAccount, AuthAccountEntity entity) {
-        entity.update(
-                authAccount.passwordHash(),
-                authAccount.role()
-        );
+        entity.update(authAccount.role());
     }
 
 }

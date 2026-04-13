@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 @Table(
         name = "auth_users",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_auth_users_provider_user_id", columnNames = {"provider", "providerUserId"})
+                @UniqueConstraint(name = "uk_auth_users_provider_id", columnNames = {"provider", "providerId"})
         }
 )
 @Getter
@@ -32,10 +32,7 @@ public class AuthAccountEntity extends BaseEntity {
     private String provider;
 
     @Column(length = 100)
-    private String providerUserId;
-
-    @Column(nullable = false)
-    private String passwordHash;
+    private String providerId;
 
     @Column(nullable = false)
     private String role;
@@ -44,22 +41,19 @@ public class AuthAccountEntity extends BaseEntity {
             Long userId,
             String publicId,
             AuthProvider provider,
-            String providerUserId,
-            String passwordHash,
+            String providerId,
             UserRole role
     ) {
         AuthAccountEntity entity = new AuthAccountEntity();
         entity.userId = requireNonNull(userId);
         entity.publicId = requireNonNull(publicId);
         entity.provider = requireNonNull(provider).name();
-        entity.providerUserId = providerUserId;
-        entity.passwordHash = requireNonNull(passwordHash);
+        entity.providerId = providerId;
         entity.role = requireNonNull(role).name();
         return entity;
     }
 
-    public void update(String passwordHash, UserRole role) {
-        this.passwordHash = requireNonNull(passwordHash);
+    public void update(UserRole role) {
         this.role = requireNonNull(role).name();
     }
 

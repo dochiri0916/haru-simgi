@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface AuthAccountJpaRepository extends JpaRepository<AuthAccountEntity, Long> {
 
-    Optional<AuthAccountEntity> findByProviderAndProviderUserId(String provider, String providerUserId);
+    Optional<AuthAccountEntity> findByProviderAndProviderId(String provider, String providerId);
 
     Optional<AuthAccountEntity> findByPublicId(String publicId);
 
