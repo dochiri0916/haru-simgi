@@ -20,17 +20,10 @@ public class UserJpaAdapter implements UserRepository {
     }
 
     @Override
-    public User loadByUserId(Long userId) {
-        return userJpaRepository.findById(userId)
-                .map(UserMapper::toDomain)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-    }
-
-    @Override
-    public User loadByPublicId(String publicId) {
+    public User loadById(String publicId) {
         return userJpaRepository.findByPublicId(publicId)
                 .map(UserMapper::toDomain)
-                .orElseThrow(() -> new UserNotFoundException("User not found with publicId: " + publicId));
+                .orElseThrow(() -> new UserNotFoundException(publicId));
     }
 
 }

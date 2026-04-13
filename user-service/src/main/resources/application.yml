@@ -10,9 +10,5 @@ spring:
     virtual:
       enabled: true
 
-security:
-  public-endpoints:
-    - /internal/users
-
 jwt:
   secret: ${JWT_SECRET}

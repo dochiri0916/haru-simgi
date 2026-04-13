@@ -20,12 +20,7 @@ public class InternalUserController {
 
     @PostMapping
     public ResponseEntity<CreateUserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        return ResponseEntity.ok(
-                CreateUserResponse.from(
-                        createUserUseCase.execute(
-                                request.toCommand()
-                        )
-                )
-        );
+        return ResponseEntity.ok(CreateUserResponse.from(createUserUseCase.execute(request.toCommand())));
     }
+
 }

@@ -20,13 +20,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponse> me(@AuthenticationPrincipal JwtPrincipal principal) {
-        return ResponseEntity.ok(
-                CurrentUserResponse.from(
-                        getCurrentUserUseCase.getCurrentUser(
-                                principal.publicId()
-                        )
-                )
-        );
+        return ResponseEntity.ok(CurrentUserResponse.from(getCurrentUserUseCase.getCurrentUser(principal.publicId())));
     }
 
 }
