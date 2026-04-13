@@ -31,7 +31,7 @@ public class UserServiceSocialUserCreateAdapter implements SocialUserCreatePort 
     public CreateSocialUserResult create(CreateSocialUserCommand command) {
         try {
             CreateSocialUserResponse response = restClient.post()
-                    .uri("/internal/users/social")
+                    .uri("/internal/users")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new CreateSocialUserRequest(command.nickname(), command.profileImageUrl()))
                     .retrieve()
