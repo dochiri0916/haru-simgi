@@ -259,11 +259,15 @@ POST /api/dev/token?userId=1&role=USER
   "habits": [
     {
       "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-      "name": "물 마시기"
+      "name": "물 마시기",
+      "color": "BLUE",
+      "colorHex": "#3B82F6"
     },
     {
       "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
-      "name": "러닝"
+      "name": "러닝",
+      "color": "GREEN",
+      "colorHex": "#22C55E"
     }
   ]
 }
@@ -279,16 +283,21 @@ POST /api/dev/token?userId=1&role=USER
 
 ```json
 {
-  "name": "물 마시기"
+  "name": "물 마시기",
+  "color": "BLUE"
 }
 ```
+
+- `color`: `BLUE`, `GREEN`, `RED`, `YELLOW`, `PURPLE`, `PINK` 중 하나
 
 응답:
 
 ```json
 {
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "name": "물 마시기"
+  "name": "물 마시기",
+  "color": "BLUE",
+  "colorHex": "#3B82F6"
 }
 ```
 
@@ -303,7 +312,9 @@ POST /api/dev/token?userId=1&role=USER
 ```json
 {
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "name": "물 마시기"
+  "name": "물 마시기",
+  "color": "BLUE",
+  "colorHex": "#3B82F6"
 }
 ```
 
@@ -326,7 +337,9 @@ POST /api/dev/token?userId=1&role=USER
 ```json
 {
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "name": "물 10잔 마시기"
+  "name": "물 10잔 마시기",
+  "color": "BLUE",
+  "colorHex": "#3B82F6"
 }
 ```
 
@@ -340,7 +353,61 @@ POST /api/dev/token?userId=1&role=USER
 
 - Status: `204 No Content`
 
-### 6. 잔디 조회
+### 6. 습관 기록 목록 조회
+
+- Method: `GET`
+- Path: `/api/habits/{habitId}/records`
+- Auth: 필요
+
+Query:
+
+- `from?: YYYY-MM-DD` (기본값: 오늘 기준 1개월 전)
+- `to?: YYYY-MM-DD` (기본값: 오늘)
+
+응답:
+
+```json
+{
+  "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "records": [
+    {
+      "id": "a1b2c3d4-...",
+      "completedAt": "2026-04-10T09:00:00Z",
+      "value": 30
+    }
+  ]
+}
+```
+
+- `value`: 소요 시간 (분 단위)
+
+### 7. 습관 기록 생성
+
+- Method: `POST`
+- Path: `/api/habits/{habitId}/records`
+- Auth: 필요
+
+요청:
+
+```json
+{
+  "completedAt": "2026-04-10T09:00:00Z",
+  "value": 30
+}
+```
+
+응답:
+
+```json
+{
+  "id": "a1b2c3d4-...",
+  "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "completedAt": "2026-04-10T09:00:00Z",
+  "value": 30
+}
+```
+
+### 8. 잔디 조회
 
 - Method: `GET`
 - Path: `/api/habits/grass`
@@ -391,60 +458,6 @@ GET /api/habits/grass?from=2026-01-01&to=2026-04-11
 
 - 월간/전체 잔디 캘린더
 - 기간별 통계 영역
-
-### 7. 습관 기록 목록 조회
-
-- Method: `GET`
-- Path: `/api/habits/{habitId}/records`
-- Auth: 필요
-
-Query:
-
-- `from?: YYYY-MM-DD` (기본값: 오늘 기준 1개월 전)
-- `to?: YYYY-MM-DD` (기본값: 오늘)
-
-응답:
-
-```json
-{
-  "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "records": [
-    {
-      "id": "a1b2c3d4-...",
-      "completedAt": "2026-04-10T09:00:00Z",
-      "value": 30
-    }
-  ]
-}
-```
-
-- `value`: 기록된 값 (분 단위)
-
-### 8. 습관 기록 생성
-
-- Method: `POST`
-- Path: `/api/habits/{habitId}/records`
-- Auth: 필요
-
-요청:
-
-```json
-{
-  "completedAt": "2026-04-10T09:00:00Z",
-  "value": 30
-}
-```
-
-응답:
-
-```json
-{
-  "id": "a1b2c3d4-...",
-  "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
-  "completedAt": "2026-04-10T09:00:00Z",
-  "value": 30
-}
-```
 
 ## 관리자 API
 
