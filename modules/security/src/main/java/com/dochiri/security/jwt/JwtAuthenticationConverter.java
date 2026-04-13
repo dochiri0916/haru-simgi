@@ -22,10 +22,10 @@ public class JwtAuthenticationConverter {
             throw new BadCredentialsException("인증에 사용할 수 없는 토큰입니다.");
         }
 
-        Long userId = jwtProvider.extractUserId(claims);
+        String publicId = jwtProvider.extractPublicId(claims);
         String role = jwtProvider.extractRole(claims);
 
-        JwtPrincipal principal = new JwtPrincipal(userId, role);
+        JwtPrincipal principal = new JwtPrincipal(publicId, role);
 
         return new UsernamePasswordAuthenticationToken(
                 principal,

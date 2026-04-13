@@ -21,8 +21,8 @@ public class JwtTokenAdapter implements TokenGeneratePort, TokenParsePort {
     private final JwtProvider jwtProvider;
 
     @Override
-    public IssuedTokenResult generate(Long userId, String role) {
-        JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(userId, role);
+    public IssuedTokenResult generate(String publicId, String role) {
+        JwtTokenResult tokenResult = jwtTokenGenerator.generateToken(publicId, role);
         Claims claims = jwtProvider.parseAndValidate(tokenResult.refreshToken());
         return new IssuedTokenResult(
                 tokenResult.accessToken(),
@@ -39,7 +39,7 @@ public class JwtTokenAdapter implements TokenGeneratePort, TokenParsePort {
             throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
         return new ParseRefreshTokenResult(
-                jwtProvider.extractUserId(claims),
+                jwtProvider.extractPublicId(claims),
                 jwtProvider.extractTokenId(claims)
         );
     }

@@ -4,12 +4,14 @@ import com.dochiri.userservice.application.port.in.dto.CreateUserResult;
 
 public record CreateUserResponse(
         Long userId,
+        String publicId,
         String nickname,
         String profileImageUrl
 ) {
     public static CreateUserResponse from(CreateUserResult result) {
         return new CreateUserResponse(
                 result.userId(),
+                result.publicId(),
                 result.nickname(),
                 result.profileImageUrl()
         );

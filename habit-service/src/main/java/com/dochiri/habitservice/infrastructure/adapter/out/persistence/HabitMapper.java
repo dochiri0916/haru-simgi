@@ -9,7 +9,8 @@ public class HabitMapper {
                 domain.getId().value(),
                 domain.getOwner().type(),
                 domain.getOwner().referenceId(),
-                domain.getName().value()
+                domain.getName().value(),
+                toColorType(domain.getColor())
         );
     }
 
@@ -22,8 +23,17 @@ public class HabitMapper {
         return Habit.from(
                 HabitId.of(entity.getPublicId()),
                 owner,
-                HabitName.of(entity.getName())
+                HabitName.of(entity.getName()),
+                toDomainColor(entity.getColor())
         );
+    }
+
+    private static HabitColorType toColorType(HabitColor habitColor) {
+        return HabitColorType.valueOf(habitColor.colorType().name());
+    }
+
+    private static HabitColor toDomainColor(HabitColorType colorType) {
+        return HabitColor.of(HabitColor.ColorType.valueOf(colorType.name()));
     }
 
 }

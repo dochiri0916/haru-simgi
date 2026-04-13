@@ -19,7 +19,7 @@ public class AuthTokenIssuerService implements AuthTokenIssueUseCase {
 
     @Override
     public IssueAuthTokenResult issue(IssueAuthTokenCommand command) {
-        IssuedTokenResult tokenResult = tokenGeneratePort.generate(command.userId(), command.role().name());
+        IssuedTokenResult tokenResult = tokenGeneratePort.generate(command.publicId(), command.role().name());
 
         RefreshToken refreshToken = RefreshToken.create(
                 tokenResult.refreshTokenId(),

@@ -16,8 +16,8 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
 
     @Transactional(readOnly = true)
     @Override
-    public GetCurrentUserResult getCurrentUser(Long userId) {
-        User user = userRepository.loadByUserId(userId);
+    public GetCurrentUserResult getCurrentUser(String publicId) {
+        User user = userRepository.loadByPublicId(publicId);
         return new GetCurrentUserResult(
                 user.getId().value(),
                 user.getNickname(),

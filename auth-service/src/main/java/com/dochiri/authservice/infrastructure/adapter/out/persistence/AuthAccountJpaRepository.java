@@ -8,4 +8,6 @@ public interface AuthAccountJpaRepository extends JpaRepository<AuthAccountEntit
 
     Optional<AuthAccountEntity> findByProviderAndProviderUserId(String provider, String providerUserId);
 
+    Optional<AuthAccountEntity> findByPublicId(String publicId);
+
 }

@@ -39,7 +39,9 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
     private UpdateHabitNameResult toResult(Habit habit) {
         return new UpdateHabitNameResult(
                 habit.getId().value(),
-                habit.getName().value()
+                habit.getName().value(),
+                habit.getColor().colorType().name(),
+                habit.getColor().getHexValue()
         );
     }
 

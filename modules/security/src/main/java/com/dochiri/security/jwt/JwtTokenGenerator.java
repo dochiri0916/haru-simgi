@@ -10,15 +10,15 @@ public class JwtTokenGenerator {
         this.jwtProvider = jwtProvider;
     }
 
-    public JwtTokenResult generateToken(Long userId, String role) {
-        String accessToken = jwtProvider.generateAccessToken(userId, role);
-        String refreshToken = jwtProvider.generateRefreshToken(userId, role);
+    public JwtTokenResult generateToken(String publicId, String role) {
+        String accessToken = jwtProvider.generateAccessToken(publicId, role);
+        String refreshToken = jwtProvider.generateRefreshToken(publicId, role);
         Instant refreshExpiresAt = jwtProvider.extractExpiration(jwtProvider.parseAndValidate(refreshToken));
 
         return new JwtTokenResult(accessToken, refreshToken, refreshExpiresAt);
     }
 
-    public String generateAccessToken(Long userId, String role) {
-        return jwtProvider.generateAccessToken(userId, role);
+    public String generateAccessToken(String publicId, String role) {
+        return jwtProvider.generateAccessToken(publicId, role);
     }
 }

@@ -3,7 +3,9 @@ package com.dochiri.authservice.application.service;
 import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.dto.LogoutCommand;
+import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
+import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.RefreshToken;
 import com.dochiri.errorhandling.BaseException;
 import com.dochiri.security.jwt.JwtProvider;
@@ -28,16 +30,11 @@ public class LogoutService implements LogoutUseCase {
             throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        Long userId = jwtProvider.extractUserId(claims);
         String tokenId = jwtProvider.extractTokenId(claims);
 
         RefreshToken storedRefreshToken = refreshTokenRepository.findByTokenId(tokenId)
                 .orElseThrow(() -> new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (!storedRefreshToken.getUserId().equals(userId)) {
-            throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
-        }
-
-        refreshTokenRepository.deleteByUserId(userId);
+        refreshTokenRepository.deleteByUserId(storedRefreshToken.getUserId());
     }
 }

@@ -8,16 +8,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
 
-public class SecurityAuditorAware implements AuditorAware<Long> {
+public class SecurityAuditorAware implements AuditorAware<String> {
 
-    private final Long systemUserId;
+    private final String systemUserId;
 
-    public SecurityAuditorAware(Long systemUserId) {
+    public SecurityAuditorAware(String systemUserId) {
         this.systemUserId = systemUserId;
     }
 
     @Override
-    public Optional<Long> getCurrentAuditor() {
+    public Optional<String> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null
@@ -29,7 +29,7 @@ public class SecurityAuditorAware implements AuditorAware<Long> {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof JwtPrincipal jwtPrincipal) {
-            return Optional.of(jwtPrincipal.userId());
+            return Optional.of(jwtPrincipal.publicId());
         }
 
         return Optional.of(systemUserId);

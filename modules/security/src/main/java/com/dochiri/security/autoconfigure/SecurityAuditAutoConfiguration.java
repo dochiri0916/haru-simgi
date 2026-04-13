@@ -14,8 +14,8 @@ class SecurityAuditAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(type = "org.springframework.data.domain.AuditorAware")
-    AuditorAware<Long> auditorAware(SecurityProperties securityProperties) {
-        return new SecurityAuditorAware(securityProperties.systemUserId());
+    AuditorAware<String> auditorAware(SecurityProperties securityProperties) {
+        return new SecurityAuditorAware(securityProperties.systemUserId().toString());
     }
 
 }

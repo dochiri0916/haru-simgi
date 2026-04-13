@@ -26,6 +26,7 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
 
         authAccountRepository.save(new AuthAccount(
                 account.userId(),
+                account.publicId(),
                 account.provider(),
                 account.providerUserId(),
                 account.passwordHash(),

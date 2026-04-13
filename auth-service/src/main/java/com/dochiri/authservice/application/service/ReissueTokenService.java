@@ -31,16 +31,16 @@ public class ReissueTokenService implements ReissueTokenUseCase {
     public IssueAuthTokenResult reissue(RefreshTokenCommand command) {
         ParseRefreshTokenResult parsed = tokenParsePort.parseRefreshToken(command.refreshToken());
 
+        AuthAccount account = authAccountRepository.findByPublicId(parsed.publicId())
+                .orElseThrow(() -> new BaseException(AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND));
+
         RefreshToken storedRefreshToken = refreshTokenRepository.findByTokenId(parsed.tokenId())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (!storedRefreshToken.getUserId().equals(parsed.userId())) {
+        if (!storedRefreshToken.getUserId().equals(account.userId())) {
             throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        AuthAccount account = authAccountRepository.findByUserId(parsed.userId())
-                .orElseThrow(() -> new BaseException(AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND));
-
-        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(account.userId(), account.role()));
+        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(account.userId(), account.publicId(), account.role()));
     }
 }

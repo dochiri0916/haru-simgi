@@ -10,6 +10,7 @@ include(
         'modules:error-handling',
         'modules:jpa',
         'modules:kafka',
+        'modules:redis',
         'modules:security',
         'modules:swagger',
         'modules:time'

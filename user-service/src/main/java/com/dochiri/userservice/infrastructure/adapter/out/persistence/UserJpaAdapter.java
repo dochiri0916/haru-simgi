@@ -26,4 +26,11 @@ public class UserJpaAdapter implements UserRepository {
                 .orElseThrow(() -> new UserNotFoundException(userId));
     }
 
+    @Override
+    public User loadByPublicId(String publicId) {
+        return userJpaRepository.findByPublicId(publicId)
+                .map(UserMapper::toDomain)
+                .orElseThrow(() -> new UserNotFoundException("User not found with publicId: " + publicId));
+    }
+
 }

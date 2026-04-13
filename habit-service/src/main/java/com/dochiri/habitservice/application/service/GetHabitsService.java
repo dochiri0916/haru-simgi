@@ -37,7 +37,9 @@ public class GetHabitsService implements GetHabitsUseCase {
     private GetHabitsResult.HabitDto toDto(Habit habit) {
         return new GetHabitsResult.HabitDto(
                 habit.getId().value(),
-                habit.getName().value()
+                habit.getName().value(),
+                habit.getColor().colorType().name(),
+                habit.getColor().getHexValue()
         );
     }
 

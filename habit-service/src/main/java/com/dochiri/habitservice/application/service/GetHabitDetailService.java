@@ -29,7 +29,9 @@ public class GetHabitDetailService implements GetHabitDetailUseCase {
 
         return new GetHabitDetailResult(
                 habit.getId().value(),
-                habit.getName().value()
+                habit.getName().value(),
+                habit.getColor().colorType().name(),
+                habit.getColor().getHexValue()
         );
     }
 

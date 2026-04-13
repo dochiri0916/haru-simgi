@@ -7,7 +7,9 @@ public record GetHabitsResult(
 ) {
     public record HabitDto(
             String id,
-            String name
+            String name,
+            String color,
+            String colorHex
     ) {
     }
 }

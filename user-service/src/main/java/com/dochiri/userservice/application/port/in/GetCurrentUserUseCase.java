@@ -4,6 +4,6 @@ import com.dochiri.userservice.application.port.in.dto.GetCurrentUserResult;
 
 public interface GetCurrentUserUseCase {
 
-    GetCurrentUserResult getCurrentUser(Long userId);
+    GetCurrentUserResult getCurrentUser(String publicId);
 
 }

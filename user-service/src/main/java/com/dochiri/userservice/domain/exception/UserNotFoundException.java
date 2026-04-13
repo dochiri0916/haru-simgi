@@ -13,4 +13,8 @@ public class UserNotFoundException extends DomainException {
         super(UserErrorCode.USER_NOT_FOUND, "userId", userId);
     }
 
+    public UserNotFoundException(String publicId) {
+        super(UserErrorCode.USER_NOT_FOUND, "publicId", publicId);
+    }
+
 }

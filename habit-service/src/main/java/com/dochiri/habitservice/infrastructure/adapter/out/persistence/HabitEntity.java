@@ -40,16 +40,22 @@ public class HabitEntity extends BaseEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private HabitColorType color;
+
     public HabitEntity(
             String publicId,
             OwnerType ownerType,
             String ownerReferenceId,
-            String name
+            String name,
+            HabitColorType color
     ) {
         this.publicId = requireNonNull(publicId);
         this.ownerType = requireNonNull(ownerType);
         this.ownerReferenceId = requireNonNull(ownerReferenceId);
         this.name = requireNonNull(name);
+        this.color = requireNonNull(color);
     }
 
     public void changeName(String name) {

@@ -43,12 +43,12 @@ public class JwtProvider {
         this.clock = requireNonNull(clock);
     }
 
-    public String generateAccessToken(Long userId, String role) {
-        return generateToken(userId, role, CATEGORY_ACCESS, jwtProperties.accessExpiration());
+    public String generateAccessToken(String publicId, String role) {
+        return generateToken(publicId, role, CATEGORY_ACCESS, jwtProperties.accessExpiration());
     }
 
-    public String generateRefreshToken(Long userId, String role) {
-        return generateRefreshToken(userId, role, UUID.randomUUID().toString());
+    public String generateRefreshToken(String publicId, String role) {
+        return generateRefreshToken(publicId, role, UUID.randomUUID().toString());
     }
 
     public Instant refreshTokenExpiresAt() {
@@ -69,7 +69,7 @@ public class JwtProvider {
         }
     }
 
-    public Long extractUserId(Claims claims) {
+    public String extractPublicId(Claims claims) {
         String subject = claims.getSubject();
 
         if (subject == null || subject.isBlank()) {
@@ -77,12 +77,7 @@ public class JwtProvider {
             throw new BadCredentialsException("JWT 토큰에 유효한 sub 클레임이 포함되어야 합니다.");
         }
 
-        try {
-            return Long.valueOf(subject);
-        } catch (NumberFormatException exception) {
-            log.warn("JWT 토큰의 sub 클레임이 숫자가 아닙니다. subject: {}", subject);
-            throw new BadCredentialsException("JWT 토큰에 유효한 sub 클레임이 포함되어야 합니다.", exception);
-        }
+        return subject;
     }
 
     public String extractRole(Claims claims) {
@@ -114,22 +109,22 @@ public class JwtProvider {
         return expiration.toInstant();
     }
 
-    String generateRefreshToken(Long userId, String role, String tokenId) {
-        return generateToken(userId, role, CATEGORY_REFRESH, jwtProperties.refreshExpiration(), tokenId);
+    String generateRefreshToken(String publicId, String role, String tokenId) {
+        return generateToken(publicId, role, CATEGORY_REFRESH, jwtProperties.refreshExpiration(), tokenId);
     }
 
-    private String generateToken(Long userId, String role, String category, long expirationMillis) {
-        return generateToken(userId, role, category, expirationMillis, null);
+    private String generateToken(String publicId, String role, String category, long expirationMillis) {
+        return generateToken(publicId, role, category, expirationMillis, null);
     }
 
-    private String generateToken(Long userId, String role, String category, long expirationMillis, String tokenId) {
-        requireNonNull(userId, "userId는 null일 수 없습니다.");
-        String normalizedRole = normalizeRole(role, userId.toString());
+    private String generateToken(String publicId, String role, String category, long expirationMillis, String tokenId) {
+        requireNonNull(publicId, "publicId는 null일 수 없습니다.");
+        String normalizedRole = normalizeRole(role, publicId);
         Instant now = Instant.now(clock);
         Instant expiration = now.plusMillis(expirationMillis);
 
         var builder = Jwts.builder()
-                .subject(userId.toString())
+                .subject(publicId)
                 .claim(CLAIM_ROLE, normalizedRole)
                 .claim(CLAIM_CATEGORY, category)
                 .issuedAt(Date.from(now))

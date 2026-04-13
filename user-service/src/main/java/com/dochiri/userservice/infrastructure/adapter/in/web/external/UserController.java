@@ -23,7 +23,7 @@ public class UserController {
         return ResponseEntity.ok(
                 CurrentUserResponse.from(
                         getCurrentUserUseCase.getCurrentUser(
-                                principal.userId()
+                                principal.publicId()
                         )
                 )
         );

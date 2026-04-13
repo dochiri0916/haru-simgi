@@ -44,7 +44,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
                 )
                 .orElseGet(() -> provisionSocialAccount(profile));
 
-        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(authAccount.userId(), authAccount.role()));
+        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(authAccount.userId(), authAccount.publicId(), authAccount.role()));
     }
 
     private AuthAccount provisionSocialAccount(KakaoUserProfileResult profile) {
@@ -55,6 +55,7 @@ public class KakaoLoginService implements KakaoLoginUseCase {
 
         return authAccountRepository.save(new AuthAccount(
                 createdUser.userId(),
+                createdUser.publicId(),
                 AuthProvider.KAKAO,
                 String.valueOf(profile.id()),
                 passwordEncoder.encode("kakao:" + profile.id() + ":" + UUID.randomUUID()),

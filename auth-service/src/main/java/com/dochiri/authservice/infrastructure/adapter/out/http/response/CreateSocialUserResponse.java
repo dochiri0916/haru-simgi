@@ -4,10 +4,11 @@ import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
 
 public record CreateSocialUserResponse(
         Long userId,
+        String publicId,
         String nickname,
         String profileImageUrl
 ) {
     public CreateSocialUserResult toResult() {
-        return new CreateSocialUserResult(userId, nickname, profileImageUrl);
+        return new CreateSocialUserResult(userId, publicId, nickname, profileImageUrl);
     }
 }

@@ -11,14 +11,14 @@ public class RefreshTokenVerifier {
         this.jwtProvider = jwtProvider;
     }
 
-    public Long verifyAndExtractUserId(String refreshToken) {
+    public String verifyAndExtractPublicId(String refreshToken) {
         Claims claims = jwtProvider.parseAndValidate(refreshToken);
 
         if (!jwtProvider.isRefreshToken(claims)) {
             throw new BadCredentialsException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        return jwtProvider.extractUserId(claims);
+        return jwtProvider.extractPublicId(claims);
     }
 
 }

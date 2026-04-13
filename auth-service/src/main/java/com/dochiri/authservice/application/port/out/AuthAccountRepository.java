@@ -11,4 +11,6 @@ public interface AuthAccountRepository {
     Optional<AuthAccount> findByProviderAndProviderUserId(String provider, String providerUserId);
 
     Optional<AuthAccount> findByUserId(Long userId);
+
+    Optional<AuthAccount> findByPublicId(String publicId);
 }

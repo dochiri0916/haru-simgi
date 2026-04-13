@@ -11,4 +11,6 @@ public interface UserRepository {
 
     User loadByUserId(Long userId);
 
+    User loadByPublicId(String publicId);
+
 }

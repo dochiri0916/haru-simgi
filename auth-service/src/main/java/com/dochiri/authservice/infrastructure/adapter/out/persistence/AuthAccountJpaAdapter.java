@@ -38,6 +38,12 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
                 .map(authAccountMapper::toDomain);
     }
 
+    @Override
+    public Optional<AuthAccount> findByPublicId(String publicId) {
+        return authAccountJpaRepository.findByPublicId(publicId)
+                .map(authAccountMapper::toDomain);
+    }
+
     private AuthAccount persist(AuthAccount authAccount) {
         AuthAccountEntity entity = authAccountJpaRepository
                 .findByProviderAndProviderUserId(authAccount.provider().name(), authAccount.providerUserId())

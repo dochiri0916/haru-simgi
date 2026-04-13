@@ -14,20 +14,23 @@ public final class Habit {
     private final HabitId id;
     private final HabitOwner owner;
     private final HabitName name;
+    private final HabitColor color;
 
-    public static Habit create(HabitOwner owner, HabitName name) {
+    public static Habit create(HabitOwner owner, HabitName name, HabitColor color) {
         return new Habit(
                 HabitId.newId(),
                 owner,
-                name
+                name,
+                color
         );
     }
 
-    public static Habit from(HabitId id, HabitOwner owner, HabitName name) {
+    public static Habit from(HabitId id, HabitOwner owner, HabitName name, HabitColor color) {
         return new Habit(
                 id,
                 owner,
-                name
+                name,
+                color
         );
     }
 
@@ -49,7 +52,8 @@ public final class Habit {
         return new Habit(
                 this.id,
                 this.owner,
-                newName
+                newName,
+                this.color
         );
     }
 

@@ -166,7 +166,7 @@ public class HabitController {
     }
 
     private String userId(JwtPrincipal principal) {
-        return String.valueOf(principal.userId());
+        return String.valueOf(principal.publicId());
     }
 
 }
