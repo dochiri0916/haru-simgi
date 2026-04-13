@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class CreateHabitRecordService implements CreateHabitRecordUseCase {
@@ -22,26 +20,29 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
     @Transactional
     @Override
     public CreateHabitRecordResult execute(CreateHabitRecordCommand command) {
-
         HabitId habitId = HabitId.of(command.habitId());
         HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
 
         Habit habit = habitRepository.loadById(habitId);
-
         habit.assertOwner(owner);
 
-        HabitRecord record = Optional.ofNullable(command.minutes())
-                .map(minutes -> habit.completeWithDuration(
-                        command.completedAt(),
-                        minutes
-                ))
-                .orElseGet(() -> habit.complete(
-                        command.completedAt()
-                ));
+        HabitCompletion completion = toCompletion(command);
 
+        HabitRecord record = habit.complete(completion);
         HabitRecord saved = habitRecordRepository.save(record);
 
         return toResult(saved);
+    }
+
+    private HabitCompletion toCompletion(CreateHabitRecordCommand command) {
+        if (command.minutes() == null) {
+            return HabitCompletion.withoutDuration(command.completedAt());
+        }
+
+        return HabitCompletion.withDuration(
+                command.completedAt(),
+                HabitDuration.of(command.minutes())
+        );
     }
 
     private CreateHabitRecordResult toResult(HabitRecord saved) {
@@ -49,9 +50,7 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
                 saved.getId().value(),
                 saved.getHabitId().value(),
                 saved.getCompletedAt(),
-                Optional.ofNullable(saved.getDuration())
-                        .map(HabitDuration::minutes)
-                        .orElse(null)
+                saved.hasDuration() ? saved.getDuration().minutes() : null
         );
     }
 

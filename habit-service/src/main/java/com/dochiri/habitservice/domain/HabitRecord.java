@@ -16,13 +16,13 @@ public final class HabitRecord {
     private final boolean completed;
     private final HabitDuration duration;
 
-    public static HabitRecord create(HabitId habitId, Instant completedAt, boolean completed, Integer minutes) {
+    public static HabitRecord create(HabitId habitId, HabitCompletion completion) {
         return new HabitRecord(
                 HabitRecordId.newId(),
                 habitId,
-                completedAt,
-                completed,
-                minutes != null ? HabitDuration.of(minutes) : null
+                completion.completedAt(),
+                true,
+                completion.duration()
         );
     }
 
@@ -34,6 +34,10 @@ public final class HabitRecord {
                 completed,
                 duration
         );
+    }
+
+    public boolean hasDuration() {
+        return duration != null;
     }
 
 }

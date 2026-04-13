@@ -5,8 +5,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
-
 @Getter
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Habit {
@@ -57,21 +55,10 @@ public final class Habit {
         );
     }
 
-    public HabitRecord complete(Instant completedAt) {
+    public HabitRecord complete(HabitCompletion completion) {
         return HabitRecord.create(
                 this.id,
-                completedAt,
-                true,
-                null
-        );
-    }
-
-    public HabitRecord completeWithDuration(Instant completedAt, int minutes) {
-        return HabitRecord.create(
-                this.id,
-                completedAt,
-                true,
-                minutes
+                completion
         );
     }
 
