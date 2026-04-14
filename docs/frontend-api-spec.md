@@ -261,13 +261,17 @@ POST /api/dev/token?userId=1&role=USER
       "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
       "name": "물 마시기",
       "color": "BLUE",
-      "colorHex": "#3B82F6"
+      "colorHex": "#3B82F6",
+      "index": 0,
+      "createdAt": "2026-04-14T00:00:00Z"
     },
     {
       "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
       "name": "러닝",
       "color": "GREEN",
-      "colorHex": "#22C55E"
+      "colorHex": "#22C55E",
+      "index": 1,
+      "createdAt": "2026-04-14T00:05:00Z"
     }
   ]
 }
@@ -297,7 +301,9 @@ POST /api/dev/token?userId=1&role=USER
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "name": "물 마시기",
   "color": "BLUE",
-  "colorHex": "#3B82F6"
+  "colorHex": "#3B82F6",
+  "index": 0,
+  "createdAt": "2026-04-14T00:00:00Z"
 }
 ```
 
@@ -314,7 +320,9 @@ POST /api/dev/token?userId=1&role=USER
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "name": "물 마시기",
   "color": "BLUE",
-  "colorHex": "#3B82F6"
+  "colorHex": "#3B82F6",
+  "index": 0,
+  "createdAt": "2026-04-14T00:00:00Z"
 }
 ```
 
@@ -339,7 +347,9 @@ POST /api/dev/token?userId=1&role=USER
   "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "name": "물 10잔 마시기",
   "color": "BLUE",
-  "colorHex": "#3B82F6"
+  "colorHex": "#3B82F6",
+  "index": 0,
+  "createdAt": "2026-04-14T00:00:00Z"
 }
 ```
 

@@ -4,9 +4,9 @@ import com.dochiri.habitservice.application.port.in.GetHabitDetailUseCase;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitDetailCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitDetailResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitId;
-import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.habit.Habit;
+import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ public class GetHabitDetailService implements GetHabitDetailUseCase {
     @Override
     public GetHabitDetailResult execute(GetHabitDetailCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
 
         Habit habit = habitRepository.loadById(habitId);
 
@@ -31,7 +31,9 @@ public class GetHabitDetailService implements GetHabitDetailUseCase {
                 habit.getId().value(),
                 habit.getName().value(),
                 habit.getColor().colorType().name(),
-                habit.getColor().getHexValue()
+                habit.getColor().getHexValue(),
+                habit.getIndex().value(),
+                habit.getCreatedAt()
         );
     }
 

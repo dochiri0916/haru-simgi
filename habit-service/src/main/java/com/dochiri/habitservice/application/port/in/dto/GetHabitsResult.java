@@ -1,5 +1,6 @@
 package com.dochiri.habitservice.application.port.in.dto;
 
+import java.time.Instant;
 import java.util.List;
 
 public record GetHabitsResult(
@@ -9,7 +10,9 @@ public record GetHabitsResult(
             String id,
             String name,
             String color,
-            String colorHex
+            String colorHex,
+            int index,
+            Instant createdAt
     ) {
     }
 }

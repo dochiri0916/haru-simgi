@@ -4,7 +4,7 @@ import java.time.Instant;
 
 public record CreateHabitRecordCommand(
         String habitId,
-        String ownerReferenceId,
+        String ownerPublicId,
         Instant completedAt,
         Integer minutes
 ) {

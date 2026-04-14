@@ -4,10 +4,10 @@ import com.dochiri.habitservice.application.port.in.GetHabitGrassUseCase;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassResult;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
-import com.dochiri.habitservice.domain.HabitDuration;
-import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.HabitRecord;
-import com.dochiri.habitservice.domain.GrassLevelPolicy;
+import com.dochiri.habitservice.domain.record.HabitDuration;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
+import com.dochiri.habitservice.domain.record.HabitRecord;
+import com.dochiri.habitservice.domain.grass.GrassLevelPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
 
         ZoneId zoneId = ZoneId.systemDefault();
 
-        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
 
         Instant fromInstant = command.fromDate()
                 .atStartOfDay(zoneId)

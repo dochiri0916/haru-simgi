@@ -5,7 +5,12 @@ import com.dochiri.habitservice.application.port.in.dto.CreateHabitRecordCommand
 import com.dochiri.habitservice.application.port.in.dto.CreateHabitRecordResult;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
-import com.dochiri.habitservice.domain.*;
+import com.dochiri.habitservice.domain.habit.Habit;
+import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
+import com.dochiri.habitservice.domain.record.HabitCompletion;
+import com.dochiri.habitservice.domain.record.HabitDuration;
+import com.dochiri.habitservice.domain.record.HabitRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +26,7 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
     @Override
     public CreateHabitRecordResult execute(CreateHabitRecordCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
 
         Habit habit = habitRepository.loadById(habitId);
         habit.assertOwner(owner);

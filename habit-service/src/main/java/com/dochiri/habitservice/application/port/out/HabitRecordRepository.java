@@ -1,9 +1,9 @@
 package com.dochiri.habitservice.application.port.out;
 
-import com.dochiri.habitservice.domain.HabitId;
-import com.dochiri.habitservice.domain.HabitRecord;
-import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.HabitRecordId;
+import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.record.HabitRecord;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
+import com.dochiri.habitservice.domain.record.HabitRecordId;
 
 import java.time.Instant;
 import java.util.List;

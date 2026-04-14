@@ -4,10 +4,10 @@ import com.dochiri.habitservice.application.port.in.UpdateHabitNameUseCase;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameCommand;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitNameResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitId;
-import com.dochiri.habitservice.domain.HabitName;
-import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.habit.Habit;
+import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.habit.HabitName;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
     @Override
     public UpdateHabitNameResult execute(UpdateHabitNameCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
         HabitName newName = HabitName.of(command.newName());
 
         Habit habit = habitRepository.loadById(habitId);
@@ -41,7 +41,9 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
                 habit.getId().value(),
                 habit.getName().value(),
                 habit.getColor().colorType().name(),
-                habit.getColor().getHexValue()
+                habit.getColor().getHexValue(),
+                habit.getIndex().value(),
+                habit.getCreatedAt()
         );
     }
 

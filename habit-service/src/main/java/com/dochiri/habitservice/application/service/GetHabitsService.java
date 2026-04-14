@@ -4,8 +4,8 @@ import com.dochiri.habitservice.application.port.in.GetHabitsUseCase;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitsCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitsResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.habit.Habit;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class GetHabitsService implements GetHabitsUseCase {
     @Override
     public GetHabitsResult execute(GetHabitsCommand command) {
 
-        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
 
         List<Habit> habits = habitRepository.findByOwner(owner);
 
@@ -39,7 +39,9 @@ public class GetHabitsService implements GetHabitsUseCase {
                 habit.getId().value(),
                 habit.getName().value(),
                 habit.getColor().colorType().name(),
-                habit.getColor().getHexValue()
+                habit.getColor().getHexValue(),
+                habit.getIndex().value(),
+                habit.getCreatedAt()
         );
     }
 

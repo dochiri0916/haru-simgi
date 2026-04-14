@@ -6,14 +6,14 @@ import java.time.ZoneOffset;
 
 public record GetHabitRecordsCommand(
         String habitId,
-        String ownerReferenceId,
+        String ownerPublicId,
         Instant fromDate,
         Instant toDate
 ) {
-    public static GetHabitRecordsCommand of(String habitId, String ownerReferenceId, LocalDate from, LocalDate to) {
+    public static GetHabitRecordsCommand of(String habitId, String ownerPublicId, LocalDate from, LocalDate to) {
         return new GetHabitRecordsCommand(
                 habitId,
-                ownerReferenceId,
+                ownerPublicId,
                 from.atStartOfDay(ZoneOffset.UTC).toInstant(),
                 to.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
         );

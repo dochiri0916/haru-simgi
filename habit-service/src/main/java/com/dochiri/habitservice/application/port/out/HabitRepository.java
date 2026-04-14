@@ -1,8 +1,9 @@
 package com.dochiri.habitservice.application.port.out;
 
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitId;
-import com.dochiri.habitservice.domain.HabitOwner;
+import com.dochiri.habitservice.domain.habit.Habit;
+import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.habit.HabitIndex;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,8 @@ public interface HabitRepository {
     Habit loadById(HabitId id);
 
     List<Habit> findByOwner(HabitOwner owner);
+
+    HabitIndex nextIndex(HabitOwner owner);
 
     void delete(HabitId id);
 

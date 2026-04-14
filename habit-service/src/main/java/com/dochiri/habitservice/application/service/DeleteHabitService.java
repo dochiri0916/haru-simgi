@@ -4,10 +4,9 @@ import com.dochiri.habitservice.application.port.in.DeleteHabitUseCase;
 import com.dochiri.habitservice.application.port.in.dto.DeleteHabitCommand;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
-import com.dochiri.habitservice.domain.Habit;
-import com.dochiri.habitservice.domain.HabitId;
-import com.dochiri.habitservice.domain.HabitOwner;
-import com.dochiri.habitservice.domain.exception.HabitNotFoundException;
+import com.dochiri.habitservice.domain.habit.Habit;
+import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +22,7 @@ public class DeleteHabitService implements DeleteHabitUseCase {
     @Override
     public void execute(DeleteHabitCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerReferenceId());
+        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
 
         Habit habit = habitRepository.loadById(habitId);
 
