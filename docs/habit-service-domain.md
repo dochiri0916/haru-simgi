@@ -62,6 +62,9 @@
 
 ### 5. 잔디 집계
 
+- 잔디 조회에서 `from`을 생략하면 사용자의 첫 습관 생성일부터 생성한다.
+- 요청한 `from`이 첫 습관 생성일보다 앞서면 첫 습관 생성일로 보정한다.
+- 습관이 하나도 없으면 `to` 날짜 하루를 기준으로 응답한다.
 - 잔디의 `value`는 해당 날짜의 완료 기록 수다.
 - 잔디의 `totalValue`는 조회 기간 내 완료 기록 수의 합이다.
 - 완료 기록 수는 사용자가 소유한 모든 습관의 완료 기록을 합산한다.
@@ -216,8 +219,6 @@ GET /api/habits/grass?from=2026-04-01&to=2026-04-30
 
 이 섹션은 구현 작업의 체크리스트다.
 
-- `CreateHabitRecordRequest`는 `int value`가 아니라 nullable `Integer minutes`를 받아야 한다.
-- `CreateHabitRecordResponse`, `GetHabitRecordsResponse`는 nullable `Integer minutes`를 반환해야 한다.
 - `GetHabitGrassService`는 duration 합계가 아니라 완료 기록 수를 날짜별로 집계해야 한다.
 - `GrassLevelPolicy`는 분 기준이 아니라 완료 기록 수 기준으로 동작해야 한다.
 - `GetHabitRecordsCommand`와 `GetHabitGrassService`는 같은 `Asia/Seoul` 날짜 경계 정책을 사용해야 한다.

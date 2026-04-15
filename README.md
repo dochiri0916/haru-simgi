@@ -4,7 +4,7 @@
 
 현재 저장소는 프론트엔드가 아니라 백엔드 중심 구조다. 외부 진입점은 `gateway`, 인증은 `auth-service`, 사용자 정보는 `user-service`, 습관과 잔디 집계는 `habit-service`가 담당한다. 여기에 `config-server`, `eureka-server`, 공통 모듈들이 붙는 전형적인 Spring Cloud 기반 MSA 구성을 학습 목적에 맞게 단순화했다.
 
-`habit-service`의 완료 기록, 선택 입력인 소요 시간, 하루 1회 완료, 잔디 집계 기준은 [Habit Service Domain Definition](docs/habit-service-domain.md)을 기준으로 한다.
+`habit-service`의 완료 기록, 선택 입력인 소요 시간, 하루 1회 완료, 잔디 집계 기준은 [Habit Service Domain Definition](docs/habit-service-domain.md)을 기준으로 한다. 클라이언트 연동용 API 계약은 [Habit Service API Spec](docs/habit-service-api-spec.md)에 정리되어 있다.
 
 ## 서비스 개요
 
