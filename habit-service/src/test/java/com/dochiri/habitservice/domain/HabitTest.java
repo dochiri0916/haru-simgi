@@ -15,7 +15,7 @@ class HabitTest {
         Habit habit = Habit.create(
                 HabitOwner.user("user-id"),
                 HabitName.of("물 마시기"),
-                HabitColor.ofDefault(),
+                HabitColor.of(ColorType.GREEN),
                 HabitIndex.of(0),
                 createdAt
         );
@@ -30,7 +30,7 @@ class HabitTest {
         Habit habit = Habit.create(
                 HabitOwner.user("user-id"),
                 HabitName.of("물 마시기"),
-                HabitColor.ofDefault(),
+                HabitColor.of(ColorType.GREEN),
                 HabitIndex.of(0),
                 Instant.parse("2026-04-14T00:00:00Z")
         );
