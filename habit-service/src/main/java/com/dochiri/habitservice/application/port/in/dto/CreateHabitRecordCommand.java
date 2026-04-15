@@ -6,6 +6,7 @@ public record CreateHabitRecordCommand(
         String habitId,
         String ownerPublicId,
         Instant completedAt,
-        Integer minutes
+        Integer minutes,
+        String memo
 ) {
 }

@@ -45,7 +45,7 @@ public class HabitEntity extends BaseEntity {
     @Column(nullable = false, length = 20)
     private ColorType color;
 
-    @Column(nullable = false)
+    @Column(name = "sort_index", nullable = false)
     private int index;
 
     public HabitEntity(

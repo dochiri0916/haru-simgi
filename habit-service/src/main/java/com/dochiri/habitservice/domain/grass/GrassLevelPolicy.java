@@ -11,15 +11,15 @@ public class GrassLevelPolicy {
             return GrassLevel.NONE;
         }
 
-        if (minutes < 30) {
+        if (minutes <= 30) {
             return GrassLevel.LOW;
         }
 
-        if (minutes < 60) {
+        if (minutes <= 60) {
             return GrassLevel.MEDIUM;
         }
 
-        if (minutes < 120) {
+        if (minutes <= 120) {
             return GrassLevel.HIGH;
         }
 

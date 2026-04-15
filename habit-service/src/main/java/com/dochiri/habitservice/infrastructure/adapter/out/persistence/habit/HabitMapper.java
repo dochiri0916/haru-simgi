@@ -40,11 +40,11 @@ public class HabitMapper {
     }
 
     private static ColorType toColorType(HabitColor habitColor) {
-        return ColorType.valueOf(habitColor.colorType().name());
+        return habitColor.colorType();
     }
 
     private static HabitColor toDomainColor(ColorType colorType) {
-        return HabitColor.of(ColorType.valueOf(colorType.name()));
+        return HabitColor.of(colorType);
     }
 
 }

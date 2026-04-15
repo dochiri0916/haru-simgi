@@ -21,7 +21,7 @@ public class DeleteHabitService implements DeleteHabitUseCase {
     @Transactional
     @Override
     public void execute(DeleteHabitCommand command) {
-        HabitId habitId = HabitId.of(command.habitId());
+        HabitId habitId = HabitId.of(command.id());
         HabitOwner owner = HabitOwner.user(command.ownerPublicId());
 
         Habit habit = habitRepository.loadById(habitId);

@@ -2,6 +2,7 @@ package com.dochiri.jpa.configuration;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.AuditorAware;
@@ -11,6 +12,7 @@ import java.util.Optional;
 
 @AutoConfiguration(afterName = "com.dochiri.security.autoconfigure.SecurityAutoConfiguration")
 @EnableJpaAuditing
+@EntityScan("com.dochiri")
 class JpaAutoConfiguration {
 
     @Bean

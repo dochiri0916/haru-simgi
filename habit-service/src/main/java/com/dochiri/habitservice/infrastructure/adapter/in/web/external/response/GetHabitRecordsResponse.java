@@ -15,13 +15,14 @@ public record GetHabitRecordsResponse(
     public record RecordItem(
             @Schema(description = "기록 ID") String id,
             @Schema(description = "완료 일시 (ISO 8601)") Instant completedAt,
-            @Schema(description = "소요 시간 (분)") int value
+            @Schema(description = "소요 시간 (분)") Integer minutes,
+            @Schema(description = "메모") String memo
     ) {
     }
 
     public static GetHabitRecordsResponse from(GetHabitRecordsResult result) {
         List<RecordItem> records = result.records().stream()
-                .map(record -> new RecordItem(record.id(), record.completedAt(), record.minutes()))
+                .map(record -> new RecordItem(record.id(), record.completedAt(), record.minutes(), record.memo()))
                 .toList();
         return new GetHabitRecordsResponse(
                 result.habitId(),

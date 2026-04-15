@@ -4,7 +4,8 @@ import com.dochiri.habitservice.application.port.in.GetHabitGrassUseCase;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassResult;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
-import com.dochiri.habitservice.domain.record.HabitDuration;
+import com.dochiri.habitservice.application.port.out.HabitRepository;
+import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.grass.GrassLevelPolicy;
@@ -21,20 +22,29 @@ import java.util.stream.Collectors;
 public class GetHabitGrassService implements GetHabitGrassUseCase {
 
     private final HabitRecordRepository habitRecordRepository;
+    private final HabitRepository habitRepository;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     @Override
     public GetHabitGrassResult execute(GetHabitGrassCommand command) {
 
-        ZoneId zoneId = ZoneId.systemDefault();
+        ZoneId zoneId = clock.getZone();
 
         HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        LocalDate today = LocalDate.now(clock);
+        LocalDate toDate = command.toDate() != null ? command.toDate() : today;
+        Optional<LocalDate> firstHabitCreatedDate = firstHabitCreatedDate(owner, zoneId);
+        LocalDate requestedFromDate = command.fromDate() != null ? command.fromDate() : firstHabitCreatedDate.orElse(toDate);
+        LocalDate fromDate = firstHabitCreatedDate
+                .filter(createdDate -> createdDate.isAfter(requestedFromDate))
+                .orElse(requestedFromDate);
 
-        Instant fromInstant = command.fromDate()
+        Instant fromInstant = fromDate
                 .atStartOfDay(zoneId)
                 .toInstant();
 
-        Instant toInstant = command.toDate()
+        Instant toInstant = toDate
                 .plusDays(1)
                 .atStartOfDay(zoneId)
                 .toInstant();
@@ -42,48 +52,57 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
         List<HabitRecord> records = habitRecordRepository
                 .findByOwnerAndCompletedAtBetween(owner, fromInstant, toInstant);
 
-        Map<LocalDate, Integer> durationByDate = records.stream()
+        Map<LocalDate, Integer> totalMinutesByDate = records.stream()
                 .collect(Collectors.groupingBy(
                         r -> r.getCompletedAt().atZone(zoneId).toLocalDate(),
-                        Collectors.summingInt(r ->
-                                Optional.ofNullable(r.getDuration())
-                                        .map(HabitDuration::minutes)
-                                        .orElse(0)
-                        )
+                        Collectors.summingInt(this::minutesOf)
                 ));
 
-        int totalMinutes = durationByDate.values()
+        int totalValue = totalMinutesByDate.values()
                 .stream()
                 .mapToInt(Integer::intValue)
                 .sum();
 
         List<GetHabitGrassResult.HabitGrassDayResult> days =
-                initializeDays(command.fromDate(), command.toDate(), durationByDate);
+                initializeDays(fromDate, toDate, totalMinutesByDate);
 
         return new GetHabitGrassResult(
-                command.fromDate(),
-                command.toDate(),
-                totalMinutes,
+                fromDate,
+                toDate,
+                totalValue,
                 days
         );
+    }
+
+    private int minutesOf(HabitRecord record) {
+        return record.hasDuration() ? record.getDuration().minutes() : 0;
+    }
+
+    private Optional<LocalDate> firstHabitCreatedDate(HabitOwner owner, ZoneId zoneId) {
+        return habitRepository.findByOwner(owner)
+                .stream()
+                .map(Habit::getCreatedAt)
+                .filter(Objects::nonNull)
+                .min(Comparator.naturalOrder())
+                .map(createdAt -> createdAt.atZone(zoneId).toLocalDate());
     }
 
     private List<GetHabitGrassResult.HabitGrassDayResult> initializeDays(
             LocalDate from,
             LocalDate to,
-            Map<LocalDate, Integer> durationByDate
+            Map<LocalDate, Integer> completionCountByDate
     ) {
         return from.datesUntil(to.plusDays(1))
                 .map(date -> {
-                    int minutes = durationByDate.getOrDefault(date, 0);
+                    int value = completionCountByDate.getOrDefault(date, 0);
 
                     int level = GrassLevelPolicy
-                            .calculate(minutes)
+                            .calculate(value)
                             .getLevel();
 
                     return new GetHabitGrassResult.HabitGrassDayResult(
                             date,
-                            minutes,
+                            value,
                             level
                     );
                 })

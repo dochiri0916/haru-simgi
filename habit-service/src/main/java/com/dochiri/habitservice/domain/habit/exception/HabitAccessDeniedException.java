@@ -8,7 +8,7 @@ public class HabitAccessDeniedException extends DomainException {
 
     public HabitAccessDeniedException(HabitId habitId, HabitOwner actualOwner, HabitOwner requestOwner) {
         super(HabitErrorCode.HABIT_ACCESS_DENIED,
-                "habitId", habitId.value(),
+                "id", habitId.value(),
                 "actualOwner", actualOwner.ownerId(),
                 "requestOwner", requestOwner.ownerId());
     }

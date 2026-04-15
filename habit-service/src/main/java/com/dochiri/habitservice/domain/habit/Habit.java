@@ -1,16 +1,13 @@
 package com.dochiri.habitservice.domain.habit;
 
-import com.dochiri.habitservice.domain.record.HabitCompletion;
-import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.habit.exception.HabitAccessDeniedException;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 
+import static java.util.Objects.requireNonNull;
+
 @Getter
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Habit {
 
     private final HabitId id;
@@ -19,6 +16,15 @@ public final class Habit {
     private final HabitColor color;
     private final HabitIndex index;
     private final Instant createdAt;
+
+    private Habit(HabitId id, HabitOwner owner, HabitName name, HabitColor color, HabitIndex index, Instant createdAt) {
+        this.id = requireNonNull(id);
+        this.owner = requireNonNull(owner);
+        this.name = requireNonNull(name);
+        this.color = requireNonNull(color);
+        this.index = requireNonNull(index);
+        this.createdAt = requireNonNull(createdAt);
+    }
 
     public static Habit create(HabitOwner owner, HabitName name, HabitColor color, HabitIndex index, Instant createdAt) {
         return new Habit(
@@ -79,13 +85,6 @@ public final class Habit {
                 this.color,
                 newIndex,
                 this.createdAt
-        );
-    }
-
-    public HabitRecord complete(HabitCompletion completion) {
-        return HabitRecord.create(
-                this.id,
-                completion
         );
     }
 

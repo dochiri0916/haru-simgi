@@ -14,6 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +27,7 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
 
     private final HabitRepository habitRepository;
     private final HabitRecordRepository habitRecordRepository;
+    private final Clock clock;
 
     @Transactional(readOnly = true)
     @Override
@@ -35,11 +40,17 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
 
         habit.assertOwner(owner);
 
+        LocalDate today = LocalDate.now(clock);
+        LocalDate fromDate = command.fromDate() != null ? command.fromDate() : today.minusMonths(1);
+        LocalDate toDate = command.toDate() != null ? command.toDate() : today;
+        Instant fromDateTime = fromDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant toDateTime = toDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+
         List<HabitRecord> records = habitRecordRepository
                 .findByHabitIdAndCompletedAtBetween(
                         habitId,
-                        command.fromDate(),
-                        command.toDate()
+                        fromDateTime,
+                        toDateTime
                 );
 
         List<GetHabitRecordsResult.RecordDto> recordDtos = records.stream()
@@ -58,7 +69,8 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
                 record.getCompletedAt(),
                 Optional.ofNullable(record.getDuration())
                         .map(HabitDuration::minutes)
-                        .orElse(null)
+                        .orElse(null),
+                record.getMemo() != null ? record.getMemo().value() : null
         );
     }
 

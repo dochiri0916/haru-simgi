@@ -4,15 +4,15 @@ import com.dochiri.habitservice.domain.record.HabitRecord;
 
 import java.time.Instant;
 
-public record CreateHabitRecordResult(
+public record UpdateHabitRecordResult(
         String id,
         String habitId,
         Instant completedAt,
         Integer minutes,
         String memo
 ) {
-    public static CreateHabitRecordResult from(HabitRecord record) {
-        return new CreateHabitRecordResult(
+    public static UpdateHabitRecordResult from(HabitRecord record) {
+        return new UpdateHabitRecordResult(
                 record.getId().value(),
                 record.getHabitId().value(),
                 record.getCompletedAt(),

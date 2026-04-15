@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +22,13 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
 
     @Override
     public HabitRecord save(HabitRecord record) {
-        HabitRecordEntity entity = HabitRecordMapper.toEntity(record);
+        HabitRecordEntity entity = habitRecordJpaRepository.findByPublicId(record.getId().value())
+                .map(existing -> {
+                    HabitRecordMapper.updateEntity(record, existing);
+                    return existing;
+                })
+                .orElseGet(() -> HabitRecordMapper.toEntity(record));
+
         HabitRecordEntity saved = habitRecordJpaRepository.save(entity);
         return HabitRecordMapper.toDomain(saved);
     }
@@ -45,6 +52,19 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     ) {
         return habitRecordJpaRepository
                 .findByHabitIdAndCompletedAt(habitId.value(), completedAt)
+                .map(HabitRecordMapper::toDomain);
+    }
+
+    @Override
+    public Optional<HabitRecord> findByHabitIdAndCompletedDate(
+            HabitId habitId,
+            LocalDate completedDate
+    ) {
+        return habitRecordJpaRepository
+                .findByHabitIdAndCompletedDate(
+                        habitId.value(),
+                        completedDate
+                )
                 .map(HabitRecordMapper::toDomain);
     }
 

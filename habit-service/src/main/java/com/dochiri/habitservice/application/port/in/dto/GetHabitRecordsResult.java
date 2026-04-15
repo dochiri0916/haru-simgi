@@ -10,7 +10,8 @@ public record GetHabitRecordsResult(
     public record RecordDto(
             String id,
             Instant completedAt,
-            Integer minutes
+            Integer minutes,
+            String memo
     ) {
     }
 }

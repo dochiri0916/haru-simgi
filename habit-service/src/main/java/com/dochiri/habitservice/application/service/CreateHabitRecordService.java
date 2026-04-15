@@ -9,18 +9,25 @@ import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 import com.dochiri.habitservice.domain.record.HabitCompletion;
-import com.dochiri.habitservice.domain.record.HabitDuration;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 @Service
 @RequiredArgsConstructor
 public class CreateHabitRecordService implements CreateHabitRecordUseCase {
 
+    private static final ZoneId DATABASE_ZONE = ZoneId.of("Asia/Seoul");
+
     private final HabitRepository habitRepository;
     private final HabitRecordRepository habitRecordRepository;
+    private final Clock clock;
 
     @Transactional
     @Override
@@ -31,32 +38,25 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
         Habit habit = habitRepository.loadById(habitId);
         habit.assertOwner(owner);
 
-        HabitCompletion completion = toCompletion(command);
+        Instant completedAt = command.completedAt() != null ? command.completedAt() : Instant.now(clock);
+        LocalDate completedDate = completedAt.atZone(DATABASE_ZONE).toLocalDate();
 
-        HabitRecord record = habit.complete(completion);
+        return habitRecordRepository.findByHabitIdAndCompletedDate(habitId, completedDate)
+                .map(CreateHabitRecordResult::from)
+                .orElseGet(() -> createRecord(command, habitId, completedAt));
+    }
+
+    private CreateHabitRecordResult createRecord(
+            CreateHabitRecordCommand command,
+            HabitId habitId,
+            Instant completedAt
+    ) {
+        HabitCompletion completion = HabitCompletion.of(completedAt, command.minutes(), command.memo());
+
+        HabitRecord record = HabitRecord.create(habitId, completion);
         HabitRecord saved = habitRecordRepository.save(record);
 
-        return toResult(saved);
-    }
-
-    private HabitCompletion toCompletion(CreateHabitRecordCommand command) {
-        if (command.minutes() == null) {
-            return HabitCompletion.withoutDuration(command.completedAt());
-        }
-
-        return HabitCompletion.withDuration(
-                command.completedAt(),
-                HabitDuration.of(command.minutes())
-        );
-    }
-
-    private CreateHabitRecordResult toResult(HabitRecord saved) {
-        return new CreateHabitRecordResult(
-                saved.getId().value(),
-                saved.getHabitId().value(),
-                saved.getCompletedAt(),
-                saved.hasDuration() ? saved.getDuration().minutes() : null
-        );
+        return CreateHabitRecordResult.from(saved);
     }
 
 }

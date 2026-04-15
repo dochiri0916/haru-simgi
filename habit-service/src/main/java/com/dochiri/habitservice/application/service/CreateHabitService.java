@@ -24,34 +24,13 @@ public class CreateHabitService implements CreateHabitUseCase {
     public CreateHabitResult execute(CreateHabitCommand command) {
         HabitOwner owner = HabitOwner.user(command.ownerPublicId());
         HabitName name = HabitName.of(command.name());
-
-        ColorType colorType = parseColorType(command.color());
-        HabitColor color = HabitColor.of(colorType);
+        HabitColor color = HabitColor.from(command.color());
         HabitIndex index = habitRepository.nextIndex(owner);
 
         Habit habit = Habit.create(owner, name, color, index, Instant.now(clock));
         Habit saved = habitRepository.save(habit);
 
-        return new CreateHabitResult(
-                saved.getId().value(),
-                saved.getName().value(),
-                saved.getColor().colorType().name(),
-                saved.getColor().colorType().getHexValue(),
-                saved.getIndex().value(),
-                saved.getCreatedAt()
-        );
-    }
-
-    private ColorType parseColorType(String colorString) {
-        if (colorString == null || colorString.isBlank()) {
-            return null;
-        }
-
-        try {
-            return ColorType.valueOf(colorString.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return CreateHabitResult.from(saved);
     }
 
 }

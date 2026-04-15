@@ -14,6 +14,7 @@ public enum HabitErrorCode implements ErrorCode {
     INVALID_HABIT_NAME(HttpStatus.BAD_REQUEST, "유효하지 않은 습관 이름입니다."),
     INVALID_HABIT_INDEX(HttpStatus.BAD_REQUEST, "유효하지 않은 습관 순서입니다."),
     INVALID_HABIT_OWNER(HttpStatus.BAD_REQUEST, "유효하지 않은 습관 소유자입니다."),
+    INVALID_HABIT_COLOR(HttpStatus.BAD_REQUEST, "유효하지 않은 습관 색상입니다."),
     HABIT_ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근할 수 없습니다.");
 
     private final HttpStatus httpStatus;

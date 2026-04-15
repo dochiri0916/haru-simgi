@@ -1,5 +1,7 @@
 package com.dochiri.habitservice.domain.habit;
 
+import com.dochiri.habitservice.domain.habit.exception.InvalidHabitColorException;
+
 public record HabitColor(
         ColorType colorType
 ) {
@@ -13,12 +15,16 @@ public record HabitColor(
         return new HabitColor(colorType);
     }
 
-    public static HabitColor ofDefault() {
-        return new HabitColor(ColorType.GREEN);
-    }
+    public static HabitColor from(String color) {
+        if (color == null || color.isBlank()) {
+            return new HabitColor(ColorType.GREEN);
+        }
 
-    public static HabitColor from(HabitColor color) {
-        return color == null ? new HabitColor(ColorType.GREEN) : color;
+        try {
+            return new HabitColor(ColorType.valueOf(color));
+        } catch (IllegalArgumentException e) {
+            throw new InvalidHabitColorException(color);
+        }
     }
 
     public String getHexValue() {

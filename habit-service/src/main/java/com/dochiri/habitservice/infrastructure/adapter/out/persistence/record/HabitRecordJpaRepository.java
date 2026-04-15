@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +14,8 @@ public interface HabitRecordJpaRepository extends JpaRepository<HabitRecordEntit
     Optional<HabitRecordEntity> findByPublicId(String publicId);
 
     Optional<HabitRecordEntity> findByHabitIdAndCompletedAt(String habitId, Instant completedAt);
+
+    Optional<HabitRecordEntity> findByHabitIdAndCompletedDate(String habitId, LocalDate completedDate);
 
     List<HabitRecordEntity> findByHabitIdAndCompletedAtBetween(String habitId, Instant fromDate, Instant toDate);
 

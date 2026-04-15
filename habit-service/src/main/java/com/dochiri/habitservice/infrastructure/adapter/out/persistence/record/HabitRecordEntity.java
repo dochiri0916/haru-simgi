@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static java.util.Objects.requireNonNull;
 
@@ -19,13 +21,15 @@ import static java.util.Objects.requireNonNull;
         uniqueConstraints = {
                 @UniqueConstraint(
                         name = "uk_habit_completion_date",
-                        columnNames = {"habit_id", "completed_at"}
+                        columnNames = {"habit_id", "completed_date"}
                 )
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class HabitRecordEntity extends BaseEntity {
+
+    private static final ZoneId DATABASE_ZONE = ZoneId.of("Asia/Seoul");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,23 +45,43 @@ public class HabitRecordEntity extends BaseEntity {
     private Instant completedAt;
 
     @Column(nullable = false)
+    private LocalDate completedDate;
+
+    @Column(nullable = false)
     private boolean completed;
 
     @Column
     private Integer durationMinutes;
+
+    @Column(length = 200)
+    private String memo;
 
     public HabitRecordEntity(
             String publicId,
             String habitId,
             Instant completedAt,
             boolean completed,
-            Integer durationMinutes
+            Integer durationMinutes,
+            String memo
     ) {
         this.publicId = requireNonNull(publicId);
         this.habitId = requireNonNull(habitId);
         this.completedAt = requireNonNull(completedAt);
+        this.completedDate = toDatabaseDate(completedAt);
         this.completed = completed;
         this.durationMinutes = durationMinutes;
+        this.memo = memo;
+    }
+
+    public void update(Instant completedAt, Integer durationMinutes, String memo) {
+        this.completedAt = requireNonNull(completedAt);
+        this.completedDate = toDatabaseDate(completedAt);
+        this.durationMinutes = durationMinutes;
+        this.memo = memo;
+    }
+
+    private static LocalDate toDatabaseDate(Instant completedAt) {
+        return completedAt.atZone(DATABASE_ZONE).toLocalDate();
     }
 
 }

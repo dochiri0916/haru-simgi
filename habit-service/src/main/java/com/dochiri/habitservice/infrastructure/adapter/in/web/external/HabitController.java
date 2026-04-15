@@ -2,12 +2,15 @@ package com.dochiri.habitservice.infrastructure.adapter.in.web.external;
 
 import com.dochiri.habitservice.application.port.in.CreateHabitRecordUseCase;
 import com.dochiri.habitservice.application.port.in.CreateHabitUseCase;
+import com.dochiri.habitservice.application.port.in.DeleteHabitRecordUseCase;
 import com.dochiri.habitservice.application.port.in.DeleteHabitUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitDetailUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitGrassUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitRecordsUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitsUseCase;
 import com.dochiri.habitservice.application.port.in.UpdateHabitNameUseCase;
+import com.dochiri.habitservice.application.port.in.UpdateHabitRecordUseCase;
+import com.dochiri.habitservice.application.port.in.dto.DeleteHabitRecordCommand;
 import com.dochiri.habitservice.application.port.in.dto.DeleteHabitCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitDetailCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
@@ -16,6 +19,7 @@ import com.dochiri.habitservice.application.port.in.dto.GetHabitsCommand;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.CreateHabitRecordRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.CreateHabitRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.UpdateHabitNameRequest;
+import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.UpdateHabitRecordRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.CreateHabitRecordResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.CreateHabitResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.GetHabitDetailResponse;
@@ -23,6 +27,7 @@ import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.GetHabitRecordsResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.GetHabitsResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitNameResponse;
+import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitRecordResponse;
 import com.dochiri.security.jwt.JwtPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -63,6 +68,8 @@ public class HabitController {
     private final UpdateHabitNameUseCase updateHabitNameUseCase;
     private final DeleteHabitUseCase deleteHabitUseCase;
     private final GetHabitRecordsUseCase getHabitRecordsUseCase;
+    private final UpdateHabitRecordUseCase updateHabitRecordUseCase;
+    private final DeleteHabitRecordUseCase deleteHabitRecordUseCase;
 
     @Operation(summary = "습관 목록 조회", description = "로그인한 사용자의 전체 습관 목록을 반환합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공",
@@ -131,10 +138,7 @@ public class HabitController {
             @Parameter(description = "조회 시작일 (ISO 8601, 예: 2024-01-01)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "조회 종료일 (ISO 8601, 예: 2024-01-31)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
-        LocalDate fromDate = from != null ? from : LocalDate.now().minusMonths(1);
-        LocalDate toDate = to != null ? to : LocalDate.now();
-
-        return ResponseEntity.ok(GetHabitRecordsResponse.from(getHabitRecordsUseCase.execute(GetHabitRecordsCommand.of(habitId, userId(principal), fromDate, toDate))));
+        return ResponseEntity.ok(GetHabitRecordsResponse.from(getHabitRecordsUseCase.execute(GetHabitRecordsCommand.of(habitId, userId(principal), from, to))));
     }
 
     @Operation(summary = "습관 완료 기록 생성", description = "특정 습관의 완료 기록을 추가합니다.")
@@ -150,7 +154,34 @@ public class HabitController {
         return ResponseEntity.ok(CreateHabitRecordResponse.from(createHabitRecordUseCase.execute(request.toCommand(habitId, userId(principal)))));
     }
 
-    @Operation(summary = "잔디 조회", description = "날짜 범위 내 습관 완료 이력을 잔디 형태로 집계합니다. 기본값: from = 18주 전, to = 오늘. 레벨 기준: 0건→0, 1건→1, 2건→2, 3~4건→3, 5건 이상→4.")
+    @Operation(summary = "습관 완료 기록 수정", description = "특정 습관의 완료 기록을 수정합니다. completedAt 또는 minutes 중 필요한 필드만 보낼 수 있습니다.")
+    @ApiResponse(responseCode = "200", description = "기록 수정 성공",
+            content = @Content(schema = @Schema(implementation = UpdateHabitRecordResponse.class)))
+    @ApiResponse(responseCode = "404", description = "습관 또는 기록을 찾을 수 없음", content = @Content)
+    @PatchMapping("/{habitId}/records/{recordId}")
+    public ResponseEntity<UpdateHabitRecordResponse> updateHabitRecord(
+            @Parameter(description = "습관 ID") @PathVariable String habitId,
+            @Parameter(description = "기록 ID") @PathVariable String recordId,
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @Valid @RequestBody UpdateHabitRecordRequest request
+    ) {
+        return ResponseEntity.ok(UpdateHabitRecordResponse.from(updateHabitRecordUseCase.execute(request.toCommand(habitId, recordId, userId(principal)))));
+    }
+
+    @Operation(summary = "습관 완료 기록 삭제", description = "특정 습관의 완료 기록을 삭제합니다.")
+    @ApiResponse(responseCode = "204", description = "기록 삭제 성공", content = @Content)
+    @ApiResponse(responseCode = "404", description = "습관 또는 기록을 찾을 수 없음", content = @Content)
+    @DeleteMapping("/{habitId}/records/{recordId}")
+    public ResponseEntity<Void> deleteHabitRecord(
+            @Parameter(description = "습관 ID") @PathVariable String habitId,
+            @Parameter(description = "기록 ID") @PathVariable String recordId,
+            @AuthenticationPrincipal JwtPrincipal principal
+    ) {
+        deleteHabitRecordUseCase.execute(new DeleteHabitRecordCommand(habitId, recordId, userId(principal)));
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "잔디 조회", description = "날짜 범위 내 습관 완료 이력을 잔디 형태로 집계합니다. 기본값: from = 첫 습관 생성일, to = 오늘. 요청 from이 첫 습관 생성일보다 앞서면 첫 습관 생성일로 보정합니다. 레벨 기준: 0건→0, 1건→1, 2건→2, 3~4건→3, 5건 이상→4.")
     @ApiResponse(responseCode = "200", description = "조회 성공",
             content = @Content(schema = @Schema(implementation = GetHabitGrassResponse.class)))
     @GetMapping("/grass")
@@ -159,10 +190,7 @@ public class HabitController {
             @Parameter(description = "조회 시작일 (ISO 8601, 예: 2024-01-01)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "조회 종료일 (ISO 8601, 예: 2024-04-12)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
-        LocalDate fromDate = from != null ? from : LocalDate.now().minusWeeks(18);
-        LocalDate toDate = to != null ? to : LocalDate.now();
-
-        return ResponseEntity.ok(GetHabitGrassResponse.from(getHabitGrassUseCase.execute(new GetHabitGrassCommand(userId(principal), fromDate, toDate))));
+        return ResponseEntity.ok(GetHabitGrassResponse.from(getHabitGrassUseCase.execute(new GetHabitGrassCommand(userId(principal), from, to))));
     }
 
     private String userId(JwtPrincipal principal) {
