@@ -1,0 +1,50 @@
+services:
+  kafka:
+    ports:
+      - "9092:9092"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  auth-mysql:
+    ports:
+      - "3307:3306"
+
+  user-mysql:
+    ports:
+      - "3308:3306"
+
+  habit-mysql:
+    ports:
+      - "3309:3306"
+
+  config-server:
+    ports:
+      - "9000:9000"
+
+  eureka-server:
+    ports:
+      - "8761:8761"
+
+  auth-service:
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+
+  user-service:
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+
+  habit-service:
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+
+  gateway:
+    ports:
+      - "8080:8080"
