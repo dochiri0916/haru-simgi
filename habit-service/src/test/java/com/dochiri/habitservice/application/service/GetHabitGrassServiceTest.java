@@ -11,8 +11,6 @@ import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitIndex;
 import com.dochiri.habitservice.domain.habit.HabitName;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
-import com.dochiri.habitservice.domain.record.HabitRecord;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -20,6 +18,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -39,22 +38,18 @@ class GetHabitGrassServiceTest {
     );
 
     @Test
-    void 잔디는_완료_기록_수가_아니라_소요_시간_합계로_레벨을_계산한다() {
+    void 잔디는_완료_기록_수로_레벨을_계산한다() {
         HabitOwner owner = HabitOwner.user("user-1");
         HabitId habitId = HabitId.newId();
         Habit habit = habit(habitId, owner);
         LocalDate date = LocalDate.parse("2026-04-15");
-        HabitRecord record = HabitRecord.create(
-                habitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T10:00:00Z"), 100, null)
-        );
 
         when(habitRepository.findByOwner(owner)).thenReturn(List.of(habit));
-        when(habitRecordRepository.findByOwnerAndCompletedAtBetween(
+        when(habitRecordRepository.countByOwnerAndCompletedDateBetween(
                 owner,
-                date.atStartOfDay(KST).toInstant(),
-                date.plusDays(1).atStartOfDay(KST).toInstant()
-        )).thenReturn(List.of(record));
+                date,
+                date
+        )).thenReturn(Map.of(date, 1));
 
         GetHabitGrassResult result = service.execute(new GetHabitGrassCommand(
                 owner.ownerId(),
@@ -62,38 +57,30 @@ class GetHabitGrassServiceTest {
                 date
         ));
 
-        assertThat(result.totalValue()).isEqualTo(100);
+        assertThat(result.totalValue()).isEqualTo(1);
         assertThat(result.days()).singleElement()
                 .satisfies(day -> {
-                    assertThat(day.value()).isEqualTo(100);
-                    assertThat(day.level()).isEqualTo(3);
+                    assertThat(day.value()).isEqualTo(1);
+                    assertThat(day.level()).isEqualTo(1);
                 });
     }
 
     @Test
-    void 같은_날_여러_습관_기록은_소요_시간을_합산해_잔디를_계산한다() {
+    void 같은_날_여러_습관_기록은_완료_기록_수를_합산해_잔디를_계산한다() {
         HabitOwner owner = HabitOwner.user("user-1");
         HabitId firstHabitId = HabitId.newId();
         HabitId secondHabitId = HabitId.newId();
         LocalDate date = LocalDate.parse("2026-04-15");
-        HabitRecord firstRecord = HabitRecord.create(
-                firstHabitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T01:00:00Z"), 30, null)
-        );
-        HabitRecord secondRecord = HabitRecord.create(
-                secondHabitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T09:00:00Z"), 40, null)
-        );
 
         when(habitRepository.findByOwner(owner)).thenReturn(List.of(
                 habit(firstHabitId, owner),
                 habit(secondHabitId, owner)
         ));
-        when(habitRecordRepository.findByOwnerAndCompletedAtBetween(
+        when(habitRecordRepository.countByOwnerAndCompletedDateBetween(
                 owner,
-                date.atStartOfDay(KST).toInstant(),
-                date.plusDays(1).atStartOfDay(KST).toInstant()
-        )).thenReturn(List.of(firstRecord, secondRecord));
+                date,
+                date
+        )).thenReturn(Map.of(date, 2));
 
         GetHabitGrassResult result = service.execute(new GetHabitGrassCommand(
                 owner.ownerId(),
@@ -101,11 +88,11 @@ class GetHabitGrassServiceTest {
                 date
         ));
 
-        assertThat(result.totalValue()).isEqualTo(70);
+        assertThat(result.totalValue()).isEqualTo(2);
         assertThat(result.days()).singleElement()
                 .satisfies(day -> {
-                    assertThat(day.value()).isEqualTo(70);
-                    assertThat(day.level()).isEqualTo(3);
+                    assertThat(day.value()).isEqualTo(2);
+                    assertThat(day.level()).isEqualTo(2);
                 });
     }
 

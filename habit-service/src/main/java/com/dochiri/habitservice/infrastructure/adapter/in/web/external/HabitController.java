@@ -8,6 +8,7 @@ import com.dochiri.habitservice.application.port.in.GetHabitDetailUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitGrassUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitRecordsUseCase;
 import com.dochiri.habitservice.application.port.in.GetHabitsUseCase;
+import com.dochiri.habitservice.application.port.in.SwapHabitIndexUseCase;
 import com.dochiri.habitservice.application.port.in.UpdateHabitNameUseCase;
 import com.dochiri.habitservice.application.port.in.UpdateHabitRecordUseCase;
 import com.dochiri.habitservice.application.port.in.dto.DeleteHabitRecordCommand;
@@ -18,6 +19,7 @@ import com.dochiri.habitservice.application.port.in.dto.GetHabitRecordsCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitsCommand;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.CreateHabitRecordRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.CreateHabitRequest;
+import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.SwapHabitIndexRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.UpdateHabitNameRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.UpdateHabitRecordRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.CreateHabitRecordResponse;
@@ -26,6 +28,7 @@ import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.GetHabitGrassResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.GetHabitRecordsResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.GetHabitsResponse;
+import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.SwapHabitIndexResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitNameResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitRecordResponse;
 import com.dochiri.security.jwt.JwtPrincipal;
@@ -66,6 +69,7 @@ public class HabitController {
     private final GetHabitsUseCase getHabitsUseCase;
     private final GetHabitDetailUseCase getHabitDetailUseCase;
     private final UpdateHabitNameUseCase updateHabitNameUseCase;
+    private final SwapHabitIndexUseCase swapHabitIndexUseCase;
     private final DeleteHabitUseCase deleteHabitUseCase;
     private final GetHabitRecordsUseCase getHabitRecordsUseCase;
     private final UpdateHabitRecordUseCase updateHabitRecordUseCase;
@@ -110,9 +114,21 @@ public class HabitController {
     public ResponseEntity<UpdateHabitNameResponse> updateHabitName(
             @Parameter(description = "습관 ID") @PathVariable String habitId,
             @AuthenticationPrincipal JwtPrincipal principal,
-            @RequestBody UpdateHabitNameRequest request
+            @Valid @RequestBody UpdateHabitNameRequest request
     ) {
         return ResponseEntity.ok(UpdateHabitNameResponse.from(updateHabitNameUseCase.execute(request.toCommand(habitId, userId(principal)))));
+    }
+
+    @Operation(summary = "습관 정렬 순서 교환", description = "두 습관의 정렬 순서를 서로 교환합니다.")
+    @ApiResponse(responseCode = "200", description = "수정 성공",
+            content = @Content(schema = @Schema(implementation = SwapHabitIndexResponse.class)))
+    @ApiResponse(responseCode = "404", description = "습관을 찾을 수 없음", content = @Content)
+    @PatchMapping("/index/swap")
+    public ResponseEntity<SwapHabitIndexResponse> swapHabitIndex(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @Valid @RequestBody SwapHabitIndexRequest request
+    ) {
+        return ResponseEntity.ok(SwapHabitIndexResponse.from(swapHabitIndexUseCase.execute(request.toCommand(userId(principal)))));
     }
 
     @Operation(summary = "습관 삭제", description = "특정 습관을 삭제합니다.")
@@ -127,7 +143,7 @@ public class HabitController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "습관 기록 조회", description = "특정 습관의 완료 기록을 기간별로 조회합니다. 기본값: from = 1개월 전, to = 오늘.")
+    @Operation(summary = "습관 기록 조회", description = "특정 습관의 완료 기록을 조회합니다. 기간을 지정하지 않으면 전체 기록을 반환합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공",
             content = @Content(schema = @Schema(implementation = GetHabitRecordsResponse.class)))
     @ApiResponse(responseCode = "404", description = "습관을 찾을 수 없음", content = @Content)

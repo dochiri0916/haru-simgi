@@ -5,21 +5,21 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class GrassLevelPolicy {
 
-    public GrassLevel calculate(int minutes) {
+    public GrassLevel calculate(int completionCount) {
 
-        if (minutes <= 0) {
+        if (completionCount <= 0) {
             return GrassLevel.NONE;
         }
 
-        if (minutes <= 30) {
+        if (completionCount == 1) {
             return GrassLevel.LOW;
         }
 
-        if (minutes <= 60) {
+        if (completionCount == 2) {
             return GrassLevel.MEDIUM;
         }
 
-        if (minutes <= 120) {
+        if (completionCount <= 4) {
             return GrassLevel.HIGH;
         }
 

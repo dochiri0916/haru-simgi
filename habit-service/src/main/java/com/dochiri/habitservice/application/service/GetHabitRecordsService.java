@@ -40,18 +40,7 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
 
         habit.assertOwner(owner);
 
-        LocalDate today = LocalDate.now(clock);
-        LocalDate fromDate = command.fromDate() != null ? command.fromDate() : today.minusMonths(1);
-        LocalDate toDate = command.toDate() != null ? command.toDate() : today;
-        Instant fromDateTime = fromDate.atStartOfDay(ZoneOffset.UTC).toInstant();
-        Instant toDateTime = toDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
-
-        List<HabitRecord> records = habitRecordRepository
-                .findByHabitIdAndCompletedAtBetween(
-                        habitId,
-                        fromDateTime,
-                        toDateTime
-                );
+        List<HabitRecord> records = findRecords(command, habitId);
 
         List<GetHabitRecordsResult.RecordDto> recordDtos = records.stream()
                 .map(this::toDto)
@@ -60,6 +49,24 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
         return new GetHabitRecordsResult(
                 habitId.value(),
                 recordDtos
+        );
+    }
+
+    private List<HabitRecord> findRecords(GetHabitRecordsCommand command, HabitId habitId) {
+        if (command.fromDate() == null && command.toDate() == null) {
+            return habitRecordRepository.findByHabitId(habitId);
+        }
+
+        LocalDate today = LocalDate.now(clock);
+        LocalDate fromDate = command.fromDate() != null ? command.fromDate() : today.minusMonths(1);
+        LocalDate toDate = command.toDate() != null ? command.toDate() : today;
+        Instant fromDateTime = fromDate.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant toDateTime = toDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+
+        return habitRecordRepository.findByHabitIdAndCompletedAtBetween(
+                habitId,
+                fromDateTime,
+                toDateTime
         );
     }
 

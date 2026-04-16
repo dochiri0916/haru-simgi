@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -43,6 +45,15 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     public HabitRecord loadById(HabitRecordId id) {
         return findById(id)
                 .orElseThrow(() -> new HabitRecordNotFoundException(id));
+    }
+
+    @Override
+    public List<HabitRecord> findByHabitId(HabitId habitId) {
+        return habitRecordJpaRepository
+                .findByHabitId(habitId.value())
+                .stream()
+                .map(HabitRecordMapper::toDomain)
+                .toList();
     }
 
     @Override
@@ -82,7 +93,7 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     }
 
     @Override
-    public List<HabitRecord> findByOwnerAndCompletedAtBetween(HabitOwner owner, Instant from, Instant to) {
+    public Map<LocalDate, Integer> countByOwnerAndCompletedDateBetween(HabitOwner owner, LocalDate from, LocalDate to) {
         return habitRecordJpaRepository
                 .findCompletionsForOwnerBetweenDates(
                         owner.type().name(),
@@ -91,8 +102,10 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
                         to
                 )
                 .stream()
-                .map(HabitRecordMapper::toDomain)
-                .toList();
+                .collect(Collectors.groupingBy(
+                        HabitRecordEntity::getCompletedDate,
+                        Collectors.summingInt(ignored -> 1)
+                ));
     }
 
     @Override

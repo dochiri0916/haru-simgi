@@ -7,7 +7,6 @@ import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.grass.GrassLevelPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,31 +38,16 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
                 .filter(createdDate -> createdDate.isAfter(requestedFromDate))
                 .orElse(requestedFromDate);
 
-        Instant fromInstant = fromDate
-                .atStartOfDay(zoneId)
-                .toInstant();
+        Map<LocalDate, Integer> completionCountByDate = habitRecordRepository
+                .countByOwnerAndCompletedDateBetween(owner, fromDate, toDate);
 
-        Instant toInstant = toDate
-                .plusDays(1)
-                .atStartOfDay(zoneId)
-                .toInstant();
-
-        List<HabitRecord> records = habitRecordRepository
-                .findByOwnerAndCompletedAtBetween(owner, fromInstant, toInstant);
-
-        Map<LocalDate, Integer> totalMinutesByDate = records.stream()
-                .collect(Collectors.groupingBy(
-                        r -> r.getCompletedAt().atZone(zoneId).toLocalDate(),
-                        Collectors.summingInt(this::minutesOf)
-                ));
-
-        int totalValue = totalMinutesByDate.values()
+        int totalValue = completionCountByDate.values()
                 .stream()
                 .mapToInt(Integer::intValue)
                 .sum();
 
         List<GetHabitGrassResult.HabitGrassDayResult> days =
-                initializeDays(fromDate, toDate, totalMinutesByDate);
+                initializeDays(fromDate, toDate, completionCountByDate);
 
         return new GetHabitGrassResult(
                 fromDate,
@@ -72,10 +55,6 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
                 totalValue,
                 days
         );
-    }
-
-    private int minutesOf(HabitRecord record) {
-        return record.hasDuration() ? record.getDuration().minutes() : 0;
     }
 
     private Optional<LocalDate> firstHabitCreatedDate(HabitOwner owner, ZoneId zoneId) {

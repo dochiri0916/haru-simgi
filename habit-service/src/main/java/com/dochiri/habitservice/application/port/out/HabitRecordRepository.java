@@ -8,6 +8,7 @@ import com.dochiri.habitservice.domain.record.HabitRecordId;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface HabitRecordRepository {
@@ -18,13 +19,15 @@ public interface HabitRecordRepository {
 
     HabitRecord loadById(HabitRecordId id);
 
+    List<HabitRecord> findByHabitId(HabitId habitId);
+
     Optional<HabitRecord> findByHabitIdAndCompletedAt(HabitId habitId, Instant completedAt);
 
     Optional<HabitRecord> findByHabitIdAndCompletedDate(HabitId habitId, LocalDate completedDate);
 
     List<HabitRecord> findByHabitIdAndCompletedAtBetween(HabitId habitId, Instant from, Instant to);
 
-    List<HabitRecord> findByOwnerAndCompletedAtBetween(HabitOwner owner, Instant from, Instant to);
+    Map<LocalDate, Integer> countByOwnerAndCompletedDateBetween(HabitOwner owner, LocalDate from, LocalDate to);
 
     void delete(HabitRecordId id);
 

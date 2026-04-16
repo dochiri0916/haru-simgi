@@ -3,7 +3,7 @@ package com.dochiri.habitservice.infrastructure.adapter.out.persistence.record;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.dochiri.habitservice.domain.habit.OwnerType.*;
@@ -19,8 +19,8 @@ public class HabitRecordRepositoryCustomImpl implements HabitRecordRepositoryCus
     public List<HabitRecordEntity> findCompletionsForOwnerBetweenDates(
             String ownerType,
             String ownerPublicId,
-            Instant fromDate,
-            Instant toDate
+            LocalDate fromDate,
+            LocalDate toDate
     ) {
         return queryFactory
                 .selectFrom(habitRecordEntity)
@@ -34,7 +34,7 @@ public class HabitRecordRepositoryCustomImpl implements HabitRecordRepositoryCus
                                                                 .and(habitEntity.ownerPublicId.eq(ownerPublicId))
                                                 )
                                 )
-                                .and(habitRecordEntity.completedAt.between(fromDate, toDate))
+                                .and(habitRecordEntity.completedDate.between(fromDate, toDate))
                 )
                 .fetch();
     }
