@@ -212,7 +212,56 @@ PATCH /api/habits/{habitId}
 }
 ```
 
-## 5. 습관 삭제
+## 5. 습관 정렬 순서 교환
+
+두 습관의 정렬 순서를 서로 교환한다. 두 습관 모두 로그인한 사용자 소유여야 한다.
+
+```http
+PATCH /api/habits/index/swap
+```
+
+### 요청
+
+```json
+{
+  "sourceHabitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "targetHabitId": "c91caa47-92cc-4f56-bc51-c7d8165d8f98"
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+| --- | --- | --- | --- |
+| `sourceHabitId` | string | Y | 정렬 순서를 바꿀 첫 번째 습관 ID |
+| `targetHabitId` | string | Y | 정렬 순서를 바꿀 두 번째 습관 ID |
+
+### 응답
+
+- Status: `200 OK`
+
+```json
+{
+  "habits": [
+    {
+      "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+      "name": "물 10잔 마시기",
+      "color": "BLUE",
+      "colorHex": "#3b82f6",
+      "index": 1,
+      "createdAt": "2026-04-14T00:00:00Z"
+    },
+    {
+      "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
+      "name": "러닝",
+      "color": "GREEN",
+      "colorHex": "#10b981",
+      "index": 0,
+      "createdAt": "2026-04-14T00:05:00Z"
+    }
+  ]
+}
+```
+
+## 6. 습관 삭제
 
 특정 습관을 삭제한다. 삭제 시 해당 습관의 기록도 함께 삭제된다.
 
@@ -225,9 +274,9 @@ DELETE /api/habits/{habitId}
 - Status: `204 No Content`
 - Body: 없음
 
-## 6. 습관 기록 목록 조회
+## 7. 습관 기록 목록 조회
 
-특정 습관의 완료 기록을 기간별로 조회한다. 본인 소유 습관만 조회할 수 있다.
+특정 습관의 완료 기록을 조회한다. 본인 소유 습관만 조회할 수 있다. 기간을 지정하지 않으면 전체 기록을 반환한다.
 
 ```http
 GET /api/habits/{habitId}/records?from=2026-04-01&to=2026-04-30
@@ -237,10 +286,10 @@ GET /api/habits/{habitId}/records?from=2026-04-01&to=2026-04-30
 
 | 이름 | 타입 | 필수 | 기본값 | 설명 |
 | --- | --- | --- | --- | --- |
-| `from` | date | N | 오늘 기준 1개월 전 | 조회 시작일, 양 끝 포함 |
-| `to` | date | N | 오늘 | 조회 종료일, 양 끝 포함 |
+| `from` | date | N | 없음 | 조회 시작일, 양 끝 포함 |
+| `to` | date | N | 없음 | 조회 종료일, 양 끝 포함 |
 
-날짜 범위는 서비스 기준 시간대의 시작/끝으로 변환해 조회한다. MVP 기준 시간대는 `Asia/Seoul`이다.
+날짜 범위를 지정하면 서비스 기준 시간대의 시작/끝으로 변환해 조회한다. MVP 기준 시간대는 `Asia/Seoul`이다.
 
 ### 응답
 
@@ -273,7 +322,7 @@ GET /api/habits/{habitId}/records?from=2026-04-01&to=2026-04-30
 | `records[].minutes` | number \| null | 선택 입력인 소요 시간. `null`이면 시간을 입력하지 않은 완료 기록 |
 | `records[].memo` | string \| null | 선택 입력인 메모. `null`이면 메모를 입력하지 않은 완료 기록 |
 
-## 7. 습관 기록 생성
+## 8. 습관 기록 생성
 
 특정 습관의 완료 기록을 생성한다. 본인 소유 습관에만 기록할 수 있다.
 
@@ -385,7 +434,7 @@ POST /api/habits/{habitId}/records
 }
 ```
 
-## 8. 습관 기록 수정
+## 9. 습관 기록 수정
 
 특정 습관의 완료 기록을 수정한다. 본인 소유 습관의 기록만 수정할 수 있다.
 
@@ -462,7 +511,7 @@ PATCH /api/habits/{habitId}/records/{recordId}
 - `minutes` 수정 여부와 관계없이 잔디 집계는 완료 기록 수 기준이다. `minutes: null`인 기록도 `value`에 1로 반영된다.
 - 같은 습관의 같은 Business Date에 다른 기록이 이미 있다면 `409 DUPLICATE_HABIT_RECORD`로 처리한다.
 
-## 9. 습관 기록 삭제
+## 10. 습관 기록 삭제
 
 특정 습관의 완료 기록을 삭제한다. 본인 소유 습관의 기록만 삭제할 수 있다.
 
@@ -490,7 +539,7 @@ DELETE /api/habits/{habitId}/records/{recordId}
 - `recordId`가 `habitId`에 속하지 않으면 `404 HABIT_RECORD_NOT_FOUND`로 처리한다.
 - 삭제 후 같은 Business Date에 다시 완료 기록을 생성할 수 있다.
 
-## 10. 잔디 조회
+## 11. 잔디 조회
 
 로그인한 사용자의 전체 습관 완료 기록을 날짜별로 집계해 잔디 데이터로 반환한다.
 
@@ -556,6 +605,7 @@ GET /api/habits/grass?from=2026-01-01&to=2026-04-11
 
 - 습관 생성 후: `GET /api/habits`, `GET /api/habits/grass` 캐시 갱신
 - 습관 이름 수정 후: `GET /api/habits`, `GET /api/habits/{habitId}` 캐시 갱신
+- 습관 정렬 순서 교환 후: `GET /api/habits`, `GET /api/habits/{sourceHabitId}`, `GET /api/habits/{targetHabitId}` 캐시 갱신
 - 습관 삭제 후: `GET /api/habits`, `GET /api/habits/grass` 캐시 갱신
 - 기록 생성 후: `GET /api/habits/{habitId}/records`, `GET /api/habits/grass` 캐시 갱신
 - 기록 수정 후: `GET /api/habits/{habitId}/records`, `GET /api/habits/grass` 캐시 갱신

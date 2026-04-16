@@ -140,6 +140,8 @@ POST /api/habits/{habitId}/records
 GET /api/habits/{habitId}/records?from=2026-04-01&to=2026-04-30
 ```
 
+`from`, `to`를 생략하면 해당 습관의 전체 완료 기록을 조회한다.
+
 응답 바디:
 
 ```json

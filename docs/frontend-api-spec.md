@@ -353,7 +353,49 @@ POST /api/dev/token?userId=1&role=USER
 }
 ```
 
-### 5. 습관 삭제
+### 5. 습관 정렬 순서 교환
+
+- Method: `PATCH`
+- Path: `/api/habits/index/swap`
+- Auth: 필요
+
+요청:
+
+```json
+{
+  "sourceHabitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+  "targetHabitId": "c91caa47-92cc-4f56-bc51-c7d8165d8f98"
+}
+```
+
+응답:
+
+```json
+{
+  "habits": [
+    {
+      "id": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
+      "name": "물 10잔 마시기",
+      "color": "BLUE",
+      "colorHex": "#3B82F6",
+      "index": 1,
+      "createdAt": "2026-04-14T00:00:00Z"
+    },
+    {
+      "id": "c91caa47-92cc-4f56-bc51-c7d8165d8f98",
+      "name": "러닝",
+      "color": "GREEN",
+      "colorHex": "#10B981",
+      "index": 0,
+      "createdAt": "2026-04-14T00:05:00Z"
+    }
+  ]
+}
+```
+
+두 습관의 `index`가 서로 교환된다.
+
+### 6. 습관 삭제
 
 - Method: `DELETE`
 - Path: `/api/habits/{habitId}`
@@ -363,7 +405,7 @@ POST /api/dev/token?userId=1&role=USER
 
 - Status: `204 No Content`
 
-### 6. 습관 기록 목록 조회
+### 7. 습관 기록 목록 조회
 
 - Method: `GET`
 - Path: `/api/habits/{habitId}/records`
@@ -371,8 +413,8 @@ POST /api/dev/token?userId=1&role=USER
 
 Query:
 
-- `from?: YYYY-MM-DD` (기본값: 오늘 기준 1개월 전)
-- `to?: YYYY-MM-DD` (기본값: 오늘)
+- `from?: YYYY-MM-DD` (생략 시 전체 조회)
+- `to?: YYYY-MM-DD` (생략 시 전체 조회)
 
 응답:
 
@@ -391,7 +433,7 @@ Query:
 
 - `minutes`: 소요 시간 (분 단위)
 
-### 7. 습관 기록 생성
+### 8. 습관 기록 생성
 
 - Method: `POST`
 - Path: `/api/habits/{habitId}/records`
@@ -417,7 +459,7 @@ Query:
 }
 ```
 
-### 8. 잔디 조회
+### 9. 잔디 조회
 
 - Method: `GET`
 - Path: `/api/habits/grass`
@@ -523,4 +565,5 @@ GET /api/habits/grass?from=2026-01-01&to=2026-04-11
 주의:
 
 - 기록 생성 후에는 `['habits', habitId, 'records']`, `['grass']` 캐시를 함께 갱신하는 쪽이 가장 안전하다
+- 습관 정렬 순서 교환 후에는 `['habits']`, `['habits', sourceHabitId]`, `['habits', targetHabitId]` 캐시를 갱신한다
 - 습관 삭제 후에는 `['habits']`, `['grass']` 캐시를 갱신한다
