@@ -9,6 +9,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static java.util.Objects.requireNonNull;
+
 public class BaseException extends ErrorResponseException {
 
     private final ErrorCode errorCode;
@@ -26,7 +28,7 @@ public class BaseException extends ErrorResponseException {
     }
 
     public BaseException(ErrorCode errorCode, Map<String, Object> properties, Throwable cause) {
-        super(requireErrorCode(errorCode).getHttpStatus(), createBody(errorCode, properties), cause);
+        super(requireErrorCode(errorCode).getHttpStatus(), createBody(errorCode, Objects.requireNonNullElse(properties, Map.of())), cause);
         this.errorCode = errorCode;
     }
 
@@ -60,7 +62,7 @@ public class BaseException extends ErrorResponseException {
     }
 
     private static ErrorCode requireErrorCode(ErrorCode errorCode) {
-        return Objects.requireNonNull(errorCode, "errorCode는 필수입니다.");
+        return requireNonNull(errorCode, "errorCode는 필수입니다.");
     }
 
     private static String toKebabCase(String name) {

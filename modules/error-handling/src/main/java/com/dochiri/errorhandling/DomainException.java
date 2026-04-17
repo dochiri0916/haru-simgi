@@ -9,7 +9,13 @@ public abstract class DomainException extends RuntimeException {
     private final Map<String, Object> properties;
 
     protected DomainException(ErrorCode errorCode) {
-        this(errorCode, Map.of());
+        this(errorCode, (Throwable) null);
+    }
+
+    protected DomainException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause);
+        this.errorCode = errorCode;
+        this.properties = Map.of();
     }
 
     protected DomainException(ErrorCode errorCode, Object... keyValues) {

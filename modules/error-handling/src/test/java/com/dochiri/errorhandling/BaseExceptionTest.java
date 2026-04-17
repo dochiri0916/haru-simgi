@@ -38,7 +38,7 @@ class BaseExceptionTest {
         assertThat(body.getStatus()).isEqualTo(400);
         assertThat(body.getDetail()).isEqualTo("테스트 에러입니다.");
         assertThat(body.getTitle()).isEqualTo("TEST_ERROR");
-        assertThat(body.getType().toString()).isEqualTo("/errors/test-error");
+        assertThat(body.getType()).hasToString("/errors/test-error");
         assertThat(body.getProperties()).containsEntry("code", "TEST_ERROR");
     }
 
@@ -66,13 +66,17 @@ class BaseExceptionTest {
 
     @Test
     void of_팩토리_메서드에_홀수_인자를_전달하면_예외가_발생한다() {
-        assertThatThrownBy(() -> BaseException.of(TestErrorCode.TEST_ERROR, "key"))
+        assertThatThrownBy(() -> {
+            throw BaseException.of(TestErrorCode.TEST_ERROR, "key");
+        })
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void ErrorCode가_null이면_NullPointerException이_발생한다() {
-        assertThatThrownBy(() -> new BaseException(null))
+        assertThatThrownBy(() -> {
+            throw new BaseException(null);
+        })
                 .isInstanceOf(NullPointerException.class);
     }
 

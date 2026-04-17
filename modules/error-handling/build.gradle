@@ -11,4 +11,6 @@ dependencies {
     compileOnly 'org.slf4j:slf4j-api'
     compileOnly 'org.springframework.security:spring-security-core'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'jakarta.servlet:jakarta.servlet-api'
+    testImplementation 'org.springframework.security:spring-security-core'
 }

@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -24,8 +25,7 @@ public class GlobalExceptionHandler {
                 e.getClass().getSimpleName(),
                 e.getErrorCode().name(),
                 request.getRequestURI(),
-                traceId,
-                e
+                traceId
         );
 
         BaseException baseException = new BaseException(e.getErrorCode(), e.getProperties(), e);
@@ -65,6 +65,23 @@ public class GlobalExceptionHandler {
         );
 
         BaseException baseException = new BaseException(CommonErrorCode.FORBIDDEN, e);
+
+        return ResponseEntity
+                .status(baseException.getStatusCode())
+                .body(baseException.getBody());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<?> handleMethodArgumentNotValid(MethodArgumentNotValidException e, HttpServletRequest request) {
+        String traceId = MDC.get("traceId");
+
+        log.warn(
+                "validation_exception uri={} traceId={}",
+                request.getRequestURI(),
+                traceId
+        );
+
+        BaseException baseException = new BaseException(CommonErrorCode.INVALID_INPUT, e);
 
         return ResponseEntity
                 .status(baseException.getStatusCode())
