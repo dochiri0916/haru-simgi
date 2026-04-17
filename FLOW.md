@@ -2,6 +2,39 @@
 
 이 문서는 `haru-simgi`의 목표 배포 흐름을 정리한다. 전체 방향은 `develop` 브랜치에 푸시하면 홈서버 Kubernetes에 자동 배포해 검증하고, 검증된 변경을 `main`에 반영하면 Jenkins 승인 버튼을 거쳐 AWS EC2에 `docker-compose`로 배포하는 구조다.
 
+## 포트폴리오 목적과 비용 전략
+
+이 배포 구조의 1차 목적은 상용 대규모 운영 최적화보다 취업용 포트폴리오에서 백엔드와 인프라 경험을 명확하게 보여주는 것이다. 따라서 CI/CD, Docker, Kubernetes, GitOps, Redis, Kafka, AWS 배포 경험이 실제 흐름 안에 드러나도록 구성한다.
+
+포트폴리오에서 보여줄 핵심 경험은 다음과 같다.
+
+```text
+Jenkins 기반 CI/CD
+Docker image build/push
+Docker Compose 운영 배포
+Kubernetes 배포
+Argo CD 기반 GitOps
+Redis 사용
+Kafka 기반 이벤트 처리
+AWS EC2 배포
+```
+
+동시에 AWS 비용은 최소화한다. AWS EC2는 프리티어로 운용 가능한 `t3.micro`를 사용하고, Kubernetes와 Kafka를 포함한 무거운 검증 환경은 홈서버에서 담당한다.
+
+```text
+home server
+  -> Kubernetes, Argo CD, Redis, Kafka, MSA 검증 환경
+  -> develop 브랜치 기준 자동 배포
+  -> 기술 경험 증명 목적
+
+AWS EC2 t3.micro
+  -> Docker Compose 기반 최종 공개 배포 환경
+  -> main 브랜치 기준 승인 후 배포
+  -> 비용 최소화와 포트폴리오 공개 URL 제공 목적
+```
+
+즉, 홈서버는 기술 경험을 보여주는 DevOps 검증 환경이고, AWS EC2는 비용을 통제하면서 외부에서 접근 가능한 최종 배포 환경이다.
+
 ## 목표 구조
 
 ```text
@@ -19,7 +52,7 @@ local
   -> AWS EC2 docker-compose deploy
 ```
 
-홈서버는 `develop` 브랜치 기준의 Kubernetes/Argo CD 검증 환경으로 사용한다. AWS EC2는 `main` 브랜치 기준의 최종 배포 환경으로 사용한다. EC2는 `t3.micro` 기준으로 Kubernetes를 올리기에는 리소스가 부족하므로 `docker-compose`로 단순하게 유지한다.
+홈서버는 `develop` 브랜치 기준의 Kubernetes/Argo CD 검증 환경으로 사용한다. AWS EC2는 `main` 브랜치 기준의 최종 배포 환경으로 사용한다. EC2는 `t3.micro` 기준으로 Kubernetes, Kafka, 다수의 Spring Boot 서비스, 다수의 DB를 모두 안정적으로 운영하기에는 리소스가 제한적이므로 `docker-compose`로 단순하게 유지한다.
 
 ## 환경별 책임
 
@@ -28,9 +61,9 @@ local
 | local | 코드 작성, 커밋, Git push | Git |
 | Jenkins | 테스트, 이미지 빌드, 이미지 푸시, manifest 업데이트, 승인 게이트, EC2 배포 실행 | Pipeline |
 | Docker Registry | 서비스별 Docker 이미지 저장 | Docker Hub 또는 GHCR |
-| home server | Kubernetes 기반 사전 배포 및 검증 | k3s + Argo CD |
+| home server | Kubernetes, Argo CD, Redis, Kafka 기반 사전 배포 및 기술 검증 | k3s + Argo CD |
 | k8s manifest repo | 홈서버 Kubernetes 배포 선언 저장 | GitOps |
-| AWS EC2 `t3.micro` | 최종 compose 배포 환경 | Docker Compose |
+| AWS EC2 `t3.micro` | 비용 최소화된 최종 공개 배포 환경 | Docker Compose |
 
 ## 브랜치 전략
 
@@ -155,6 +188,8 @@ k8s manifest repo
 
 홈서버는 최종 운영 환경이라기보다 EC2 배포 전 검증 환경이다. 따라서 여기서는 배포 성공 여부, 서비스 기동 여부, Gateway 라우팅, 인증/습관 API의 기본 동작을 확인한다.
 
+포트폴리오 관점에서는 홈서버가 Kubernetes, Argo CD, Redis, Kafka를 실제로 묶어 운영해 본 경험을 보여주는 핵심 환경이다. AWS 프리티어 EC2에 모든 인프라를 무리하게 올리기보다, 홈서버에서 무거운 DevOps 검증을 수행하고 EC2는 공개 배포 환경으로 가볍게 유지한다.
+
 ### 5. 검증
 
 Argo CD 배포가 끝난 뒤 Jenkins는 홈서버 배포 결과를 확인한다.
@@ -233,7 +268,7 @@ Jenkins
   -> docker image prune
 ```
 
-EC2는 `t3.micro` 기준으로 운영하므로 Kubernetes 대신 Docker Compose를 사용한다.
+EC2는 `t3.micro` 기준으로 운영하므로 Kubernetes 대신 Docker Compose를 사용한다. 이 환경은 대규모 트래픽이나 고가용성 운영을 목표로 하지 않고, AWS 배포 경험과 외부 접근 가능한 포트폴리오 URL 제공을 목표로 한다.
 
 ```text
 AWS EC2 t3.micro
@@ -243,6 +278,21 @@ AWS EC2 t3.micro
   - docker-compose.prod.yml
   - .env
 ```
+
+EC2 운영 구성은 비용 최소화가 우선이다. Kafka, Kubernetes, Argo CD 같은 무거운 구성은 홈서버 검증 환경에서 경험을 증명하고, EC2에는 main 브랜치 기준의 애플리케이션을 Compose로 배포한다.
+
+필요하면 EC2에서는 아래처럼 최소 운영 구성을 우선한다.
+
+```text
+gateway
+auth-service
+user-service
+habit-service
+redis
+mysql
+```
+
+Kafka 기반 이벤트 처리 경험은 홈서버 Kubernetes 환경에서 검증한다. EC2에서 Kafka까지 실행해야 하는 경우에는 `t3.micro` 리소스 제약을 고려해 JVM 메모리 제한, swap, 컨테이너 메모리 제한을 함께 적용한다.
 
 배포 스크립트 예시:
 
@@ -384,3 +434,5 @@ stage('Deploy EC2') {
 ```
 
 핵심은 `develop`은 홈서버 Kubernetes 검증 환경으로 자동 배포하고, `main`은 EC2 `t3.micro` Docker Compose 운영 환경으로 승인 후 배포하는 것이다.
+
+이 구조에서는 Jenkins가 CI/CD를 담당하고, 홈서버가 Kubernetes, Argo CD, Redis, Kafka를 포함한 기술 경험 증명 환경이 되며, AWS EC2는 비용을 최소화하면서 외부 공개 배포를 담당한다. 따라서 포트폴리오에서는 단순히 서비스를 배포했다는 점뿐 아니라, 비용 제약을 고려해 환경별 책임을 분리하고 현실적인 배포 전략을 설계했다는 점을 함께 보여줄 수 있다.
