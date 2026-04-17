@@ -20,13 +20,15 @@ public abstract class BaseEntity {
     private Instant createdAt;
 
     @LastModifiedDate
+    @Column(nullable = false)
     private Instant updatedAt;
 
     @CreatedBy
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, length = 36)
     private String createdBy;
 
     @LastModifiedBy
+    @Column(nullable = false, length = 36)
     private String updatedBy;
 
     public Instant getCreatedAt() {
