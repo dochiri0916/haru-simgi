@@ -22,3 +22,11 @@ jwt:
   secret: ${JWT_SECRET}
   access-expiration: ${JWT_ACCESS_EXPIRATION:1800000}
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
+
+auth:
+  session:
+    redis:
+      key-prefix:
+        session: ${AUTH_SESSION_REDIS_SESSION_KEY_PREFIX:auth:session:}
+        refresh: ${AUTH_SESSION_REDIS_REFRESH_KEY_PREFIX:auth:refresh:}
+        user-sessions: ${AUTH_SESSION_REDIS_USER_SESSIONS_KEY_PREFIX:auth:user-sessions:}

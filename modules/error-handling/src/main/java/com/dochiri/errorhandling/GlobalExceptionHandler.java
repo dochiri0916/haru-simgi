@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -50,6 +51,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(e.getStatusCode())
                 .body(e.getBody());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException e, HttpServletRequest request) {
+        String traceId = MDC.get("traceId");
+
+        log.warn(
+                "access_denied_exception uri={} traceId={}",
+                request.getRequestURI(),
+                traceId,
+                e
+        );
+
+        BaseException baseException = new BaseException(CommonErrorCode.FORBIDDEN, e);
+
+        return ResponseEntity
+                .status(baseException.getStatusCode())
+                .body(baseException.getBody());
     }
 
     @ExceptionHandler(Exception.class)

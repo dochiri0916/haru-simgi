@@ -199,6 +199,10 @@ services:
         condition: service_started
       user-service:
         condition: service_started
+      redis:
+        condition: service_healthy
     environment:
       SERVER_PORT: 8080
       EUREKA_DEFAULT_ZONE: http://${EUREKA_SERVER_USERNAME:-adbin}:${EUREKA_SERVER_PASSWORD:-adbin}@eureka-server:8761/eureka/
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379

@@ -4,7 +4,7 @@ import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.in.ChangeUserRoleUseCase;
 import com.dochiri.authservice.application.port.in.dto.ChangeUserRoleCommand;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
-import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
+import com.dochiri.authservice.application.port.out.AuthSessionRepository;
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.errorhandling.BaseException;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChangeUserRoleService implements ChangeUserRoleUseCase {
 
     private final AuthAccountRepository authAccountRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final AuthSessionRepository authSessionRepository;
 
     @Transactional
     @Override
@@ -32,7 +32,7 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
                 command.role()
         ));
 
-        refreshTokenRepository.deleteByUserId(command.userId());
+        authSessionRepository.deleteByUserId(command.userId());
     }
 
 }

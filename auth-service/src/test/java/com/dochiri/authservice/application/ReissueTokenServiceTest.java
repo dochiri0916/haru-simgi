@@ -1,16 +1,18 @@
 package com.dochiri.authservice.application;
 
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
+import com.dochiri.authservice.application.port.out.AuthSessionRepository;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
-import com.dochiri.authservice.application.port.out.RefreshTokenRepository;
+import com.dochiri.authservice.application.port.out.TokenParsePort;
+import com.dochiri.authservice.application.port.in.AuthTokenIssueUseCase;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenCommand;
+import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
+import com.dochiri.authservice.application.port.out.dto.ParseRefreshTokenResult;
 import com.dochiri.authservice.application.service.ReissueTokenService;
 import com.dochiri.authservice.domain.AuthAccount;
 import com.dochiri.authservice.domain.AuthProvider;
-import com.dochiri.authservice.domain.RefreshToken;
+import com.dochiri.authservice.domain.AuthSession;
 import com.dochiri.errorhandling.BaseException;
-import com.dochiri.security.jwt.JwtProvider;
-import com.dochiri.security.jwt.JwtTokenGenerator;
-import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,49 +28,63 @@ import static org.mockito.Mockito.*;
 class ReissueTokenServiceTest {
 
     private final AuthAccountRepository authAccountRepository = mock(AuthAccountRepository.class);
-    private final RefreshTokenRepository refreshTokenRepository = mock(RefreshTokenRepository.class);
-    private final JwtProvider jwtProvider = new JwtProvider(new JwtProperties(
-            "12345678901234567890123456789012",
-            1_800_000L,
-            1_209_600_000L
-    ));
-    private final JwtTokenGenerator jwtTokenGenerator = new JwtTokenGenerator(jwtProvider);
+    private final AuthSessionRepository authSessionRepository = mock(AuthSessionRepository.class);
+    private final TokenParsePort tokenParsePort = mock(TokenParsePort.class);
+    private final AuthTokenIssueUseCase authTokenIssueUseCase = mock(AuthTokenIssueUseCase.class);
 
     private ReissueTokenService reissueTokenService;
 
     @BeforeEach
     void setUp() {
-        reissueTokenService = new ReissueTokenService(jwtProvider, jwtTokenGenerator, authAccountRepository, refreshTokenRepository);
+        reissueTokenService = new ReissueTokenService(
+                tokenParsePort,
+                authTokenIssueUseCase,
+                authAccountRepository,
+                authSessionRepository
+        );
     }
 
     @Test
     void 저장된_리프레시_토큰이면_토큰을_재발급한다() {
-        String refreshToken = jwtProvider.generateRefreshToken(1L, "USER");
-        var claims = jwtProvider.parseAndValidate(refreshToken);
-        String tokenId = jwtProvider.extractTokenId(claims);
+        String refreshToken = "refresh-token";
+        String tokenId = "session-id";
 
-        when(refreshTokenRepository.findByTokenId(tokenId))
-                .thenReturn(Optional.of(RefreshToken.create(tokenId, 1L, Instant.now().plusSeconds(60))));
-        when(authAccountRepository.findByUserId(1L))
-                .thenReturn(Optional.of(new AuthAccount(1L, AuthProvider.KAKAO, "100", "password-hash", UserRole.USER)));
-        when(refreshTokenRepository.replaceByUserId(any(RefreshToken.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(tokenParsePort.parseRefreshToken(refreshToken))
+                .thenReturn(new ParseRefreshTokenResult("public-id-1", tokenId));
+        when(authSessionRepository.findByRefreshTokenId(tokenId))
+                .thenReturn(Optional.of(AuthSession.create(
+                        tokenId,
+                        1L,
+                        "public-id-1",
+                        UserRole.USER,
+                        Instant.now().plusSeconds(60)
+                )));
+        when(authAccountRepository.findByPublicId("public-id-1"))
+                .thenReturn(Optional.of(new AuthAccount(1L, "public-id-1", AuthProvider.KAKAO, "100", UserRole.USER)));
+        when(authTokenIssueUseCase.issue(any(IssueAuthTokenCommand.class)))
+                .thenReturn(new IssueAuthTokenResult(
+                        "new-access-token",
+                        "new-refresh-token",
+                        Instant.now().plusSeconds(60),
+                        UserRole.USER
+                ));
 
         var result = reissueTokenService.reissue(new RefreshTokenCommand(refreshToken));
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
         assertThat(result.role()).isEqualTo(UserRole.USER);
-        verify(refreshTokenRepository).replaceByUserId(any(RefreshToken.class));
+        verify(authTokenIssueUseCase).issue(any(IssueAuthTokenCommand.class));
     }
 
     @Test
     void 저장되지_않은_리프레시_토큰이면_예외가_발생한다() {
-        String refreshToken = jwtProvider.generateRefreshToken(1L, "USER");
-        var claims = jwtProvider.parseAndValidate(refreshToken);
-        String tokenId = jwtProvider.extractTokenId(claims);
+        String refreshToken = "refresh-token";
+        String tokenId = "session-id";
 
-        when(refreshTokenRepository.findByTokenId(tokenId)).thenReturn(Optional.empty());
+        when(tokenParsePort.parseRefreshToken(refreshToken))
+                .thenReturn(new ParseRefreshTokenResult("public-id-1", tokenId));
+        when(authSessionRepository.findByRefreshTokenId(tokenId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> reissueTokenService.reissue(new RefreshTokenCommand(refreshToken)))
                 .isInstanceOf(BaseException.class);

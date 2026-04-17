@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: gateway
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
   cloud:
     gateway:
       httpclient:
@@ -72,6 +76,14 @@ jwt:
   secret: ${JWT_SECRET:12345678901234567890123456789012}
   cookie:
     access-token-name: ${JWT_COOKIE_ACCESS_TOKEN_NAME:access_token}
+
+auth:
+  session:
+    redis:
+      key-prefix:
+        session: ${AUTH_SESSION_REDIS_SESSION_KEY_PREFIX:auth:session:}
+        refresh: ${AUTH_SESSION_REDIS_REFRESH_KEY_PREFIX:auth:refresh:}
+        user-sessions: ${AUTH_SESSION_REDIS_USER_SESSIONS_KEY_PREFIX:auth:user-sessions:}
 
 springdoc:
   swagger-ui:

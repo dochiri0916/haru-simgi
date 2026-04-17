@@ -1,6 +1,7 @@
 package com.dochiri.security.jwt;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class JwtTokenGenerator {
 
@@ -11,8 +12,9 @@ public class JwtTokenGenerator {
     }
 
     public JwtTokenResult generateToken(String publicId, String role) {
-        String accessToken = jwtProvider.generateAccessToken(publicId, role);
-        String refreshToken = jwtProvider.generateRefreshToken(publicId, role);
+        String sessionId = UUID.randomUUID().toString();
+        String accessToken = jwtProvider.generateAccessToken(publicId, role, sessionId);
+        String refreshToken = jwtProvider.generateRefreshToken(publicId, role, sessionId);
         Instant refreshExpiresAt = jwtProvider.extractExpiration(jwtProvider.parseAndValidate(refreshToken));
 
         return new JwtTokenResult(accessToken, refreshToken, refreshExpiresAt);

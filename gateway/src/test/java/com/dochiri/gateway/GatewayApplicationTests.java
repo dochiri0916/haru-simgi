@@ -43,7 +43,7 @@ class GatewayApplicationTests {
 
         // then
         assertThat(routeIds)
-                .contains("auth-service", "auth-admin-service", "user-service", "task-service");
+                .contains("auth-service", "auth-admin-service", "user-service", "habit-service");
     }
 
     @Test

@@ -1,4 +1,5 @@
 dependencies {
+    implementation project(':modules:redis')
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
     implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:3.0.0'
     implementation 'io.netty:netty-resolver-dns-native-macos:4.1.109.Final:osx-aarch_64'

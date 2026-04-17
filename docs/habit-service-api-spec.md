@@ -22,6 +22,15 @@
 - `fetch`: `credentials: 'include'`
 - `axios`: `withCredentials: true`
 
+Gateway는 보호 API 요청마다 JWT 서명/만료와 Redis 인증 세션 존재 여부를 함께 검증한다. 따라서 서버에서 로그아웃, 권한 변경, 세션 만료 등으로 Redis 세션이 삭제되면 아직 만료되지 않은 `accessToken`도 더 이상 사용할 수 없다.
+
+클라이언트 인증 처리 기준:
+
+- `/api/habits/**` 요청에는 `access_token` 쿠키 또는 `Authorization: Bearer <accessToken>`만 사용한다.
+- `refresh_token`은 `/api/auth/refresh`, `/api/auth/logout`에만 사용한다. `refresh_token`을 Habit API의 Bearer 토큰으로 보내면 `401 UNAUTHORIZED`가 반환된다.
+- Habit API에서 `401 UNAUTHORIZED`를 받으면 `/api/auth/refresh`로 토큰을 재발급한 뒤 원 요청을 한 번 재시도한다.
+- refresh도 실패하면 클라이언트 인증 상태를 초기화하고 로그인 화면으로 이동한다.
+
 ## 공통 응답 규칙
 
 - 날짜: `YYYY-MM-DD`

@@ -47,6 +47,10 @@ public class JwtProvider {
         return generateToken(publicId, role, CATEGORY_ACCESS, jwtProperties.accessExpiration());
     }
 
+    public String generateAccessToken(String publicId, String role, String tokenId) {
+        return generateToken(publicId, role, CATEGORY_ACCESS, jwtProperties.accessExpiration(), tokenId);
+    }
+
     public String generateRefreshToken(String publicId, String role) {
         return generateRefreshToken(publicId, role, UUID.randomUUID().toString());
     }
