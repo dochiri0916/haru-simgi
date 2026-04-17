@@ -5,6 +5,7 @@ import com.dochiri.habitservice.application.port.in.dto.GetHabitRecordsCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitRecordsResult;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
+import com.dochiri.habitservice.domain.grass.GrassLevelPolicy;
 import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
@@ -41,7 +42,6 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
         habit.assertOwner(owner);
 
         List<HabitRecord> records = findRecords(command, habitId);
-
         List<GetHabitRecordsResult.RecordDto> recordDtos = records.stream()
                 .map(this::toDto)
                 .toList();
@@ -71,14 +71,25 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
     }
 
     private GetHabitRecordsResult.RecordDto toDto(HabitRecord record) {
+        Integer minutes = minutesOf(record);
+
         return new GetHabitRecordsResult.RecordDto(
                 record.getId().value(),
                 record.getCompletedAt(),
-                Optional.ofNullable(record.getDuration())
-                        .map(HabitDuration::minutes)
-                        .orElse(null),
+                minutes != null ? minutes : 0,
+                calculateLevel(minutes),
                 record.getMemo() != null ? record.getMemo().value() : null
         );
+    }
+
+    private Integer minutesOf(HabitRecord record) {
+        return Optional.ofNullable(record.getDuration())
+                .map(HabitDuration::minutes)
+                .orElse(null);
+    }
+
+    private int calculateLevel(Integer minutes) {
+        return Math.max(1, GrassLevelPolicy.calculate(minutes != null ? minutes : 0).getLevel());
     }
 
 }

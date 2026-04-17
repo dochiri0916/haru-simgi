@@ -68,6 +68,9 @@ class GetHabitRecordsServiceTest {
         assertThat(result.records())
                 .extracting(GetHabitRecordsResult.RecordDto::id)
                 .containsExactly(oldRecord.getId().value(), recentRecord.getId().value());
+        assertThat(result.records())
+                .extracting(GetHabitRecordsResult.RecordDto::level)
+                .containsExactly(1, 1);
         verify(habitRecordRepository).findByHabitId(habitId);
         verify(habitRecordRepository, never()).findByHabitIdAndCompletedAtBetween(
                 habitId,
@@ -103,8 +106,44 @@ class GetHabitRecordsServiceTest {
         ));
 
         assertThat(result.records()).singleElement()
-                .satisfies(recordDto -> assertThat(recordDto.id()).isEqualTo(record.getId().value()));
+                .satisfies(recordDto -> {
+                    assertThat(recordDto.id()).isEqualTo(record.getId().value());
+                    assertThat(recordDto.level()).isEqualTo(1);
+                });
         verify(habitRecordRepository, never()).findByHabitId(habitId);
+    }
+
+    @Test
+    void 소요_시간이_없는_완료_기록은_0분_level_1로_계산한다() {
+        HabitId habitId = HabitId.newId();
+        HabitOwner owner = HabitOwner.user("user-1");
+        Habit habit = habit(habitId, owner);
+        HabitRecord recordWithMinutes = HabitRecord.create(
+                habitId,
+                HabitCompletion.of(Instant.parse("2026-04-14T00:00:00Z"), 15, null)
+        );
+        HabitRecord recordWithoutMinutes = HabitRecord.create(
+                habitId,
+                HabitCompletion.of(Instant.parse("2026-04-15T00:00:00Z"), null, null)
+        );
+
+        when(habitRepository.loadById(habitId)).thenReturn(habit);
+        when(habitRecordRepository.findByHabitId(habitId))
+                .thenReturn(List.of(recordWithMinutes, recordWithoutMinutes));
+
+        GetHabitRecordsResult result = service.execute(GetHabitRecordsCommand.of(
+                habitId.value(),
+                owner.ownerId(),
+                null,
+                null
+        ));
+
+        assertThat(result.records())
+                .extracting(GetHabitRecordsResult.RecordDto::level)
+                .containsExactly(1, 1);
+        assertThat(result.records())
+                .extracting(GetHabitRecordsResult.RecordDto::minutes)
+                .containsExactly(15, 0);
     }
 
     private Habit habit(HabitId habitId, HabitOwner owner) {

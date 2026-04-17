@@ -27,7 +27,11 @@ public interface HabitRecordRepository {
 
     List<HabitRecord> findByHabitIdAndCompletedAtBetween(HabitId habitId, Instant from, Instant to);
 
-    Map<LocalDate, Integer> countByOwnerAndCompletedDateBetween(HabitOwner owner, LocalDate from, LocalDate to);
+    Map<LocalDate, HabitGrassAggregation> aggregateGrassByOwnerAndCompletedDateBetween(
+            HabitOwner owner,
+            LocalDate from,
+            LocalDate to
+    );
 
     void delete(HabitRecordId id);
 

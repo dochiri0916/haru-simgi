@@ -312,12 +312,14 @@ GET /api/habits/{habitId}/records?from=2026-04-01&to=2026-04-30
       "id": "a1b2c3d4-0000-0000-0000-000000000000",
       "completedAt": "2026-04-10T09:00:00Z",
       "minutes": 30,
+      "level": 1,
       "memo": "클린 아키텍처"
     },
     {
       "id": "b2c3d4e5-0000-0000-0000-000000000000",
       "completedAt": "2026-04-11T09:00:00Z",
-      "minutes": null,
+      "minutes": 0,
+      "level": 1,
       "memo": null
     }
   ]
@@ -326,9 +328,11 @@ GET /api/habits/{habitId}/records?from=2026-04-01&to=2026-04-30
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
+| `habitId` | string | 습관 ID |
 | `records[].id` | string | 기록 ID |
 | `records[].completedAt` | instant | 완료 시각 |
-| `records[].minutes` | number \| null | 선택 입력인 소요 시간. `null`이면 시간을 입력하지 않은 완료 기록 |
+| `records[].minutes` | number | 소요 시간. 입력하지 않은 완료 기록은 `0` |
+| `records[].level` | number | 기록의 `minutes` 기준 레벨, `1~4`. 완료 기록은 최소 `1` |
 | `records[].memo` | string \| null | 선택 입력인 메모. `null`이면 메모를 입력하지 않은 완료 기록 |
 
 ## 8. 습관 기록 생성
@@ -362,7 +366,7 @@ POST /api/habits/{habitId}/records
 | 필드 | 타입 | 필수 | 설명 |
 | --- | --- | --- | --- |
 | `completedAt` | instant | N | 완료 시각. 생략 시 서버 현재 시각 사용 |
-| `minutes` | number | N | 선택 입력인 소요 시간. 생략하면 `null`, 입력 시 `0 <= minutes <= 1440` |
+| `minutes` | number | N | 선택 입력인 소요 시간. 생략하면 소요 시간 없음, 입력 시 `0 <= minutes <= 1440` |
 | `memo` | string | N | 선택 입력인 메모. 생략하면 `null`, 최대 200자 |
 
 요청 바디별 의미는 아래와 같다.
@@ -386,18 +390,20 @@ POST /api/habits/{habitId}/records
   "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "completedAt": "2026-04-10T09:00:00Z",
   "minutes": 30,
+  "level": 1,
   "memo": "클린 아키텍처"
 }
 ```
 
-완료만 체크한 기록은 `minutes`, `memo`가 `null`로 반환된다. 이 기록도 잔디 집계에서는 완료 1건으로 계산된다.
+완료만 체크한 기록은 `minutes: 0`, `level: 1`, `memo: null`로 반환된다. 이 기록은 잔디 집계에서는 0분으로 계산되지만, 완료 기록이 있으므로 잔디 `level`은 최소 1이다.
 
 ```json
 {
   "id": "a1b2c3d4-0000-0000-0000-000000000000",
   "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "completedAt": "2026-04-10T09:00:00Z",
-  "minutes": null,
+  "minutes": 0,
+  "level": 1,
   "memo": null
 }
 ```
@@ -497,18 +503,20 @@ PATCH /api/habits/{habitId}/records/{recordId}
   "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "completedAt": "2026-04-10T10:00:00Z",
   "minutes": 45,
+  "level": 2,
   "memo": "리팩터링"
 }
 ```
 
-소요 시간, 메모가 없는 기록은 각각 `null`로 반환된다.
+소요 시간이 없는 기록은 `minutes: 0`, `level: 1`로 반환되고, 메모가 없는 기록은 `memo: null`로 반환된다.
 
 ```json
 {
   "id": "a1b2c3d4-0000-0000-0000-000000000000",
   "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "completedAt": "2026-04-10T10:00:00Z",
-  "minutes": null,
+  "minutes": 0,
+  "level": 1,
   "memo": null
 }
 ```
@@ -517,7 +525,7 @@ PATCH /api/habits/{habitId}/records/{recordId}
 
 - `recordId`가 `habitId`에 속하지 않으면 `404 HABIT_RECORD_NOT_FOUND`로 처리한다.
 - `completedAt`을 수정하면 해당 완료 기록의 Business Date도 바뀔 수 있다.
-- `minutes` 수정 여부와 관계없이 잔디 집계는 완료 기록 수 기준이다. `minutes: null`인 기록도 `value`에 1로 반영된다.
+- `minutes`를 수정하면 잔디 집계의 해당 날짜 소요 시간 합계가 바뀔 수 있다. `minutes: null`인 기록은 `value`에 0으로 반영되지만, 완료 기록이 있으므로 `level`은 최소 1이다.
 - 같은 습관의 같은 Business Date에 다른 기록이 이미 있다면 `409 DUPLICATE_HABIT_RECORD`로 처리한다.
 
 ## 10. 습관 기록 삭제
@@ -593,22 +601,23 @@ GET /api/habits/grass?from=2026-01-01&to=2026-04-11
 | --- | --- | --- |
 | `fromDate` | date | 조회 시작일 |
 | `toDate` | date | 조회 종료일 |
-| `totalValue` | number | 조회 기간 내 완료 기록 수 합계 |
+| `totalValue` | number | 조회 기간 내 소요 시간 합계(분) |
 | `days[].date` | date | 날짜 |
-| `days[].value` | number | 해당 날짜의 완료 기록 수 |
+| `days[].value` | number | 해당 날짜의 소요 시간 합계(분) |
 | `days[].level` | number | 잔디 레벨, `0~4` |
 
 ### 잔디 레벨
 
-`level`은 해당 날짜의 완료 기록 수를 기준으로 계산한다. `minutes`는 잔디 `value`, `totalValue`, `level` 계산에 사용하지 않는다. 따라서 `minutes`가 `null`인 완료 기록도 해당 날짜 `value`에 1로 반영된다.
+`level`은 해당 날짜의 소요 시간 합계(분)를 기준으로 계산한다. `minutes`가 `null`인 완료 기록은 해당 날짜 `value`에 0으로 반영된다.
 
-| 완료 기록 수 | level |
+| 소요 시간(분) | level |
 | --- | --- |
-| 0 | 0 |
-| 1 | 1 |
-| 2 | 2 |
-| 3~4 | 3 |
-| 5 이상 | 4 |
+| 0 + 완료 기록 없음 | 0 |
+| 0 + 완료 기록 있음 | 1 |
+| 1~30 | 1 |
+| 31~60 | 2 |
+| 61~120 | 3 |
+| 121 이상 | 4 |
 
 ## 클라이언트 캐시 갱신 기준
 

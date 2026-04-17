@@ -3,6 +3,7 @@ package com.dochiri.habitservice.application.service;
 import com.dochiri.habitservice.application.port.in.GetHabitGrassUseCase;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassResult;
+import com.dochiri.habitservice.application.port.out.HabitGrassAggregation;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.habit.Habit;
@@ -38,16 +39,16 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
                 .filter(createdDate -> createdDate.isAfter(requestedFromDate))
                 .orElse(requestedFromDate);
 
-        Map<LocalDate, Integer> completionCountByDate = habitRecordRepository
-                .countByOwnerAndCompletedDateBetween(owner, fromDate, toDate);
+        Map<LocalDate, HabitGrassAggregation> grassByDate = habitRecordRepository
+                .aggregateGrassByOwnerAndCompletedDateBetween(owner, fromDate, toDate);
 
-        int totalValue = completionCountByDate.values()
+        int totalValue = grassByDate.values()
                 .stream()
-                .mapToInt(Integer::intValue)
+                .mapToInt(HabitGrassAggregation::totalMinutes)
                 .sum();
 
         List<GetHabitGrassResult.HabitGrassDayResult> days =
-                initializeDays(fromDate, toDate, completionCountByDate);
+                initializeDays(fromDate, toDate, grassByDate);
 
         return new GetHabitGrassResult(
                 fromDate,
@@ -69,15 +70,14 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
     private List<GetHabitGrassResult.HabitGrassDayResult> initializeDays(
             LocalDate from,
             LocalDate to,
-            Map<LocalDate, Integer> completionCountByDate
+            Map<LocalDate, HabitGrassAggregation> grassByDate
     ) {
         return from.datesUntil(to.plusDays(1))
                 .map(date -> {
-                    int value = completionCountByDate.getOrDefault(date, 0);
+                    HabitGrassAggregation aggregation = grassByDate.getOrDefault(date, new HabitGrassAggregation(0, 0));
+                    int value = aggregation.totalMinutes();
 
-                    int level = GrassLevelPolicy
-                            .calculate(value)
-                            .getLevel();
+                    int level = calculateLevel(value, aggregation.completedCount());
 
                     return new GetHabitGrassResult.HabitGrassDayResult(
                             date,
@@ -86,6 +86,16 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
                     );
                 })
                 .toList();
+    }
+
+    private int calculateLevel(int totalMinutes, int completedCount) {
+        int level = GrassLevelPolicy.calculate(totalMinutes).getLevel();
+
+        if (completedCount > 0) {
+            return Math.max(1, level);
+        }
+
+        return level;
     }
 
 }

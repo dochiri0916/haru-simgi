@@ -68,6 +68,7 @@ class UpdateHabitRecordServiceTest {
 
         assertThat(result.completedAt()).isEqualTo(record.getCompletedAt());
         assertThat(result.minutes()).isEqualTo(45);
+        assertThat(result.level()).isEqualTo(2);
         assertThat(result.memo()).isEqualTo("기존 메모");
     }
 
@@ -106,6 +107,39 @@ class UpdateHabitRecordServiceTest {
 
         assertThat(result.completedAt()).isEqualTo(record.getCompletedAt());
         assertThat(result.minutes()).isEqualTo(20);
+        assertThat(result.memo()).isNull();
+    }
+
+    @Test
+    void 소요_시간이_없는_기록은_0분으로_반환한다() {
+        HabitId habitId = HabitId.newId();
+        HabitRecordId recordId = HabitRecordId.newId();
+        HabitOwner owner = HabitOwner.user("user-1");
+        Habit habit = habit(habitId, owner);
+        HabitRecord record = HabitRecord.from(
+                recordId,
+                habitId,
+                Instant.parse("2026-04-15T10:00:00Z"),
+                null,
+                null
+        );
+        UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
+                habitId.value(),
+                recordId.value(),
+                owner.ownerId(),
+                null,
+                null,
+                JsonNullable.undefined()
+        );
+
+        when(habitRepository.loadById(habitId)).thenReturn(habit);
+        when(habitRecordRepository.loadById(recordId)).thenReturn(record);
+        when(habitRecordRepository.save(any(HabitRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        UpdateHabitRecordResult result = service.execute(command);
+
+        assertThat(result.minutes()).isZero();
+        assertThat(result.level()).isEqualTo(1);
         assertThat(result.memo()).isNull();
     }
 

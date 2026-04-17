@@ -425,13 +425,15 @@ Query:
     {
       "id": "a1b2c3d4-...",
       "completedAt": "2026-04-10T09:00:00Z",
-      "minutes": 30
+      "minutes": 30,
+      "level": 1
     }
   ]
 }
 ```
 
-- `minutes`: 소요 시간 (분 단위)
+- `minutes`: 소요 시간 (분 단위). 입력하지 않은 완료 기록은 0
+- `level`: 기록의 `minutes` 기준 레벨 (1~4). 완료 기록은 최소 1
 
 ### 8. 습관 기록 생성
 
@@ -455,7 +457,8 @@ Query:
   "id": "a1b2c3d4-...",
   "habitId": "7a2e41fd-8f5c-4d8b-9324-f39f4f76c5a8",
   "completedAt": "2026-04-10T09:00:00Z",
-  "minutes": 30
+  "minutes": 30,
+  "level": 1
 }
 ```
 

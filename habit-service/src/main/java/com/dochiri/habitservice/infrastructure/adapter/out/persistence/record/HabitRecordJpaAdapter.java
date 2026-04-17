@@ -1,5 +1,6 @@
 package com.dochiri.habitservice.infrastructure.adapter.out.persistence.record;
 
+import com.dochiri.habitservice.application.port.out.HabitGrassAggregation;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
 import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
@@ -93,7 +94,11 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     }
 
     @Override
-    public Map<LocalDate, Integer> countByOwnerAndCompletedDateBetween(HabitOwner owner, LocalDate from, LocalDate to) {
+    public Map<LocalDate, HabitGrassAggregation> aggregateGrassByOwnerAndCompletedDateBetween(
+            HabitOwner owner,
+            LocalDate from,
+            LocalDate to
+    ) {
         return habitRecordJpaRepository
                 .findCompletionsForOwnerBetweenDates(
                         owner.type().name(),
@@ -102,10 +107,23 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
                         to
                 )
                 .stream()
-                .collect(Collectors.groupingBy(
-                        HabitRecordEntity::getCompletedDate,
-                        Collectors.summingInt(ignored -> 1)
+                .collect(Collectors.groupingBy(HabitRecordEntity::getCompletedDate))
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> new HabitGrassAggregation(
+                                entry.getValue().size(),
+                                entry.getValue()
+                                        .stream()
+                                        .mapToInt(this::durationMinutesOf)
+                                        .sum()
+                        )
                 ));
+    }
+
+    private int durationMinutesOf(HabitRecordEntity entity) {
+        return entity.getDurationMinutes() != null ? entity.getDurationMinutes() : 0;
     }
 
     @Override

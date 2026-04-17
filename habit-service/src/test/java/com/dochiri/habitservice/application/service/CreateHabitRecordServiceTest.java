@@ -99,8 +99,37 @@ class CreateHabitRecordServiceTest {
         assertThat(result.habitId()).isEqualTo(habitId.value());
         assertThat(result.completedAt()).isEqualTo(completedAt);
         assertThat(result.minutes()).isEqualTo(20);
+        assertThat(result.level()).isEqualTo(1);
         assertThat(result.memo()).isEqualTo("새 기록");
         verify(habitRecordRepository).save(any(HabitRecord.class));
+    }
+
+    @Test
+    void 소요_시간을_입력하지_않은_완료_기록은_0분으로_반환한다() {
+        HabitId habitId = HabitId.newId();
+        HabitOwner owner = HabitOwner.user("user-1");
+        Habit habit = habit(habitId, owner);
+        Instant completedAt = Instant.parse("2026-04-16T12:00:00Z");
+        CreateHabitRecordCommand command = new CreateHabitRecordCommand(
+                habitId.value(),
+                owner.ownerId(),
+                completedAt,
+                null,
+                null
+        );
+
+        when(habitRepository.loadById(habitId)).thenReturn(habit);
+        when(habitRecordRepository.findByHabitIdAndCompletedDate(
+                habitId,
+                LocalDate.parse("2026-04-16")
+        )).thenReturn(Optional.empty());
+        when(habitRecordRepository.save(any(HabitRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        CreateHabitRecordResult result = service.execute(command);
+
+        assertThat(result.minutes()).isZero();
+        assertThat(result.level()).isEqualTo(1);
+        assertThat(result.memo()).isNull();
     }
 
     private Habit habit(HabitId habitId, HabitOwner owner) {

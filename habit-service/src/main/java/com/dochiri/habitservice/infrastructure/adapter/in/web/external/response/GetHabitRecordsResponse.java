@@ -15,14 +15,21 @@ public record GetHabitRecordsResponse(
     public record RecordItem(
             @Schema(description = "기록 ID") String id,
             @Schema(description = "완료 일시 (ISO 8601)") Instant completedAt,
-            @Schema(description = "소요 시간 (분)") Integer minutes,
+            @Schema(description = "소요 시간 (분). 입력하지 않은 완료 기록은 0") int minutes,
+            @Schema(description = "기록의 소요 시간 기준 레벨 (1~4). 완료 기록은 최소 1") int level,
             @Schema(description = "메모") String memo
     ) {
     }
 
     public static GetHabitRecordsResponse from(GetHabitRecordsResult result) {
         List<RecordItem> records = result.records().stream()
-                .map(record -> new RecordItem(record.id(), record.completedAt(), record.minutes(), record.memo()))
+                .map(record -> new RecordItem(
+                        record.id(),
+                        record.completedAt(),
+                        record.minutes(),
+                        record.level(),
+                        record.memo()
+                ))
                 .toList();
         return new GetHabitRecordsResponse(
                 result.habitId(),
