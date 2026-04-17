@@ -17,7 +17,6 @@ import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.security.role.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,6 @@ public class KakaoLoginService implements KakaoLoginUseCase {
     private final AuthAccountRepository authAccountRepository;
     private final AuthTokenIssueUseCase authTokenIssueUseCase;
 
-    @Transactional
     @Override
     public IssueAuthTokenResult login(KakaoLoginCommand command) {
         KakaoUserProfileResult profile = kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand(command.code()));

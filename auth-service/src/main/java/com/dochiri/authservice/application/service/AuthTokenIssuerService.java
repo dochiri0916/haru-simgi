@@ -10,12 +10,15 @@ import com.dochiri.authservice.domain.AuthSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
+
 @Service
 @RequiredArgsConstructor
 public class AuthTokenIssuerService implements AuthTokenIssueUseCase {
 
     private final TokenGeneratePort tokenGeneratePort;
     private final AuthSessionRepository authSessionRepository;
+    private final Clock clock;
 
     @Override
     public IssueAuthTokenResult issue(IssueAuthTokenCommand command) {
@@ -26,6 +29,7 @@ public class AuthTokenIssuerService implements AuthTokenIssueUseCase {
                 command.userId(),
                 command.publicId(),
                 command.role(),
+                clock.instant(),
                 tokenResult.refreshTokenExpiresAt()
         );
         authSessionRepository.saveReplacingUserSessions(authSession);

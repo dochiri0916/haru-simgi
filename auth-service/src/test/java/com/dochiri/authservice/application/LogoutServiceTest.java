@@ -45,7 +45,8 @@ class LogoutServiceTest {
                         1L,
                         "public-id-1",
                         UserRole.USER,
-                        Instant.now().plusSeconds(60)
+                        Instant.parse("2026-04-17T00:00:00Z"),
+                        Instant.parse("2026-04-17T00:01:00Z")
                 )));
 
         logoutService.logout(new LogoutCommand(refreshToken));

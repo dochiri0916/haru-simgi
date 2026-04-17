@@ -57,7 +57,8 @@ class ReissueTokenServiceTest {
                         1L,
                         "public-id-1",
                         UserRole.USER,
-                        Instant.now().plusSeconds(60)
+                        Instant.parse("2026-04-17T00:00:00Z"),
+                        Instant.parse("2026-04-17T00:01:00Z")
                 )));
         when(authAccountRepository.findByPublicId("public-id-1"))
                 .thenReturn(Optional.of(new AuthAccount(1L, "public-id-1", AuthProvider.KAKAO, "100", UserRole.USER)));

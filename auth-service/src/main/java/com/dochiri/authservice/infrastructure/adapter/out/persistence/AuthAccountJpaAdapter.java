@@ -7,6 +7,7 @@ import com.dochiri.errorhandling.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
     private final AuthAccountJpaRepository authAccountJpaRepository;
     private final AuthAccountMapper authAccountMapper;
 
+    @Transactional
     @Override
     public AuthAccount save(AuthAccount authAccount) {
         try {

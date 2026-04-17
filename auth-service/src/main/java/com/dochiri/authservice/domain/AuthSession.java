@@ -29,8 +29,9 @@ public record AuthSession(
             Long userId,
             String publicId,
             UserRole role,
+            Instant issuedAt,
             Instant expiresAt
     ) {
-        return new AuthSession(sessionId, userId, publicId, role, Instant.now(), expiresAt);
+        return new AuthSession(sessionId, userId, publicId, role, issuedAt, expiresAt);
     }
 }

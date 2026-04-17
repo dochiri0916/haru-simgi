@@ -11,8 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -24,6 +27,7 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final AuthSessionRedisKeyProperties keyProperties;
+    private final Clock clock;
 
     @Override
     public AuthSession saveReplacingUserSessions(AuthSession authSession) {
@@ -62,7 +66,7 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
         }
 
         AuthSession authSession = deserialize(sessionJson);
-        if (authSession.expiresAt().isBefore(Instant.now())) {
+        if (authSession.expiresAt().isBefore(clock.instant())) {
             deleteBySessionId(authSession.sessionId());
             return Optional.empty();
         }
@@ -83,13 +87,16 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
     public void deleteByUserId(Long userId) {
         String userSessionsKey = userSessionsKey(userId);
         Set<String> sessionIds = redisTemplate.opsForSet().members(userSessionsKey);
-        if (sessionIds != null && !sessionIds.isEmpty()) {
+
+        List<String> keysToDelete = new ArrayList<>();
+        keysToDelete.add(userSessionsKey);
+        if (sessionIds != null) {
             for (String sessionId : sessionIds) {
-                redisTemplate.delete(sessionKey(sessionId));
-                redisTemplate.delete(refreshTokenKey(sessionId));
+                keysToDelete.add(sessionKey(sessionId));
+                keysToDelete.add(refreshTokenKey(sessionId));
             }
         }
-        redisTemplate.delete(userSessionsKey);
+        redisTemplate.delete(keysToDelete);
     }
 
     private Optional<AuthSession> findSessionById(String sessionId) {
@@ -101,7 +108,7 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
     }
 
     private long ttlSeconds(Instant expiresAt) {
-        return Math.max(Duration.between(Instant.now(), expiresAt).toSeconds(), 1);
+        return Math.max(Duration.between(clock.instant(), expiresAt).toSeconds(), 1);
     }
 
     private String serialize(AuthSession authSession) {
