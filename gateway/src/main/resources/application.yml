@@ -99,3 +99,12 @@ logging:
   level:
     org.springframework.cloud.gateway: ${GATEWAY_LOG_LEVEL:INFO}
     org.springframework.web.reactive: ${WEB_REACTIVE_LOG_LEVEL:INFO}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
