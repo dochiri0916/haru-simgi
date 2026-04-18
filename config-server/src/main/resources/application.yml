@@ -12,7 +12,7 @@ spring:
           uri: ${CONFIG_GIT_URI}
           username: ${CONFIG_GIT_USERNAME:}
           password: ${CONFIG_GIT_PASSWORD:}
-          clone-on-start: true
+          clone-on-start: false
           default-label: main
 
 config-server:
