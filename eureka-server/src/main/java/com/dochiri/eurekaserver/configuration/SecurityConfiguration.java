@@ -33,9 +33,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-
     public SecurityFilterChain filterChain(HttpSecurity http) {
-
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
