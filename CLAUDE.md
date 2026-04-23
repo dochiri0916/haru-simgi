@@ -100,8 +100,8 @@ PATCH  /api/admin/users/{userId}/role
 
 ## CI/CD
 
-`Jenkinsfile`에 파이프라인 정의. `Dockerfile.service`는 멀티스테이지 빌드로 특정 모듈을 빌드한다.
+`Jenkinsfile`에 파이프라인 정의. `infra/docker/Dockerfile.service`는 멀티스테이지 빌드로 특정 모듈을 빌드한다. 젠킨스 전용 이미지는 `infra/docker/jenkins/Dockerfile`에 둔다.
 
 ```bash
-docker build -f Dockerfile.service --build-arg MODULE_NAME={module} .
+docker build -f infra/docker/Dockerfile.service --build-arg MODULE_NAME={module} .
 ```

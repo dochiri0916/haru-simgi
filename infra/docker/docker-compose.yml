@@ -70,15 +70,15 @@ services:
 
   config-server:
     build:
-      context: .
-      dockerfile: Dockerfile.service
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
       args:
         MODULE_NAME: config-server
     container_name: haru-simgi-config-server
     depends_on:
       - kafka
     env_file:
-      - ./config-server.env
+      - ../../config-server.env
     environment:
       CONFIG_SERVER_USERNAME: ${CONFIG_SERVER_USERNAME:-adbin}
       CONFIG_SERVER_PASSWORD: ${CONFIG_SERVER_PASSWORD:-adbin}
@@ -91,8 +91,8 @@ services:
 
   eureka-server:
     build:
-      context: .
-      dockerfile: Dockerfile.service
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
       args:
         MODULE_NAME: eureka-server
     container_name: haru-simgi-eureka-server
@@ -112,8 +112,8 @@ services:
 
   auth-service:
     build:
-      context: .
-      dockerfile: Dockerfile.service
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
       args:
         MODULE_NAME: auth-service
     container_name: haru-simgi-auth-service
@@ -140,8 +140,8 @@ services:
 
   user-service:
     build:
-      context: .
-      dockerfile: Dockerfile.service
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
       args:
         MODULE_NAME: user-service
     container_name: haru-simgi-user-service
@@ -162,8 +162,8 @@ services:
 
   habit-service:
     build:
-      context: .
-      dockerfile: Dockerfile.service
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
       args:
         MODULE_NAME: habit-service
     container_name: haru-simgi-habit-service
@@ -185,8 +185,8 @@ services:
 
   gateway:
     build:
-      context: .
-      dockerfile: Dockerfile.service
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.service
       args:
         MODULE_NAME: gateway
     container_name: haru-simgi-gateway
