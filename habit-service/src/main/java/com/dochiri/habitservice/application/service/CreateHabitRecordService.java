@@ -8,7 +8,6 @@ import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,9 +50,7 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
             HabitId habitId,
             Instant completedAt
     ) {
-        HabitCompletion completion = HabitCompletion.of(completedAt, command.minutes(), command.memo());
-
-        HabitRecord record = HabitRecord.create(habitId, completion);
+        HabitRecord record = HabitRecord.create(habitId, completedAt, command.minutes(), command.memo());
         HabitRecord saved = habitRecordRepository.save(record);
 
         return CreateHabitRecordResult.from(saved);

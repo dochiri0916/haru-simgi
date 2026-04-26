@@ -78,7 +78,7 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
                 record.getCompletedAt(),
                 minutes != null ? minutes : 0,
                 calculateLevel(minutes),
-                record.getMemo() != null ? record.getMemo().value() : null
+                record.getMemo().value()
         );
     }
 

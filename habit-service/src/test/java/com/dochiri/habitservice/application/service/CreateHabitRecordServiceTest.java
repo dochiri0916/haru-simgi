@@ -11,7 +11,6 @@ import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitIndex;
 import com.dochiri.habitservice.domain.habit.HabitName;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +47,9 @@ class CreateHabitRecordServiceTest {
         Habit habit = habit(habitId, owner);
         HabitRecord existing = HabitRecord.create(
                 habitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T23:00:00Z"), 10, "기존")
+                Instant.parse("2026-04-15T23:00:00Z"),
+                10,
+                "기존"
         );
         CreateHabitRecordCommand command = new CreateHabitRecordCommand(
                 habitId.value(),

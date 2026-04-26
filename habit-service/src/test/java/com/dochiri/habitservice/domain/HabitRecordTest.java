@@ -1,7 +1,6 @@
 package com.dochiri.habitservice.domain;
 
 import com.dochiri.habitservice.domain.habit.HabitId;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.record.exception.HabitRecordErrorCode;
 import com.dochiri.habitservice.domain.record.exception.InvalidCompletedAtException;
@@ -19,10 +18,7 @@ class HabitRecordTest {
         Instant completedAt = Instant.parse("2026-04-14T00:00:00Z");
         HabitId habitId = HabitId.newId();
 
-        HabitRecord record = HabitRecord.create(
-                habitId,
-                HabitCompletion.of(completedAt, 30, null)
-        );
+        HabitRecord record = HabitRecord.create(habitId, completedAt, 30, null);
 
         assertThat(record.getHabitId()).isEqualTo(habitId);
         assertThat(record.getCompletedAt()).isEqualTo(completedAt);
@@ -34,10 +30,7 @@ class HabitRecordTest {
         Instant completedAt = Instant.parse("2026-04-14T00:00:00Z");
         HabitId habitId = HabitId.newId();
 
-        HabitRecord record = HabitRecord.create(
-                habitId,
-                HabitCompletion.of(completedAt, null, null)
-        );
+        HabitRecord record = HabitRecord.create(habitId, completedAt, null, null);
 
         assertThat(record.getHabitId()).isEqualTo(habitId);
         assertThat(record.getCompletedAt()).isEqualTo(completedAt);
@@ -47,7 +40,9 @@ class HabitRecordTest {
 
     @Test
     void 완료_시간이_없으면_도메인_예외가_발생한다() {
-        assertThatThrownBy(() -> HabitCompletion.of(null, null, null))
+        HabitId habitId = HabitId.newId();
+
+        assertThatThrownBy(() -> HabitRecord.create(habitId, null, null, null))
                 .isInstanceOf(InvalidCompletedAtException.class)
                 .extracting("errorCode")
                 .isEqualTo(HabitRecordErrorCode.INVALID_COMPLETED_AT);

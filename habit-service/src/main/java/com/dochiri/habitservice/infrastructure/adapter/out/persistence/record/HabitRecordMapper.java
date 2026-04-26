@@ -19,7 +19,7 @@ public class HabitRecordMapper {
                 domain.getDuration() != null
                         ? domain.getDuration().minutes()
                         : null,
-                domain.getMemo() != null ? domain.getMemo().value() : null
+                domain.getMemo().value()
         );
     }
 
@@ -41,7 +41,7 @@ public class HabitRecordMapper {
                 domain.getDuration() != null
                         ? domain.getDuration().minutes()
                         : null,
-                domain.getMemo() != null ? domain.getMemo().value() : null
+                domain.getMemo().value()
         );
     }
 

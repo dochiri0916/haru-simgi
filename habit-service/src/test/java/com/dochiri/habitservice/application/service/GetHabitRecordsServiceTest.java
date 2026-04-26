@@ -11,7 +11,6 @@ import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitIndex;
 import com.dochiri.habitservice.domain.habit.HabitName;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import org.junit.jupiter.api.Test;
 
@@ -48,11 +47,15 @@ class GetHabitRecordsServiceTest {
         Habit habit = habit(habitId, owner);
         HabitRecord oldRecord = HabitRecord.create(
                 habitId,
-                HabitCompletion.of(Instant.parse("2025-01-01T00:00:00Z"), 10, "오래된 기록")
+                Instant.parse("2025-01-01T00:00:00Z"),
+                10,
+                "오래된 기록"
         );
         HabitRecord recentRecord = HabitRecord.create(
                 habitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T00:00:00Z"), 20, "최근 기록")
+                Instant.parse("2026-04-15T00:00:00Z"),
+                20,
+                "최근 기록"
         );
 
         when(habitRepository.loadById(habitId)).thenReturn(habit);
@@ -88,7 +91,9 @@ class GetHabitRecordsServiceTest {
         LocalDate to = LocalDate.parse("2026-04-15");
         HabitRecord record = HabitRecord.create(
                 habitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T00:00:00Z"), 20, "기간 기록")
+                Instant.parse("2026-04-15T00:00:00Z"),
+                20,
+                "기간 기록"
         );
 
         when(habitRepository.loadById(habitId)).thenReturn(habit);
@@ -120,11 +125,15 @@ class GetHabitRecordsServiceTest {
         Habit habit = habit(habitId, owner);
         HabitRecord recordWithMinutes = HabitRecord.create(
                 habitId,
-                HabitCompletion.of(Instant.parse("2026-04-14T00:00:00Z"), 15, null)
+                Instant.parse("2026-04-14T00:00:00Z"),
+                15,
+                null
         );
         HabitRecord recordWithoutMinutes = HabitRecord.create(
                 habitId,
-                HabitCompletion.of(Instant.parse("2026-04-15T00:00:00Z"), null, null)
+                Instant.parse("2026-04-15T00:00:00Z"),
+                null,
+                null
         );
 
         when(habitRepository.loadById(habitId)).thenReturn(habit);

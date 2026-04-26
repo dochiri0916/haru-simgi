@@ -1,6 +1,7 @@
 package com.dochiri.habitservice.domain.record;
 
 import com.dochiri.habitservice.domain.habit.HabitId;
+import com.dochiri.habitservice.domain.record.exception.InvalidCompletedAtException;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -21,18 +22,16 @@ public final class HabitRecord {
         this.habitId = requireNonNull(habitId);
         this.completedAt = requireNonNull(completedAt);
         this.duration = duration;
-        this.memo = memo;
+        this.memo = requireNonNull(memo);
     }
 
-    public static HabitRecord create(HabitId habitId, HabitCompletion completion) {
-        requireNonNull(completion);
-
+    public static HabitRecord create(HabitId habitId, Instant completedAt, Integer minutes, String memo) {
         return new HabitRecord(
                 HabitRecordId.newId(),
                 habitId,
-                completion.completedAt(),
-                completion.duration(),
-                completion.memo()
+                requireCompletedAt(completedAt),
+                minutes == null ? null : HabitDuration.of(minutes),
+                HabitMemo.of(memo)
         );
     }
 
@@ -46,20 +45,25 @@ public final class HabitRecord {
         );
     }
 
-    public HabitRecord update(HabitCompletion completion) {
-        requireNonNull(completion);
-
+    public HabitRecord update(Instant completedAt, Integer minutes, String memo) {
         return new HabitRecord(
                 this.id,
                 this.habitId,
-                completion.completedAt(),
-                completion.duration(),
-                completion.memo()
+                requireCompletedAt(completedAt),
+                minutes == null ? null : HabitDuration.of(minutes),
+                HabitMemo.of(memo)
         );
     }
 
     public boolean hasDuration() {
         return duration != null;
+    }
+
+    private static Instant requireCompletedAt(Instant completedAt) {
+        if (completedAt == null) {
+            throw new InvalidCompletedAtException();
+        }
+        return completedAt;
     }
 
 }

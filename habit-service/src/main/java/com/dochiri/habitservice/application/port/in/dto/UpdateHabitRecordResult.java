@@ -22,7 +22,7 @@ public record UpdateHabitRecordResult(
                 record.getCompletedAt(),
                 minutes,
                 calculateLevel(minutes),
-                record.getMemo() != null ? record.getMemo().value() : null
+                record.getMemo().value()
         );
     }
 

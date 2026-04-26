@@ -11,7 +11,8 @@ import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitIndex;
 import com.dochiri.habitservice.domain.habit.HabitName;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
+import com.dochiri.habitservice.domain.record.HabitDuration;
+import com.dochiri.habitservice.domain.record.HabitMemo;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.record.HabitRecordId;
 import org.junit.jupiter.api.Test;
@@ -39,17 +40,12 @@ class UpdateHabitRecordServiceTest {
         HabitRecordId recordId = HabitRecordId.newId();
         HabitOwner owner = HabitOwner.user("user-1");
         Habit habit = habit(habitId, owner);
-        HabitCompletion completion = HabitCompletion.of(
-                Instant.parse("2026-04-15T10:00:00Z"),
-                20,
-                "기존 메모"
-        );
         HabitRecord record = HabitRecord.from(
                 recordId,
                 habitId,
-                completion.completedAt(),
-                completion.duration(),
-                completion.memo()
+                Instant.parse("2026-04-15T10:00:00Z"),
+                HabitDuration.of(20),
+                HabitMemo.of("기존 메모")
         );
         UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
                 habitId.value(),
@@ -78,17 +74,12 @@ class UpdateHabitRecordServiceTest {
         HabitRecordId recordId = HabitRecordId.newId();
         HabitOwner owner = HabitOwner.user("user-1");
         Habit habit = habit(habitId, owner);
-        HabitCompletion completion = HabitCompletion.of(
-                Instant.parse("2026-04-15T10:00:00Z"),
-                20,
-                "기존 메모"
-        );
         HabitRecord record = HabitRecord.from(
                 recordId,
                 habitId,
-                completion.completedAt(),
-                completion.duration(),
-                completion.memo()
+                Instant.parse("2026-04-15T10:00:00Z"),
+                HabitDuration.of(20),
+                HabitMemo.of("기존 메모")
         );
         UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
                 habitId.value(),
@@ -121,7 +112,7 @@ class UpdateHabitRecordServiceTest {
                 habitId,
                 Instant.parse("2026-04-15T10:00:00Z"),
                 null,
-                null
+                HabitMemo.empty()
         );
         UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
                 habitId.value(),

@@ -8,7 +8,6 @@ import com.dochiri.habitservice.application.port.out.HabitRepository;
 import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
-import com.dochiri.habitservice.domain.record.HabitCompletion;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.record.HabitRecordId;
 import com.dochiri.habitservice.domain.record.exception.HabitRecordNotFoundException;
@@ -48,10 +47,10 @@ public class UpdateHabitRecordService implements UpdateHabitRecordUseCase {
                 ? command.minutes()
                 : record.hasDuration() ? record.getDuration().minutes() : null;
         String memo = JsonNullable.undefined().equals(command.memo())
-                ? (record.getMemo() != null ? record.getMemo().value() : null)
+                ? record.getMemo().value()
                 : command.memo().orElse(null);
 
-        HabitRecord updated = record.update(HabitCompletion.of(completedAt, minutes, memo));
+        HabitRecord updated = record.update(completedAt, minutes, memo);
         HabitRecord saved = habitRecordRepository.save(updated);
 
         return UpdateHabitRecordResult.from(saved);
