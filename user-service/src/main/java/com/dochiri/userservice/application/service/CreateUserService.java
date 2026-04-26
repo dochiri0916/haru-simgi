@@ -24,8 +24,8 @@ public class CreateUserService implements CreateUserUseCase {
         return new CreateUserResult(
                 userId,
                 user.getId().value(),
-                user.getNickname(),
-                user.getProfileImageUrl()
+                user.getNickname().value(),
+                user.getProfileImageUrl().value()
         );
     }
 

@@ -9,10 +9,10 @@ import lombok.RequiredArgsConstructor;
 public final class User {
 
     private final UserId id;
-    private final String nickname;
-    private final String profileImageUrl;
+    private final Nickname nickname;
+    private final ProfileImageUrl profileImageUrl;
 
-    public static User create(String nickname, String profileImageUrl) {
+    public static User create(Nickname nickname, ProfileImageUrl profileImageUrl) {
         return new User(
                 UserId.newId(),
                 nickname,
@@ -20,12 +20,20 @@ public final class User {
         );
     }
 
-    public static User from(UserId id, String nickname, String profileImageUrl) {
+    public static User from(UserId id, Nickname nickname, ProfileImageUrl profileImageUrl) {
         return new User(
                 id,
                 nickname,
                 profileImageUrl
         );
+    }
+
+    public User changeNickname(Nickname nickname) {
+        return new User(this.id, nickname, this.profileImageUrl);
+    }
+
+    public User changeProfileImageUrl(ProfileImageUrl profileImageUrl) {
+        return new User(this.id, this.nickname, profileImageUrl);
     }
 
 }

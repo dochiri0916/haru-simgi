@@ -2,6 +2,8 @@ package com.dochiri.userservice.application.service;
 
 import com.dochiri.userservice.application.port.in.dto.CreateUserCommand;
 import com.dochiri.userservice.application.port.out.UserRepository;
+import com.dochiri.userservice.domain.Nickname;
+import com.dochiri.userservice.domain.ProfileImageUrl;
 import com.dochiri.userservice.domain.User;
 import org.junit.jupiter.api.Test;
 
@@ -20,8 +22,8 @@ class CreateUserServiceTest {
                 .thenReturn(1L);
 
         var result = createUserService.execute(new CreateUserCommand(
-                "alice",
-                "https://example.com/alice.png"
+                Nickname.of("alice"),
+                ProfileImageUrl.of("https://example.com/alice.png")
         ));
 
         assertThat(result.userId()).isEqualTo(1L);
