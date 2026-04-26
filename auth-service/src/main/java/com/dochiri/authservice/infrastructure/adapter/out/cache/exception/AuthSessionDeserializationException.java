@@ -1,5 +1,6 @@
-package com.dochiri.authservice.domain.exception;
+package com.dochiri.authservice.infrastructure.adapter.out.cache.exception;
 
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.errorhandling.BaseException;
 
 public class AuthSessionDeserializationException extends BaseException {

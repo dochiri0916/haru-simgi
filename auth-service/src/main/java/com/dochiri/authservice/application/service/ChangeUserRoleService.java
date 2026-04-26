@@ -24,13 +24,7 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
         AuthAccount account = authAccountRepository.findByUserId(command.userId())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND));
 
-        authAccountRepository.save(new AuthAccount(
-                account.userId(),
-                account.publicId(),
-                account.provider(),
-                account.providerId(),
-                command.role()
-        ));
+        authAccountRepository.save(account.changeRole(command.role()));
 
         authSessionRepository.deleteByUserId(command.userId());
     }

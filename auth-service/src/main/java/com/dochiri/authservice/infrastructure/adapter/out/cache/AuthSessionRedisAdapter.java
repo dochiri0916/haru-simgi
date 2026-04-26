@@ -2,8 +2,8 @@ package com.dochiri.authservice.infrastructure.adapter.out.cache;
 
 import com.dochiri.authservice.application.port.out.AuthSessionRepository;
 import com.dochiri.authservice.domain.AuthSession;
-import com.dochiri.authservice.domain.exception.AuthSessionDeserializationException;
-import com.dochiri.authservice.domain.exception.AuthSessionSerializationException;
+import com.dochiri.authservice.infrastructure.adapter.out.cache.exception.AuthSessionDeserializationException;
+import com.dochiri.authservice.infrastructure.adapter.out.cache.exception.AuthSessionSerializationException;
 import com.dochiri.authservice.infrastructure.configuration.AuthSessionRedisKeyProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
