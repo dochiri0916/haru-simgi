@@ -102,7 +102,7 @@ DDD / 헥사고날 / MSA 관점에서 정합성을 점검한 결과입니다.
 
 ### 3.2 개선 필요
 
-#### (H-1) `KakaoAuthorizeUseCase`가 use case 패턴을 깨뜨림
+#### (H-1) `KakaoAuthorizeUseCase`가 use case 패턴을 깨뜨림 — ✅ 수정 완료
 ```java
 public interface KakaoAuthorizeUseCase {
     String buildAuthorizeUrl(String state);
@@ -114,16 +114,24 @@ public interface KakaoAuthorizeUseCase {
 - **권장**: `KakaoAuthorizeCommand(String state)` /
   `KakaoAuthorizeResult(String url)` 도입하거나, 컨트롤러에서 포트를 직접 주입
   받지 말고 use case 한 단계만 두되 서명을 다른 use case와 통일.
+- **수정 내용**: `KakaoAuthorizeCommand(String state)` /
+  `KakaoAuthorizeResult(String authorizeUrl)` record 도입.
+  `KakaoAuthorizeUseCase.execute(Command)` 시그니처로 통일하고
+  `KakaoAuthorizeService` · `AuthController`도 새 계약에 맞춰 갱신.
 
-#### (H-2) `LogoutService`가 추상화를 우회한다
+#### (H-2) `LogoutService`가 추상화를 우회한다 — ✅ 수정 완료
 - `ReissueTokenService`는 `TokenParsePort`로 토큰을 해석하지만,
   `LogoutService`는 `JwtProvider`(security 모듈의 구체)를 직접 주입한다.
 - 같은 service 패키지에서 두 가지 추상화 레벨이 공존 → 일관성 깨짐.
 - **권장**: `LogoutService`도 `TokenParsePort`로 `tokenId` 추출. 만약
   refresh-only 검증이 필요하면 `TokenParsePort`에 메서드 추가 (이미
   `parseRefreshToken`이 동일 검증을 함 → 재사용 가능).
+- **수정 내용**: `LogoutService`가 `JwtProvider` 의존 제거 후
+  `TokenParsePort.parseRefreshToken`으로 일원화. `ReissueTokenService`와
+  동일한 추상화 레벨로 정렬되어 application 계층에서 security 모듈 구체에
+  더는 의존하지 않는다.
 
-#### (H-3) `AuthController#logout`이 도메인 예외를 직접 처리
+#### (H-3) `AuthController#logout`이 도메인 예외를 직접 처리 — ✅ 수정 완료
 ```java
 } catch (BaseException exception) {
     if (!"INVALID_REFRESH_TOKEN".equals(exception.getErrorCode().name())) {
@@ -135,8 +143,11 @@ public interface KakaoAuthorizeUseCase {
   표현해야 할 정책이다.
 - **권장**: `LogoutService`가 invalid-token을 무시하도록 만들거나(idempotent
   logout), use case 결과 타입에 “이미 로그아웃됨” 케이스를 표현.
+- **수정 내용**: `LogoutService`가 `INVALID_REFRESH_TOKEN`을 내부에서 잡고
+  세션이 없으면 `ifPresent`로 조용히 종료하도록 멱등화. `AuthController#logout`
+  의 `try/catch`/swallow 로직 제거.
 
-#### (H-4) `UserRepository.save(User)`가 `Long`을 반환
+#### (H-4) `UserRepository.save(User)`가 `Long`을 반환 — ✅ 수정 완료
 - 포트가 JPA 자동생성 PK(`Long`)를 그대로 노출 — 어댑터 세부 사항이 도메인
   포트로 새어 나옴.
 - 이 `Long`은 auth-service가 외래 키로 보관하기 위한 값이라 “MSA 식별자
@@ -144,38 +155,62 @@ public interface KakaoAuthorizeUseCase {
 - **권장**: `User.create(...)`가 `internalId`까지 포함하도록 정리하거나, port가
   `User`를 반환하고 caller가 `user.getId()` / `user.getInternalId()`를 꺼내게
   한다.
+- **수정 내용**: `User`에 nullable `internalId` 필드와 `User.from(internalId, ...)`
+  팩토리 추가. `UserRepository.save(User)` 시그니처가 `User`를 반환하고
+  caller(`CreateUserService`)는 `saved.getInternalId()`로 꺼내 사용. JPA
+  어댑터/매퍼는 영속화된 엔티티를 도메인으로 다시 매핑.
 
-#### (H-5) `GetCurrentUserUseCase`가 raw `String` 인자
+#### (H-5) `GetCurrentUserUseCase`가 raw `String` 인자 — ✅ 수정 완료
 - 다른 use case는 모두 Command 객체를 받는데 여기만 `getCurrentUser(String publicId)`.
 - **권장**: `GetCurrentUserCommand(String publicId)` 도입 + `execute(...)` 시그니처
   통일.
+- **수정 내용**: `GetCurrentUserCommand(String publicId)` record 도입(컴팩트
+  생성자에서 null 검증). `GetCurrentUserUseCase.execute(Command)` 시그니처로
+  통일하고 `UserController`/`GetCurrentUserService`도 일치시켰다.
 
-#### (H-6) Use case 메서드 시그니처 통일
+#### (H-6) Use case 메서드 시그니처 통일 — ✅ 수정 완료
 - habit-service: `execute(Command)` 일관됨. ✅
 - auth/user-service: `login` / `issue` / `reissue` / `logout` / `changeRole`
   / `getCurrentUser` / `buildAuthorizeUrl` 등 메서드명이 제각각.
 - **권장**: 모든 use case를 `execute(Command)`로 통일하면 컨트롤러/테스트 패턴이
   단순해진다 (선호 사항이므로 강제는 아님).
+- **수정 내용**: `KakaoLoginUseCase` · `ReissueTokenUseCase` ·
+  `AuthTokenIssueUseCase` · `LogoutUseCase` · `ChangeUserRoleUseCase` ·
+  `KakaoAuthorizeUseCase` · `GetCurrentUserUseCase`까지 모두 `execute(Command)`
+  로 일원화. 컨트롤러/구현체/테스트가 동일한 호출 패턴을 따른다.
 
-#### (H-7) 포트 메서드 인자가 raw String
+#### (H-7) 포트 메서드 인자가 raw String — ✅ 수정 완료
 - `AuthAccountRepository.findByProviderAndProviderId(String provider, ...)` —
   `AuthProvider` enum 인자로 받아야 호출부에서 `AuthProvider.KAKAO.name()`
   변환을 강요하지 않는다 (`KakaoLoginService`에 그 변환이 노출돼 있다).
 - `HabitRecordRepositoryCustomImpl.findCompletionsForOwnerBetweenDates(String ownerType, ...)`
   도 마찬가지. `OwnerType` enum을 그대로 받자.
+- **수정 내용**: `AuthAccountRepository.findByProviderAndProviderId`가
+  `AuthProvider` enum을 받도록 수정 (`KakaoLoginService`의 `.name()` 변환
+  제거, JPA 어댑터 내부에서만 `provider.name()` 호출). 마찬가지로
+  `HabitRecordRepositoryCustom.findCompletionsForOwnerBetweenDates`가
+  `OwnerType` enum을 받고 어댑터/캐스팅이 사라졌다.
 
-#### (H-8) `findById` + `loadById` 중복
+#### (H-8) `findById` + `loadById` 중복 — ✅ 수정 완료
 - `HabitRepository`, `HabitRecordRepository` 모두 `findById(Optional)` +
   `loadById(throw)` 두 종류 메서드를 노출한다.
 - 호출부에서는 거의 항상 `loadById`만 사용 (`findById`는 거의 사용되지 않음).
 - **권장**: `loadById`만 남기거나, 명확한 정책으로 분리. (현 정책이 의도라면
   Javadoc으로 명시.)
+- **수정 내용**: 두 포트의 `findById`(Optional) 시그니처를 제거하고
+  `loadById`만 노출. 어댑터(`HabitJpaAdapter`/`HabitRecordJpaAdapter`)는
+  내부에서 `findById` 호출 후 도메인 예외로 직접 변환.
 
-#### (H-9) 매퍼/DTO 중복
+#### (H-9) 매퍼/DTO 중복 — ✅ 수정 완료
 - `CreateHabitResult.from`, `UpdateHabitNameService#toResult`, `GetHabitsService#toDto`,
   `GetHabitDetailService` 등 모두 동일한 `Habit` → DTO 변환을 반복한다.
 - **권장**: `HabitView`(공통 DTO) 한 개를 application 계층에서 정의해 모든
   Result가 이를 사용하거나, MapStruct/공통 DtoFactory로 위임.
+- **수정 내용**: 공통 `HabitView` record를 `application/port/in/dto`에 도입하고
+  `HabitView.from(Habit)` / `HabitView.from(List<Habit>)` 팩토리로 변환을
+  일원화. `CreateHabitResult` · `UpdateHabitNameResult` ·
+  `GetHabitDetailResult` · `GetHabitsResult` · `SwapHabitIndexResult`가
+  `HabitView`를 그대로 보관. 응답 DTO/서비스에서 중복 매핑 제거.
 
 ---
 
