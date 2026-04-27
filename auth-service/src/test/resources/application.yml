@@ -22,6 +22,10 @@ jwt:
   access-expiration: 1800000
   refresh-expiration: 1209600000
 
+auth:
+  guest-session:
+    expiration-days: 90
+
 internal-api:
   client:
     token: test-internal-token

@@ -24,6 +24,8 @@ jwt:
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:1209600000}
 
 auth:
+  guest-session:
+    expiration-days: ${AUTH_GUEST_SESSION_EXPIRATION_DAYS:90}
   session:
     redis:
       key-prefix:
