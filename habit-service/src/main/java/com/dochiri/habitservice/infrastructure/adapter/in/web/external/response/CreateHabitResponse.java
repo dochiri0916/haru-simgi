@@ -1,6 +1,7 @@
 package com.dochiri.habitservice.infrastructure.adapter.in.web.external.response;
 
 import com.dochiri.habitservice.application.port.in.dto.CreateHabitResult;
+import com.dochiri.habitservice.application.port.in.dto.HabitView;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
@@ -15,13 +16,14 @@ public record CreateHabitResponse(
         @Schema(description = "습관 생성 시각") Instant createdAt
 ) {
     public static CreateHabitResponse from(CreateHabitResult result) {
+        HabitView habit = result.habit();
         return new CreateHabitResponse(
-                result.id(),
-                result.name(),
-                result.color(),
-                result.colorHex(),
-                result.index(),
-                result.createdAt()
+                habit.id(),
+                habit.name(),
+                habit.color(),
+                habit.colorHex(),
+                habit.index(),
+                habit.createdAt()
         );
     }
 }

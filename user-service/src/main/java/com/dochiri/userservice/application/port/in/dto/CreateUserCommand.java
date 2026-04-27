@@ -6,6 +6,7 @@ import com.dochiri.userservice.domain.ProfileImageUrl;
 import static java.util.Objects.requireNonNull;
 
 public record CreateUserCommand(
+        String idempotencyKey,
         Nickname nickname,
         ProfileImageUrl profileImageUrl
 ) {

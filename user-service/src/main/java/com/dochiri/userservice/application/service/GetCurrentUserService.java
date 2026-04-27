@@ -1,6 +1,7 @@
 package com.dochiri.userservice.application.service;
 
 import com.dochiri.userservice.application.port.in.GetCurrentUserUseCase;
+import com.dochiri.userservice.application.port.in.dto.GetCurrentUserCommand;
 import com.dochiri.userservice.application.port.in.dto.GetCurrentUserResult;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
@@ -16,8 +17,8 @@ public class GetCurrentUserService implements GetCurrentUserUseCase {
 
     @Transactional(readOnly = true)
     @Override
-    public GetCurrentUserResult getCurrentUser(String publicId) {
-        User user = userRepository.loadById(publicId);
+    public GetCurrentUserResult execute(GetCurrentUserCommand command) {
+        User user = userRepository.loadById(command.publicId());
         return new GetCurrentUserResult(
                 user.getId().value(),
                 user.getNickname().value(),

@@ -14,7 +14,8 @@ import static java.util.Objects.requireNonNull;
 @Table(
         name = "auth_users",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_auth_users_provider_id", columnNames = {"provider", "providerId"})
+                @UniqueConstraint(name = "uk_auth_users_provider_id", columnNames = {"provider", "providerId"}),
+                @UniqueConstraint(name = "uk_auth_users_public_id", columnNames = "publicId")
         }
 )
 @Getter
@@ -22,8 +23,8 @@ import static java.util.Objects.requireNonNull;
 public class AuthAccountEntity extends BaseEntity {
 
     @Id
-    @Column(nullable = false, updatable = false)
-    private Long userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, updatable = false, length = 36)
     private String publicId;
@@ -38,14 +39,12 @@ public class AuthAccountEntity extends BaseEntity {
     private String role;
 
     public static AuthAccountEntity from(
-            Long userId,
             String publicId,
             AuthProvider provider,
             String providerId,
             UserRole role
     ) {
         AuthAccountEntity entity = new AuthAccountEntity();
-        entity.userId = requireNonNull(userId);
         entity.publicId = requireNonNull(publicId);
         entity.provider = requireNonNull(provider).name();
         entity.providerId = providerId;

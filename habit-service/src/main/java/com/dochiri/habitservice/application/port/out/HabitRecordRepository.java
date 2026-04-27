@@ -15,8 +15,6 @@ public interface HabitRecordRepository {
 
     HabitRecord save(HabitRecord record);
 
-    Optional<HabitRecord> findById(HabitRecordId id);
-
     HabitRecord loadById(HabitRecordId id);
 
     List<HabitRecord> findByHabitId(HabitId habitId);

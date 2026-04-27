@@ -28,32 +28,37 @@ public class KakaoLoginService implements KakaoLoginUseCase {
     private final AuthTokenIssueUseCase authTokenIssueUseCase;
 
     @Override
-    public IssueAuthTokenResult login(KakaoLoginCommand command) {
+    public IssueAuthTokenResult execute(KakaoLoginCommand command) {
         KakaoUserProfileResult profile = kakaoOAuthPort.authenticate(new KakaoAuthenticationCommand(command.code()));
         String providerUserId = String.valueOf(profile.id());
 
         AuthAccount authAccount = authAccountRepository.findByProviderAndProviderId(
-                        AuthProvider.KAKAO.name(),
+                        AuthProvider.KAKAO,
                         providerUserId
                 )
-                .orElseGet(() -> provisionSocialAccount(profile));
+                .orElseGet(() -> provisionSocialAccount(profile, providerUserId));
 
-        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(authAccount.userId(), authAccount.publicId(), authAccount.role()));
+        return authTokenIssueUseCase.execute(new IssueAuthTokenCommand(authAccount.publicId(), authAccount.role()));
     }
 
-    private AuthAccount provisionSocialAccount(KakaoUserProfileResult profile) {
+    private AuthAccount provisionSocialAccount(KakaoUserProfileResult profile, String providerUserId) {
+        String idempotencyKey = idempotencyKey(AuthProvider.KAKAO, providerUserId);
         CreateSocialUserResult createdUser = socialUserCreatePort.create(new CreateSocialUserCommand(
+                idempotencyKey,
                 profile.nickname(),
                 profile.profileImageUrl()
         ));
 
         return authAccountRepository.save(new AuthAccount(
-                createdUser.userId(),
                 createdUser.publicId(),
                 AuthProvider.KAKAO,
-                String.valueOf(profile.id()),
+                providerUserId,
                 UserRole.USER
         ));
+    }
+
+    private String idempotencyKey(AuthProvider provider, String providerId) {
+        return provider.name() + ":" + providerId;
     }
 
 }

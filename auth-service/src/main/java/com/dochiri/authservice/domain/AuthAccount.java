@@ -5,14 +5,12 @@ import com.dochiri.security.role.UserRole;
 import static java.util.Objects.requireNonNull;
 
 public record AuthAccount(
-        Long userId,
         String publicId,
         AuthProvider provider,
         String providerId,
         UserRole role
 ) {
     public AuthAccount {
-        requireNonNull(userId, "userId는 필수입니다.");
         requireNonNull(provider, "provider는 필수입니다.");
         requireNonNull(role, "role은 필수입니다.");
         requireNonBlank(publicId, "publicId는 비어 있을 수 없습니다.");
@@ -20,7 +18,7 @@ public record AuthAccount(
     }
 
     public AuthAccount changeRole(UserRole role) {
-        return new AuthAccount(userId, publicId, provider, providerId, role);
+        return new AuthAccount(publicId, provider, providerId, role);
     }
 
     private static void requireNonBlank(String value, String message) {

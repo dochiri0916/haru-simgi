@@ -4,6 +4,6 @@ import com.dochiri.authservice.application.port.in.dto.ChangeUserRoleCommand;
 
 public interface ChangeUserRoleUseCase {
 
-    void changeRole(ChangeUserRoleCommand command);
+    void execute(ChangeUserRoleCommand command);
 
 }

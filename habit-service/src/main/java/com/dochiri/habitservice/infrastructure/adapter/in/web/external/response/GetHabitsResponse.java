@@ -32,8 +32,6 @@ public record GetHabitsResponse(
                         habit.createdAt()
                 ))
                 .toList();
-        return new GetHabitsResponse(
-                habits
-        );
+        return new GetHabitsResponse(habits);
     }
 }

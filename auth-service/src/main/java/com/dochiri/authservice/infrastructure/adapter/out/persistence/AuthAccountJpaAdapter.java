@@ -3,6 +3,7 @@ package com.dochiri.authservice.infrastructure.adapter.out.persistence;
 import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.application.port.out.AuthAccountRepository;
 import com.dochiri.authservice.domain.AuthAccount;
+import com.dochiri.authservice.domain.AuthProvider;
 import com.dochiri.errorhandling.BaseException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,14 +30,8 @@ public class AuthAccountJpaAdapter implements AuthAccountRepository {
     }
 
     @Override
-    public Optional<AuthAccount> findByProviderAndProviderId(String provider, String providerId) {
-        return authAccountJpaRepository.findByProviderAndProviderId(provider, providerId)
-                .map(authAccountMapper::toDomain);
-    }
-
-    @Override
-    public Optional<AuthAccount> findByUserId(Long userId) {
-        return authAccountJpaRepository.findById(userId)
+    public Optional<AuthAccount> findByProviderAndProviderId(AuthProvider provider, String providerId) {
+        return authAccountJpaRepository.findByProviderAndProviderId(provider.name(), providerId)
                 .map(authAccountMapper::toDomain);
     }
 

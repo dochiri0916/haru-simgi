@@ -7,16 +7,18 @@ import com.dochiri.userservice.domain.UserId;
 
 public class UserMapper {
 
-    public static UserEntity toEntity(User domain) {
+    public static UserEntity toEntity(User domain, String idempotencyKey) {
         return new UserEntity(
                 domain.getId().value(),
                 domain.getNickname().value(),
-                domain.getProfileImageUrl().value()
+                domain.getProfileImageUrl().value(),
+                idempotencyKey
         );
     }
 
     public static User toDomain(UserEntity entity) {
         return User.from(
+                entity.getId(),
                 UserId.of(entity.getPublicId()),
                 Nickname.of(entity.getNickname()),
                 ProfileImageUrl.of(entity.getProfileImageUrl())

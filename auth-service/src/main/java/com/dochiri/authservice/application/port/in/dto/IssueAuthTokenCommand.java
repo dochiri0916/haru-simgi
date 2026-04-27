@@ -5,12 +5,10 @@ import com.dochiri.security.role.UserRole;
 import static java.util.Objects.requireNonNull;
 
 public record IssueAuthTokenCommand(
-        Long userId,
         String publicId,
         UserRole role
 ) {
     public IssueAuthTokenCommand {
-        requireNonNull(userId);
         requireNonNull(publicId);
         requireNonNull(role);
     }

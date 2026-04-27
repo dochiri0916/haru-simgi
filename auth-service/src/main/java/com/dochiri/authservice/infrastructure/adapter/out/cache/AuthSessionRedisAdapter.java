@@ -31,7 +31,7 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
 
     @Override
     public AuthSession saveReplacingUserSessions(AuthSession authSession) {
-        deleteByUserId(authSession.userId());
+        deleteByPublicId(authSession.publicId());
 
         long ttlSeconds = ttlSeconds(authSession.expiresAt());
         redisTemplate.opsForValue().set(
@@ -46,8 +46,8 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
                 ttlSeconds,
                 TimeUnit.SECONDS
         );
-        redisTemplate.opsForSet().add(userSessionsKey(authSession.userId()), authSession.sessionId());
-        redisTemplate.expire(userSessionsKey(authSession.userId()), ttlSeconds, TimeUnit.SECONDS);
+        redisTemplate.opsForSet().add(userSessionsKey(authSession.publicId()), authSession.sessionId());
+        redisTemplate.expire(userSessionsKey(authSession.publicId()), ttlSeconds, TimeUnit.SECONDS);
 
         return authSession;
     }
@@ -77,15 +77,15 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
     @Override
     public void deleteBySessionId(String sessionId) {
         findSessionById(sessionId).ifPresent(authSession ->
-                redisTemplate.opsForSet().remove(userSessionsKey(authSession.userId()), sessionId)
+                redisTemplate.opsForSet().remove(userSessionsKey(authSession.publicId()), sessionId)
         );
         redisTemplate.delete(sessionKey(sessionId));
         redisTemplate.delete(refreshTokenKey(sessionId));
     }
 
     @Override
-    public void deleteByUserId(Long userId) {
-        String userSessionsKey = userSessionsKey(userId);
+    public void deleteByPublicId(String publicId) {
+        String userSessionsKey = userSessionsKey(publicId);
         Set<String> sessionIds = redisTemplate.opsForSet().members(userSessionsKey);
 
         List<String> keysToDelete = new ArrayList<>();
@@ -135,7 +135,7 @@ public class AuthSessionRedisAdapter implements AuthSessionRepository {
         return keyProperties.refresh() + refreshTokenId;
     }
 
-    private String userSessionsKey(Long userId) {
-        return keyProperties.userSessions() + userId;
+    private String userSessionsKey(String publicId) {
+        return keyProperties.userSessions() + publicId;
     }
 }

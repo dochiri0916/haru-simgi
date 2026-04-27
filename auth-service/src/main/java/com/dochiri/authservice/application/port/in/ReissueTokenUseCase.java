@@ -5,5 +5,5 @@ import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 
 public interface ReissueTokenUseCase {
 
-    IssueAuthTokenResult reissue(RefreshTokenCommand command);
+    IssueAuthTokenResult execute(RefreshTokenCommand command);
 }

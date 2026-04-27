@@ -5,6 +5,6 @@ import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
 
 public interface AuthTokenIssueUseCase {
 
-    IssueAuthTokenResult issue(IssueAuthTokenCommand command);
+    IssueAuthTokenResult execute(IssueAuthTokenCommand command);
 
 }

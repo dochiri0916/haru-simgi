@@ -8,7 +8,6 @@ import static java.util.Objects.requireNonNull;
 
 public record AuthSession(
         String sessionId,
-        Long userId,
         String publicId,
         UserRole role,
         Instant issuedAt,
@@ -17,7 +16,6 @@ public record AuthSession(
 
     public AuthSession {
         requireNonNull(sessionId);
-        requireNonNull(userId);
         requireNonNull(publicId);
         requireNonNull(role);
         requireNonNull(issuedAt);
@@ -26,12 +24,11 @@ public record AuthSession(
 
     public static AuthSession create(
             String sessionId,
-            Long userId,
             String publicId,
             UserRole role,
             Instant issuedAt,
             Instant expiresAt
     ) {
-        return new AuthSession(sessionId, userId, publicId, role, issuedAt, expiresAt);
+        return new AuthSession(sessionId, publicId, role, issuedAt, expiresAt);
     }
 }

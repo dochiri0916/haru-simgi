@@ -1,18 +1,13 @@
 package com.dochiri.habitservice.application.port.in.dto;
 
-import java.time.Instant;
+import com.dochiri.habitservice.domain.habit.Habit;
+
 import java.util.List;
 
 public record GetHabitsResult(
-        List<HabitDto> habits
+        List<HabitView> habits
 ) {
-    public record HabitDto(
-            String id,
-            String name,
-            String color,
-            String colorHex,
-            int index,
-            Instant createdAt
-    ) {
+    public static GetHabitsResult from(List<Habit> habits) {
+        return new GetHabitsResult(habits.stream().map(HabitView::from).toList());
     }
 }

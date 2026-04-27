@@ -6,11 +6,13 @@ import com.dochiri.userservice.domain.ProfileImageUrl;
 import jakarta.validation.constraints.NotBlank;
 
 public record CreateUserRequest(
+        String idempotencyKey,
         @NotBlank String nickname,
         @NotBlank String profileImageUrl
 ) {
     public CreateUserCommand toCommand() {
         return new CreateUserCommand(
+                idempotencyKey,
                 Nickname.of(nickname),
                 ProfileImageUrl.of(profileImageUrl)
         );

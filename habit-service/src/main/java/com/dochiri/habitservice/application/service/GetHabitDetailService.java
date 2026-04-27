@@ -27,14 +27,7 @@ public class GetHabitDetailService implements GetHabitDetailUseCase {
 
         habit.assertOwner(owner);
 
-        return new GetHabitDetailResult(
-                habit.getId().value(),
-                habit.getName().value(),
-                habit.getColor().colorType().name(),
-                habit.getColor().getHexValue(),
-                habit.getIndex().value(),
-                habit.getCreatedAt()
-        );
+        return GetHabitDetailResult.from(habit);
     }
 
 }

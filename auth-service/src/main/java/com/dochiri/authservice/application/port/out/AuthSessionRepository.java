@@ -12,5 +12,5 @@ public interface AuthSessionRepository {
 
     void deleteBySessionId(String sessionId);
 
-    void deleteByUserId(Long userId);
+    void deleteByPublicId(String publicId);
 }

@@ -1,8 +1,8 @@
 package com.dochiri.userservice.infrastructure.adapter.in.web.external;
 
 import com.dochiri.security.jwt.JwtPrincipal;
-import com.dochiri.security.role.UserRole;
 import com.dochiri.userservice.application.port.in.GetCurrentUserUseCase;
+import com.dochiri.userservice.application.port.in.dto.GetCurrentUserCommand;
 import com.dochiri.userservice.infrastructure.adapter.in.web.external.response.CurrentUserResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<CurrentUserResponse> me(@AuthenticationPrincipal JwtPrincipal principal) {
-        return ResponseEntity.ok(CurrentUserResponse.from(getCurrentUserUseCase.getCurrentUser(principal.publicId())));
+        return ResponseEntity.ok(CurrentUserResponse.from(getCurrentUserUseCase.execute(new GetCurrentUserCommand(principal.publicId()))));
     }
 
 }

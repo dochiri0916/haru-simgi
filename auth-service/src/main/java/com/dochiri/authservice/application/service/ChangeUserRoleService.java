@@ -20,13 +20,13 @@ public class ChangeUserRoleService implements ChangeUserRoleUseCase {
 
     @Transactional
     @Override
-    public void changeRole(ChangeUserRoleCommand command) {
-        AuthAccount account = authAccountRepository.findByUserId(command.userId())
+    public void execute(ChangeUserRoleCommand command) {
+        AuthAccount account = authAccountRepository.findByPublicId(command.publicId())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.AUTH_ACCOUNT_NOT_FOUND));
 
         authAccountRepository.save(account.changeRole(command.role()));
 
-        authSessionRepository.deleteByUserId(command.userId());
+        authSessionRepository.deleteByPublicId(command.publicId());
     }
 
 }

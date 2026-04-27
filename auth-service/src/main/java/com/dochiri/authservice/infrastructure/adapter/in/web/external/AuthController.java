@@ -4,6 +4,7 @@ import com.dochiri.authservice.application.port.in.KakaoAuthorizeUseCase;
 import com.dochiri.authservice.application.port.in.KakaoLoginUseCase;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
+import com.dochiri.authservice.application.port.in.dto.KakaoAuthorizeCommand;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.in.dto.LogoutCommand;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
@@ -13,7 +14,6 @@ import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.Re
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.AuthTokenResponse;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.response.KakaoAuthorizeUrlResponse;
 import com.dochiri.authservice.infrastructure.configuration.KakaoLoginProperties;
-import com.dochiri.errorhandling.BaseException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +42,8 @@ public class AuthController {
     public ResponseEntity<KakaoAuthorizeUrlResponse> kakaoAuthorizeUrl(
             @RequestParam(required = false) String state
     ) {
-        return ResponseEntity.ok(new KakaoAuthorizeUrlResponse(kakaoAuthorizeUseCase.buildAuthorizeUrl(state)));
+        var result = kakaoAuthorizeUseCase.execute(new KakaoAuthorizeCommand(state));
+        return ResponseEntity.ok(new KakaoAuthorizeUrlResponse(result.authorizeUrl()));
     }
 
     @PostMapping("/login/kakao")
@@ -50,7 +51,7 @@ public class AuthController {
             @Valid @RequestBody KakaoLoginRequest request,
             HttpServletRequest httpServletRequest
     ) {
-        var result = kakaoLoginUseCase.login(request.toCommand());
+        var result = kakaoLoginUseCase.execute(request.toCommand());
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
         applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
         return responseBuilder.body(AuthTokenResponse.from(result));
@@ -61,7 +62,7 @@ public class AuthController {
             @RequestParam String code,
             HttpServletRequest httpServletRequest
     ) {
-        var result = kakaoLoginUseCase.login(new KakaoLoginCommand(code));
+        var result = kakaoLoginUseCase.execute(new KakaoLoginCommand(code));
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(302)
                 .location(URI.create(kakaoLoginProperties.frontendRedirectUri()));
         applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
@@ -73,7 +74,7 @@ public class AuthController {
             @RequestBody(required = false) RefreshTokenRequest request,
             HttpServletRequest httpServletRequest
     ) {
-        var result = reissueTokenUseCase.reissue(
+        var result = reissueTokenUseCase.execute(
                 new RefreshTokenCommand(
                         authTokenCookieManager.resolveRefreshToken(
                                 request != null ? request.refreshToken() : null,
@@ -92,20 +93,14 @@ public class AuthController {
             @RequestBody(required = false) LogoutRequest request,
             HttpServletRequest httpServletRequest
     ) {
-        try {
-            logoutUseCase.logout(
-                    new LogoutCommand(
-                            authTokenCookieManager.resolveRefreshToken(
-                                    request != null ? request.refreshToken() : null,
-                                    httpServletRequest
-                            )
-                    )
-            );
-        } catch (BaseException exception) {
-            if (!"INVALID_REFRESH_TOKEN".equals(exception.getErrorCode().name())) {
-                throw exception;
-            }
-        }
+        logoutUseCase.execute(
+                new LogoutCommand(
+                        authTokenCookieManager.resolveRefreshToken(
+                                request != null ? request.refreshToken() : null,
+                                httpServletRequest
+                        )
+                )
+        );
 
         ResponseEntity.HeadersBuilder<?> responseBuilder = ResponseEntity.noContent();
         applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.clearAuthCookieHeaders());

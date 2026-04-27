@@ -37,14 +37,9 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     }
 
     @Override
-    public Optional<HabitRecord> findById(HabitRecordId id) {
-        return habitRecordJpaRepository.findByPublicId(id.value())
-                .map(HabitRecordMapper::toDomain);
-    }
-
-    @Override
     public HabitRecord loadById(HabitRecordId id) {
-        return findById(id)
+        return habitRecordJpaRepository.findByPublicId(id.value())
+                .map(HabitRecordMapper::toDomain)
                 .orElseThrow(() -> new HabitRecordNotFoundException(id));
     }
 
@@ -101,7 +96,7 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     ) {
         return habitRecordJpaRepository
                 .findCompletionsForOwnerBetweenDates(
-                        owner.type().name(),
+                        owner.type(),
                         owner.ownerId(),
                         from,
                         to

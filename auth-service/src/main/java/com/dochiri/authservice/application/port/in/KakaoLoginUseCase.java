@@ -5,6 +5,6 @@ import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 
 public interface KakaoLoginUseCase {
 
-    IssueAuthTokenResult login(KakaoLoginCommand command);
+    IssueAuthTokenResult execute(KakaoLoginCommand command);
 
 }

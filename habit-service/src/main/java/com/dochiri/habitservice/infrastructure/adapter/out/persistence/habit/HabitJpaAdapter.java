@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,14 +31,9 @@ public class HabitJpaAdapter implements HabitRepository {
     }
 
     @Override
-    public Optional<Habit> findById(HabitId id) {
-        return habitJpaRepository.findByPublicId(id.value())
-                .map(HabitMapper::toDomain);
-    }
-
-    @Override
     public Habit loadById(HabitId id) {
-        return findById(id)
+        return habitJpaRepository.findByPublicId(id.value())
+                .map(HabitMapper::toDomain)
                 .orElseThrow(() -> new HabitNotFoundException(id));
     }
 

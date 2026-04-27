@@ -21,12 +21,11 @@ public class AuthTokenIssuerService implements AuthTokenIssueUseCase {
     private final Clock clock;
 
     @Override
-    public IssueAuthTokenResult issue(IssueAuthTokenCommand command) {
+    public IssueAuthTokenResult execute(IssueAuthTokenCommand command) {
         IssuedTokenResult tokenResult = tokenGeneratePort.generate(command.publicId(), command.role().name());
 
         AuthSession authSession = AuthSession.create(
                 tokenResult.refreshTokenId(),
-                command.userId(),
                 command.publicId(),
                 command.role(),
                 clock.instant(),

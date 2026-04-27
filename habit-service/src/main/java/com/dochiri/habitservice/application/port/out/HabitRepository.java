@@ -6,13 +6,10 @@ import com.dochiri.habitservice.domain.habit.HabitIndex;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface HabitRepository {
 
     Habit save(Habit habit);
-
-    Optional<Habit> findById(HabitId id);
 
     Habit loadById(HabitId id);
 

@@ -3,12 +3,11 @@ package com.dochiri.authservice.infrastructure.adapter.out.http.response;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
 
 public record CreateSocialUserResponse(
-        Long userId,
         String publicId,
         String nickname,
         String profileImageUrl
 ) {
     public CreateSocialUserResult toResult() {
-        return new CreateSocialUserResult(userId, publicId, nickname, profileImageUrl);
+        return new CreateSocialUserResult(publicId, nickname, profileImageUrl);
     }
 }

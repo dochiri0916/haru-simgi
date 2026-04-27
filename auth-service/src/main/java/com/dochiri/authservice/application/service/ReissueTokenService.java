@@ -28,7 +28,7 @@ public class ReissueTokenService implements ReissueTokenUseCase {
 
     @Transactional
     @Override
-    public IssueAuthTokenResult reissue(RefreshTokenCommand command) {
+    public IssueAuthTokenResult execute(RefreshTokenCommand command) {
         ParseRefreshTokenResult parsed = tokenParsePort.parseRefreshToken(command.refreshToken());
 
         AuthAccount account = authAccountRepository.findByPublicId(parsed.publicId())
@@ -37,12 +37,11 @@ public class ReissueTokenService implements ReissueTokenUseCase {
         AuthSession authSession = authSessionRepository.findByRefreshTokenId(parsed.tokenId())
                 .orElseThrow(() -> new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN));
 
-        if (!authSession.userId().equals(account.userId())
-                || !authSession.publicId().equals(account.publicId())
+        if (!authSession.publicId().equals(account.publicId())
                 || authSession.role() != account.role()) {
             throw new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        return authTokenIssueUseCase.issue(new IssueAuthTokenCommand(account.userId(), account.publicId(), account.role()));
+        return authTokenIssueUseCase.execute(new IssueAuthTokenCommand(account.publicId(), account.role()));
     }
 }

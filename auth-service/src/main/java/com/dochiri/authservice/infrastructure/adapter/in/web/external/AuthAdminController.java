@@ -15,10 +15,10 @@ public class AuthAdminController {
 
     private final ChangeUserRoleUseCase changeUserRoleUseCase;
 
-    @PatchMapping("/{userId}/role")
+    @PatchMapping("/{publicId}/role")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> changeRole(@PathVariable Long userId, @Valid @RequestBody ChangeUserRoleRequest request) {
-        changeUserRoleUseCase.changeRole(request.toCommand(userId));
+    public ResponseEntity<Void> changeRole(@PathVariable String publicId, @Valid @RequestBody ChangeUserRoleRequest request) {
+        changeUserRoleUseCase.execute(request.toCommand(publicId));
         return ResponseEntity.noContent().build();
     }
 

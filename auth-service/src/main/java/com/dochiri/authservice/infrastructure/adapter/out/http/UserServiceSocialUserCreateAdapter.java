@@ -6,8 +6,9 @@ import com.dochiri.authservice.application.port.out.dto.CreateSocialUserCommand;
 import com.dochiri.authservice.application.port.out.dto.CreateSocialUserResult;
 import com.dochiri.authservice.infrastructure.adapter.out.http.request.CreateSocialUserRequest;
 import com.dochiri.authservice.infrastructure.adapter.out.http.response.CreateSocialUserResponse;
+import com.dochiri.authservice.infrastructure.configuration.InternalApiClientProperties;
 import com.dochiri.errorhandling.BaseException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -16,15 +17,20 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class UserServiceSocialUserCreateAdapter implements SocialUserCreatePort {
 
+    static final String USER_SERVICE_BASE_URL = "lb://user-service";
+    static final String INTERNAL_API_TOKEN_HEADER = "X-Internal-Api-Token";
+
     private final RestClient restClient;
+    private final String internalApiToken;
 
     public UserServiceSocialUserCreateAdapter(
-            RestClient.Builder restClientBuilder,
-            @Value("${app.user-service.base-url:http://localhost:8081}") String userServiceBaseUrl
+            @LoadBalanced RestClient.Builder restClientBuilder,
+            InternalApiClientProperties internalApiClientProperties
     ) {
         this.restClient = restClientBuilder
-                .baseUrl(userServiceBaseUrl)
+                .baseUrl(USER_SERVICE_BASE_URL)
                 .build();
+        this.internalApiToken = internalApiClientProperties.token();
     }
 
     @Override
@@ -33,11 +39,16 @@ public class UserServiceSocialUserCreateAdapter implements SocialUserCreatePort 
             CreateSocialUserResponse response = restClient.post()
                     .uri("/internal/users")
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new CreateSocialUserRequest(command.nickname(), command.profileImageUrl()))
+                    .header(INTERNAL_API_TOKEN_HEADER, internalApiToken)
+                    .body(new CreateSocialUserRequest(
+                            command.idempotencyKey(),
+                            command.nickname(),
+                            command.profileImageUrl()
+                    ))
                     .retrieve()
                     .body(CreateSocialUserResponse.class);
 
-            if (response == null || response.userId() == null) {
+            if (response == null || response.publicId() == null) {
                 throw new BaseException(AuthErrorCode.USER_SERVICE_UNAVAILABLE);
             }
 

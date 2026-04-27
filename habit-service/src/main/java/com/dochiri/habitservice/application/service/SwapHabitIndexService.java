@@ -29,27 +29,10 @@ public class SwapHabitIndexService implements SwapHabitIndexUseCase {
         sourceHabit.assertOwner(owner);
         targetHabit.assertOwner(owner);
 
-        Habit reorderedSourceHabit = sourceHabit.reorder(targetHabit.getIndex());
-        Habit reorderedTargetHabit = targetHabit.reorder(sourceHabit.getIndex());
+        Habit savedSourceHabit = habitRepository.save(sourceHabit.reorder(targetHabit.getIndex()));
+        Habit savedTargetHabit = habitRepository.save(targetHabit.reorder(sourceHabit.getIndex()));
 
-        Habit savedSourceHabit = habitRepository.save(reorderedSourceHabit);
-        Habit savedTargetHabit = habitRepository.save(reorderedTargetHabit);
-
-        return new SwapHabitIndexResult(List.of(
-                toDto(savedSourceHabit),
-                toDto(savedTargetHabit)
-        ));
-    }
-
-    private SwapHabitIndexResult.HabitDto toDto(Habit habit) {
-        return new SwapHabitIndexResult.HabitDto(
-                habit.getId().value(),
-                habit.getName().value(),
-                habit.getColor().colorType().name(),
-                habit.getColor().getHexValue(),
-                habit.getIndex().value(),
-                habit.getCreatedAt()
-        );
+        return SwapHabitIndexResult.from(List.of(savedSourceHabit, savedTargetHabit));
     }
 
 }

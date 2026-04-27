@@ -6,6 +6,8 @@ import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @RequiredArgsConstructor
 public class UserJpaAdapter implements UserRepository {
@@ -13,10 +15,19 @@ public class UserJpaAdapter implements UserRepository {
     private final UserJpaRepository userJpaRepository;
 
     @Override
-    public Long save(User user) {
-        UserEntity entity = UserMapper.toEntity(user);
+    public User save(User user, String idempotencyKey) {
+        UserEntity entity = UserMapper.toEntity(user, idempotencyKey);
         UserEntity saved = userJpaRepository.save(entity);
-        return saved.getId();
+        return UserMapper.toDomain(saved);
+    }
+
+    @Override
+    public Optional<User> findByIdempotencyKey(String idempotencyKey) {
+        if (idempotencyKey == null) {
+            return Optional.empty();
+        }
+        return userJpaRepository.findByIdempotencyKey(idempotencyKey)
+                .map(UserMapper::toDomain);
     }
 
     @Override

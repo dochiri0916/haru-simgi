@@ -29,22 +29,9 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
 
         habit.assertOwner(owner);
 
-        Habit updatedHabit = habit.rename(newName);
+        Habit saved = habitRepository.save(habit.rename(newName));
 
-        Habit saved = habitRepository.save(updatedHabit);
-
-        return toResult(saved);
-    }
-
-    private UpdateHabitNameResult toResult(Habit habit) {
-        return new UpdateHabitNameResult(
-                habit.getId().value(),
-                habit.getName().value(),
-                habit.getColor().colorType().name(),
-                habit.getColor().getHexValue(),
-                habit.getIndex().value(),
-                habit.getCreatedAt()
-        );
+        return UpdateHabitNameResult.from(saved);
     }
 
 }

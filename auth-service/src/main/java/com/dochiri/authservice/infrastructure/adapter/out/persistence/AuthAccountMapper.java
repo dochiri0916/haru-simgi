@@ -10,7 +10,6 @@ public class AuthAccountMapper {
 
     public AuthAccount toDomain(AuthAccountEntity entity) {
         return new AuthAccount(
-                entity.getUserId(),
                 entity.getPublicId(),
                 AuthProvider.valueOf(entity.getProvider()),
                 entity.getProviderId(),
@@ -20,7 +19,6 @@ public class AuthAccountMapper {
 
     public AuthAccountEntity toEntity(AuthAccount authAccount) {
         return AuthAccountEntity.from(
-                authAccount.userId(),
                 authAccount.publicId(),
                 authAccount.provider(),
                 authAccount.providerId(),

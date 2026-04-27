@@ -8,4 +8,6 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByPublicId(String publicId);
 
+    Optional<UserEntity> findByIdempotencyKey(String idempotencyKey);
+
 }

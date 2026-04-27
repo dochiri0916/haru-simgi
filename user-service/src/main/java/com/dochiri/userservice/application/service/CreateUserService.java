@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CreateUserService implements CreateUserUseCase {
@@ -18,11 +20,20 @@ public class CreateUserService implements CreateUserUseCase {
     @Transactional
     @Override
     public CreateUserResult execute(CreateUserCommand command) {
-        User user = User.create(command.nickname(), command.profileImageUrl());
-        Long userId = userRepository.save(user);
+        Optional<User> existing = userRepository.findByIdempotencyKey(command.idempotencyKey());
+        if (existing.isPresent()) {
+            return toResult(existing.get());
+        }
 
+        User saved = userRepository.save(
+                User.create(command.nickname(), command.profileImageUrl()),
+                command.idempotencyKey()
+        );
+        return toResult(saved);
+    }
+
+    private CreateUserResult toResult(User user) {
         return new CreateUserResult(
-                userId,
                 user.getId().value(),
                 user.getNickname().value(),
                 user.getProfileImageUrl().value()

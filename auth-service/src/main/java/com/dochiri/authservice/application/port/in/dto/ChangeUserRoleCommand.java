@@ -5,11 +5,11 @@ import com.dochiri.security.role.UserRole;
 import static java.util.Objects.requireNonNull;
 
 public record ChangeUserRoleCommand(
-        Long userId,
+        String publicId,
         UserRole role
 ) {
     public ChangeUserRoleCommand {
-        requireNonNull(userId);
+        requireNonNull(publicId);
         requireNonNull(role);
     }
 }

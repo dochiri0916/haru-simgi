@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 public record ChangeUserRoleRequest(
         @NotNull UserRole role
 ) {
-    public ChangeUserRoleCommand toCommand(Long userId) {
-        return new ChangeUserRoleCommand(userId, role);
+    public ChangeUserRoleCommand toCommand(String publicId) {
+        return new ChangeUserRoleCommand(publicId, role);
     }
 }
