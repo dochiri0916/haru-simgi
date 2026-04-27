@@ -13,7 +13,7 @@ DDD / 헥사고날 / MSA 관점에서 정합성을 점검한 결과입니다.
 | 어그리게이트 · VO 설계 | 양호(habit) / 미흡(auth, user) | `Habit`, `HabitRecord`는 모범. `AuthAccount`, `User`는 anemic |
 | 포트–어댑터 분리 | 대체로 양호 | 일부 use case가 패턴을 깨뜨림 (KakaoAuthorize, GetCurrentUser, Logout) |
 | 트랜잭션 경계 | 양호 | `@Transactional`이 application service에 위치 |
-| MSA 경계 | 미흡 | auth-service가 user-service의 PK(`Long userId`)를 직접 저장 |
+| MSA 경계 | 양호 | auth-service는 자체 PK + `publicId`만 보관, 내부 통신은 `lb://`+토큰 검증 |
 | 데드 코드 / 일관성 | 다수 발견 | RefreshToken 계열 전체, `findByHabitIdAndCompletedAt` 등 |
 
 ---
@@ -225,7 +225,7 @@ public interface KakaoAuthorizeUseCase {
 
 ### 4.2 개선 필요
 
-#### (M-1) auth-service가 user-service의 PK를 직접 저장
+#### (M-1) auth-service가 user-service의 PK를 직접 저장 — ✅ 수정 완료
 ```java
 @Entity @Table(name = "auth_users")
 public class AuthAccountEntity {
@@ -237,8 +237,13 @@ public class AuthAccountEntity {
   PK 전략을 바꾸면 auth-service 스키마가 깨진다 — 강한 결합.
 - **권장**: 서비스 간 식별자는 `publicId`(UUID) 한 가지만 공유. auth-service는
   자체 PK를 별도로 가지고, FK는 `publicId(string)` 한 컬럼만 보관한다.
+- **수정 내용**: `AuthAccountEntity`는 자체 `@GeneratedValue` `id`를 PK로 보유하고
+  user-service 식별자는 `publicId(string)` 단 한 컬럼만 보관한다. `AuthAccount`
+  도메인/`CreateSocialUserResult` DTO/`SocialUserCreatePort` 어디에도 user-service
+  의 `Long` PK가 노출되지 않는다. (`Long internalId` 잔존 위치는 `RefreshToken*`
+  데드코드 한정 — 5장에서 별도 제거 권고.)
 
-#### (M-2) 내부 통신 URL이 환경변수 fallback `localhost:8081`
+#### (M-2) 내부 통신 URL이 환경변수 fallback `localhost:8081` — ✅ 수정 완료
 ```java
 @Value("${app.user-service.base-url:http://localhost:8081}") String userServiceBaseUrl
 ```
@@ -246,15 +251,28 @@ public class AuthAccountEntity {
   hardcoded localhost로 fallback이 가능 → 운영 환경에서 사고 발생 가능.
 - **권장**: `WebClient`/`RestClient`에 LoadBalanced 빈을 사용하고
   `lb://user-service`로 호출. fallback URL을 두지 않는다.
+- **수정 내용**: `UserServiceSocialUserCreateAdapter`가 `@LoadBalanced
+  RestClient.Builder`를 주입받아 `baseUrl("lb://user-service")` 한 곳으로
+  고정. localhost fallback 또는 `app.user-service.base-url` 프로퍼티 자체가
+  존재하지 않는다.
 
-#### (M-3) `InternalUserController`에 보안 미적용
+#### (M-3) `InternalUserController`에 보안 미적용 — ✅ 수정 완료
 - 인증/인가 어노테이션이 없다. Gateway가 잘못 라우팅하면 외부에서도 호출 가능.
 - **권장**:
   1. `/internal/**` 경로를 Gateway에서 명시적으로 차단.
   2. 서비스 간 호출용 토큰/mTLS 도입.
   3. SecurityConfiguration에서 `/internal/**`는 내부망 IP 화이트리스트로 한정.
+- **수정 내용**:
+  1. Gateway는 `/api/**` 경로만 라우팅하므로 외부에서 `/internal/**`은
+     라우트 자체가 없다(암묵적 차단).
+  2. user-service에 `InternalApiTokenAuthenticationFilter` + `UserServiceSecurityConfiguration`
+     도입. `/internal/**` 요청은 `X-Internal-Api-Token` 헤더가
+     `internal-api.server.token`과 일치할 때만 통과하며, `ROLE_INTERNAL_API`
+     권한을 받아 `hasRole("INTERNAL_API")` 매처로 격리. 토큰 누락/불일치 시
+     401. auth-service의 `UserServiceSocialUserCreateAdapter`가 같은 헤더로
+     호출하도록 이미 정합.
 
-#### (M-4) Kakao 로그인 1회당 토큰/유저 정보 호출 2번 + 동시 로그인 충돌 처리
+#### (M-4) Kakao 로그인 1회당 토큰/유저 정보 호출 2번 + 동시 로그인 충돌 처리 — ✅ 수정 완료
 - `KakaoLoginService`는 신규 사용자 시 user-service에 HTTP 호출하여 사용자 생성,
   실패 시 `AuthAccountJpaAdapter`에서 동시성 충돌을 다시 update로 회복한다.
 - 분산 트랜잭션이 아니라 **eventually-consistent**한 보상 패턴이지만, 명세가
@@ -263,6 +281,13 @@ public class AuthAccountEntity {
 - **권장**: outbox 패턴 또는 Kafka 이벤트 기반(이미 모듈은 존재) 비동기 처리,
   혹은 idempotency-key를 `providerId`로 부여하고 user-service `POST /internal/users`를
   멱등하게 만든다.
+- **수정 내용**: `KakaoLoginService.provisionSocialAccount`가
+  `provider:providerId` 형식의 `idempotencyKey`를 생성해 `CreateSocialUserCommand`
+  로 전달. user-service `users` 테이블에 `idempotencyKey` 유니크 컬럼 +
+  `CreateUserService.execute`에서 사전 조회 후 동시 INSERT 충돌 시
+  `DataIntegrityViolationException`을 잡아 동일 키 사용자를 재조회·반환하는
+  멱등 보상까지 추가. 보상 성공 시 auth-service가 같은 `publicId`를 받아
+  orphan 가능성을 제거. (Kafka 기반 비동기 보상은 별도 과제.)
 
 #### (M-5) Kafka 모듈은 있으나 사용처 0건
 - `modules/kafka` 의존성 / `docker-compose`의 Kafka는 있지만, 실제 produce/consume
@@ -294,10 +319,11 @@ public class AuthAccountEntity {
 
 ### 🔴 High — 정합성/안정성에 직결
 1. **(M-1)** auth-service에서 user-service PK(`Long`) 의존 제거 → `publicId` 중심
-   설계로 전환.
+   설계로 전환. ✅
 2. **데드 코드 제거** — `RefreshToken*` 5개 파일 + 테이블 마이그레이션.
-3. **(M-3)** `/internal/**` 경로 보안 (Gateway 라우팅 + Security 설정).
-4. **(M-2)** user-service URL `lb://`로 통일.
+3. **(M-3)** `/internal/**` 경로 보안 (Gateway 라우팅 + Security 설정). ✅
+4. **(M-2)** user-service URL `lb://`로 통일. ✅
+5. **(M-4)** social user 생성 멱등화. ✅
 
 ### 🟡 Mid — 헥사고날·DDD 일관성
 6. **(D-1)** `User`, `AuthAccount`에 VO 도입 + 도메인 메서드 추가.
