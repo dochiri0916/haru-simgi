@@ -13,8 +13,8 @@ public class InvalidHabitOwnerException extends DomainException {
     public InvalidHabitOwnerException(Reason reason, OwnerType type, String ownerId) {
         super(HabitErrorCode.INVALID_HABIT_OWNER,
                 "reason", reason,
-                "type", type,
-                "ownerId", ownerId);
+                "type", String.valueOf(type),
+                "ownerId", String.valueOf(ownerId));
     }
 
 }

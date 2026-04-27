@@ -22,7 +22,7 @@ public class SwapHabitIndexService implements SwapHabitIndexUseCase {
     @Transactional
     @Override
     public SwapHabitIndexResult execute(SwapHabitIndexCommand command) {
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
         Habit sourceHabit = habitRepository.loadById(HabitId.of(command.sourceHabitId()));
         Habit targetHabit = habitRepository.loadById(HabitId.of(command.targetHabitId()));
 

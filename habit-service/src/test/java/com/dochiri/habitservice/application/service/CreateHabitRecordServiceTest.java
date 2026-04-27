@@ -53,7 +53,7 @@ class CreateHabitRecordServiceTest {
         );
         CreateHabitRecordCommand command = new CreateHabitRecordCommand(
                 habitId.value(),
-                owner.ownerId(),
+                owner,
                 Instant.parse("2026-04-16T12:00:00Z"),
                 20,
                 "새 기록"
@@ -82,7 +82,7 @@ class CreateHabitRecordServiceTest {
         Instant completedAt = Instant.parse("2026-04-16T12:00:00Z");
         CreateHabitRecordCommand command = new CreateHabitRecordCommand(
                 habitId.value(),
-                owner.ownerId(),
+                owner,
                 completedAt,
                 20,
                 "새 기록"
@@ -113,7 +113,7 @@ class CreateHabitRecordServiceTest {
         Instant completedAt = Instant.parse("2026-04-16T12:00:00Z");
         CreateHabitRecordCommand command = new CreateHabitRecordCommand(
                 habitId.value(),
-                owner.ownerId(),
+                owner,
                 completedAt,
                 null,
                 null

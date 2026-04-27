@@ -50,7 +50,7 @@ class UpdateHabitRecordServiceTest {
         UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
                 habitId.value(),
                 recordId.value(),
-                owner.ownerId(),
+                owner,
                 null,
                 45,
                 null
@@ -84,7 +84,7 @@ class UpdateHabitRecordServiceTest {
         UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
                 habitId.value(),
                 recordId.value(),
-                owner.ownerId(),
+                owner,
                 null,
                 null,
                 JsonNullable.of(null)
@@ -117,7 +117,7 @@ class UpdateHabitRecordServiceTest {
         UpdateHabitRecordCommand command = new UpdateHabitRecordCommand(
                 habitId.value(),
                 recordId.value(),
-                owner.ownerId(),
+                owner,
                 null,
                 null,
                 JsonNullable.undefined()

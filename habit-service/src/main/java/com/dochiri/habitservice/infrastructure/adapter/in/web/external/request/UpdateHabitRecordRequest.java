@@ -1,6 +1,7 @@
 package com.dochiri.habitservice.infrastructure.adapter.in.web.external.request;
 
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitRecordCommand;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -49,11 +50,11 @@ public class UpdateHabitRecordRequest {
         this.memoPresent = true;
     }
 
-    public UpdateHabitRecordCommand toCommand(String habitId, String recordId, String userId) {
+    public UpdateHabitRecordCommand toCommand(String habitId, String recordId, HabitOwner owner) {
         return new UpdateHabitRecordCommand(
                 habitId,
                 recordId,
-                userId,
+                owner,
                 completedAt,
                 minutes,
                 memoPresent ? JsonNullable.of(memo) : JsonNullable.undefined()

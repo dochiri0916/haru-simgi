@@ -35,7 +35,7 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
     public GetHabitRecordsResult execute(GetHabitRecordsCommand command) {
 
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
 
         Habit habit = habitRepository.loadById(habitId);
 

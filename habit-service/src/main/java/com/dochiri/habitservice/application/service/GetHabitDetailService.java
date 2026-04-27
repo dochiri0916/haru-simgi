@@ -21,7 +21,7 @@ public class GetHabitDetailService implements GetHabitDetailUseCase {
     @Override
     public GetHabitDetailResult execute(GetHabitDetailCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
 
         Habit habit = habitRepository.loadById(habitId);
 

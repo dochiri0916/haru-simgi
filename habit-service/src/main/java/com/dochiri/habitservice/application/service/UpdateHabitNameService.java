@@ -22,7 +22,7 @@ public class UpdateHabitNameService implements UpdateHabitNameUseCase {
     @Override
     public UpdateHabitNameResult execute(UpdateHabitNameCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
         HabitName newName = HabitName.of(command.newName());
 
         Habit habit = habitRepository.loadById(habitId);

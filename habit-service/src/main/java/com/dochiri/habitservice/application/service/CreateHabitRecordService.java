@@ -32,7 +32,7 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
     @Override
     public CreateHabitRecordResult execute(CreateHabitRecordCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
 
         Habit habit = habitRepository.loadById(habitId);
         habit.assertOwner(owner);

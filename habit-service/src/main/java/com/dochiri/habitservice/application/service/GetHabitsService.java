@@ -18,7 +18,7 @@ public class GetHabitsService implements GetHabitsUseCase {
     @Transactional(readOnly = true)
     @Override
     public GetHabitsResult execute(GetHabitsCommand command) {
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
         return GetHabitsResult.from(habitRepository.findByOwner(owner));
     }
 

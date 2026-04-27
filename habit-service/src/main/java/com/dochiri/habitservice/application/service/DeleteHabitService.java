@@ -22,7 +22,7 @@ public class DeleteHabitService implements DeleteHabitUseCase {
     @Override
     public void execute(DeleteHabitCommand command) {
         HabitId habitId = HabitId.of(command.id());
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
 
         Habit habit = habitRepository.loadById(habitId);
 

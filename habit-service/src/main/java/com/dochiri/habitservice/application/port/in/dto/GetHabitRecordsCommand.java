@@ -1,17 +1,19 @@
 package com.dochiri.habitservice.application.port.in.dto;
 
+import com.dochiri.habitservice.domain.habit.HabitOwner;
+
 import java.time.LocalDate;
 
 public record GetHabitRecordsCommand(
         String habitId,
-        String ownerPublicId,
+        HabitOwner owner,
         LocalDate fromDate,
         LocalDate toDate
 ) {
-    public static GetHabitRecordsCommand of(String habitId, String ownerPublicId, LocalDate from, LocalDate to) {
+    public static GetHabitRecordsCommand of(String habitId, HabitOwner owner, LocalDate from, LocalDate to) {
         return new GetHabitRecordsCommand(
                 habitId,
-                ownerPublicId,
+                owner,
                 from,
                 to
         );

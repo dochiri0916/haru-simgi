@@ -1,9 +1,11 @@
 package com.dochiri.habitservice.application.port.in.dto;
 
+import com.dochiri.habitservice.domain.habit.HabitOwner;
+
 import java.time.LocalDate;
 
 public record GetHabitGrassCommand(
-        String ownerPublicId,
+        HabitOwner owner,
         LocalDate fromDate,
         LocalDate toDate
 ) {

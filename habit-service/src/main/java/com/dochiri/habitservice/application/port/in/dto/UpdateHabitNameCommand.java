@@ -1,8 +1,10 @@
 package com.dochiri.habitservice.application.port.in.dto;
 
+import com.dochiri.habitservice.domain.habit.HabitOwner;
+
 public record UpdateHabitNameCommand(
         String habitId,
-        String ownerPublicId,
+        HabitOwner owner,
         String newName
 ) {
 }

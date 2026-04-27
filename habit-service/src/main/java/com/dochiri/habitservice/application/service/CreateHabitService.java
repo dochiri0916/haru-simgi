@@ -22,7 +22,7 @@ public class CreateHabitService implements CreateHabitUseCase {
     @Transactional
     @Override
     public CreateHabitResult execute(CreateHabitCommand command) {
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
         HabitName name = HabitName.of(command.name());
         HabitColor color = HabitColor.from(command.color());
         HabitIndex index = habitRepository.nextIndex(owner);

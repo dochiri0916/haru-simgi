@@ -35,7 +35,7 @@ class SwapHabitIndexServiceTest {
         SwapHabitIndexCommand command = new SwapHabitIndexCommand(
                 sourceHabitId.value(),
                 targetHabitId.value(),
-                owner.ownerId()
+                owner
         );
 
         when(habitRepository.loadById(sourceHabitId)).thenReturn(sourceHabit);

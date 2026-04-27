@@ -30,7 +30,7 @@ public class GetHabitGrassService implements GetHabitGrassUseCase {
 
         ZoneId zoneId = clock.getZone();
 
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
         LocalDate today = LocalDate.now(clock);
         LocalDate toDate = command.toDate() != null ? command.toDate() : today;
         Optional<LocalDate> firstHabitCreatedDate = firstHabitCreatedDate(owner, zoneId);

@@ -53,7 +53,7 @@ class GetHabitGrassServiceTest {
         )).thenReturn(Map.of(date, new HabitGrassAggregation(1, 30)));
 
         GetHabitGrassResult result = service.execute(new GetHabitGrassCommand(
-                owner.ownerId(),
+                owner,
                 date,
                 date
         ));
@@ -84,7 +84,7 @@ class GetHabitGrassServiceTest {
         )).thenReturn(Map.of(date, new HabitGrassAggregation(2, 90)));
 
         GetHabitGrassResult result = service.execute(new GetHabitGrassCommand(
-                owner.ownerId(),
+                owner,
                 date,
                 date
         ));
@@ -111,7 +111,7 @@ class GetHabitGrassServiceTest {
         )).thenReturn(Map.of(date, new HabitGrassAggregation(1, 0)));
 
         GetHabitGrassResult result = service.execute(new GetHabitGrassCommand(
-                owner.ownerId(),
+                owner,
                 date,
                 date
         ));

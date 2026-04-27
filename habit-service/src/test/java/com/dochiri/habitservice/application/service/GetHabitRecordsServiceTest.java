@@ -63,7 +63,7 @@ class GetHabitRecordsServiceTest {
 
         GetHabitRecordsResult result = service.execute(GetHabitRecordsCommand.of(
                 habitId.value(),
-                owner.ownerId(),
+                owner,
                 null,
                 null
         ));
@@ -105,7 +105,7 @@ class GetHabitRecordsServiceTest {
 
         GetHabitRecordsResult result = service.execute(GetHabitRecordsCommand.of(
                 habitId.value(),
-                owner.ownerId(),
+                owner,
                 from,
                 to
         ));
@@ -142,7 +142,7 @@ class GetHabitRecordsServiceTest {
 
         GetHabitRecordsResult result = service.execute(GetHabitRecordsCommand.of(
                 habitId.value(),
-                owner.ownerId(),
+                owner,
                 null,
                 null
         ));

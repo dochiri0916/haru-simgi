@@ -30,7 +30,7 @@ public class UpdateHabitRecordService implements UpdateHabitRecordUseCase {
     public UpdateHabitRecordResult execute(UpdateHabitRecordCommand command) {
         HabitId habitId = HabitId.of(command.habitId());
         HabitRecordId recordId = HabitRecordId.of(command.recordId());
-        HabitOwner owner = HabitOwner.user(command.ownerPublicId());
+        HabitOwner owner = command.owner();
 
         Habit habit = habitRepository.loadById(habitId);
         habit.assertOwner(owner);

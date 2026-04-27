@@ -1,6 +1,7 @@
 package com.dochiri.habitservice.infrastructure.adapter.in.web.external.request;
 
 import com.dochiri.habitservice.application.port.in.dto.CreateHabitCommand;
+import com.dochiri.habitservice.domain.habit.HabitOwner;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -18,9 +19,9 @@ public record CreateHabitRequest(
         )
         @Schema(description = "색상 (BLUE, GREEN, RED, YELLOW, PURPLE, PINK)", example = "GREEN") String color
 ) {
-    public CreateHabitCommand toCommand(String userId) {
+    public CreateHabitCommand toCommand(HabitOwner owner) {
         return new CreateHabitCommand(
-                userId,
+                owner,
                 name,
                 color
         );

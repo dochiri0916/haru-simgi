@@ -19,6 +19,10 @@ public record HabitOwner(
         return new HabitOwner(OwnerType.GUEST, guestId);
     }
 
+    public static HabitOwner of(OwnerType type, String ownerId) {
+        return new HabitOwner(type, ownerId);
+    }
+
     private static void validate(OwnerType type, String ownerId) {
 
         if (type == null) {
