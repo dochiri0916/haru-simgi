@@ -26,14 +26,11 @@ public class KakaoOAuthAdapter implements KakaoOAuthPort {
     private final RestClient restClient;
     private final KakaoLoginProperties kakaoLoginProperties;
 
-    public KakaoOAuthAdapter(
-            RestClient.Builder restClientBuilder,
-            KakaoLoginProperties kakaoLoginProperties
-    ) {
+    public KakaoOAuthAdapter(KakaoLoginProperties kakaoLoginProperties) {
         var httpClient = HttpClients.custom()
                 .disableAutomaticRetries()
                 .build();
-        this.restClient = restClientBuilder
+        this.restClient = RestClient.builder()
                 .requestFactory(new HttpComponentsClientHttpRequestFactory(httpClient))
                 .build();
         this.kakaoLoginProperties = kakaoLoginProperties;

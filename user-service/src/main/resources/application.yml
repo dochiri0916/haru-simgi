@@ -12,3 +12,7 @@ spring:
 
 jwt:
   secret: ${JWT_SECRET}
+
+internal-api:
+  server:
+    token: ${INTERNAL_API_TOKEN:internal-default-token-change-me}

@@ -6,6 +6,7 @@ import com.dochiri.userservice.application.port.in.dto.CreateUserResult;
 import com.dochiri.userservice.application.port.out.UserRepository;
 import com.dochiri.userservice.domain.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,11 +26,17 @@ public class CreateUserService implements CreateUserUseCase {
             return toResult(existing.get());
         }
 
-        User saved = userRepository.save(
-                User.create(command.nickname(), command.profileImageUrl()),
-                command.idempotencyKey()
-        );
-        return toResult(saved);
+        try {
+            User saved = userRepository.save(
+                    User.create(command.nickname(), command.profileImageUrl()),
+                    command.idempotencyKey()
+            );
+            return toResult(saved);
+        } catch (DataIntegrityViolationException exception) {
+            return userRepository.findByIdempotencyKey(command.idempotencyKey())
+                    .map(this::toResult)
+                    .orElseThrow(() -> exception);
+        }
     }
 
     private CreateUserResult toResult(User user) {

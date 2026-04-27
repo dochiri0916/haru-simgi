@@ -8,7 +8,8 @@ import com.dochiri.authservice.infrastructure.adapter.out.http.request.CreateSoc
 import com.dochiri.authservice.infrastructure.adapter.out.http.response.CreateSocialUserResponse;
 import com.dochiri.authservice.infrastructure.configuration.InternalApiClientProperties;
 import com.dochiri.errorhandling.BaseException;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -17,27 +18,32 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class UserServiceSocialUserCreateAdapter implements SocialUserCreatePort {
 
-    static final String USER_SERVICE_BASE_URL = "lb://user-service";
+    static final String USER_SERVICE_NAME = "user-service";
     static final String INTERNAL_API_TOKEN_HEADER = "X-Internal-Api-Token";
 
     private final RestClient restClient;
+    private final LoadBalancerClient loadBalancerClient;
     private final String internalApiToken;
 
     public UserServiceSocialUserCreateAdapter(
-            @LoadBalanced RestClient.Builder restClientBuilder,
+            LoadBalancerClient loadBalancerClient,
             InternalApiClientProperties internalApiClientProperties
     ) {
-        this.restClient = restClientBuilder
-                .baseUrl(USER_SERVICE_BASE_URL)
-                .build();
+        this.restClient = RestClient.builder().build();
+        this.loadBalancerClient = loadBalancerClient;
         this.internalApiToken = internalApiClientProperties.token();
     }
 
     @Override
     public CreateSocialUserResult create(CreateSocialUserCommand command) {
+        ServiceInstance instance = loadBalancerClient.choose(USER_SERVICE_NAME);
+        if (instance == null) {
+            throw new BaseException(AuthErrorCode.USER_SERVICE_UNAVAILABLE);
+        }
+
         try {
             CreateSocialUserResponse response = restClient.post()
-                    .uri("/internal/users")
+                    .uri(instance.getUri() + "/internal/users")
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(INTERNAL_API_TOKEN_HEADER, internalApiToken)
                     .body(new CreateSocialUserRequest(

@@ -137,6 +137,7 @@ services:
       KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET:?KAKAO_CLIENT_SECRET is required}
       KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8080/api/auth/login/kakao/callback}
       KAKAO_FRONTEND_REDIRECT_URI: ${KAKAO_FRONTEND_REDIRECT_URI:-http://localhost:5173/auth/callback}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-4ba447379feeb0ebcbb13150fd9e9fb4114927c3a9e6faf7c29f589457be19d1}
 
   user-service:
     build:
@@ -159,6 +160,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${USER_DB_PASSWORD:-user_password}
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-4ba447379feeb0ebcbb13150fd9e9fb4114927c3a9e6faf7c29f589457be19d1}
 
   habit-service:
     build:
