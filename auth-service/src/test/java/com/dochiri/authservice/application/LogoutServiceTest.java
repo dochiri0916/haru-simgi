@@ -2,11 +2,12 @@ package com.dochiri.authservice.application;
 
 import com.dochiri.authservice.application.port.in.dto.LogoutCommand;
 import com.dochiri.authservice.application.port.out.AuthSessionRepository;
+import com.dochiri.authservice.application.port.out.TokenParsePort;
+import com.dochiri.authservice.application.port.out.dto.ParseRefreshTokenResult;
 import com.dochiri.authservice.application.service.LogoutService;
 import com.dochiri.authservice.domain.AuthSession;
+import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.errorhandling.BaseException;
-import com.dochiri.security.jwt.JwtProvider;
-import com.dochiri.security.properties.JwtProperties;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,55 +15,64 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class LogoutServiceTest {
 
     private final AuthSessionRepository authSessionRepository = mock(AuthSessionRepository.class);
-    private final JwtProvider jwtProvider = new JwtProvider(new JwtProperties(
-            "12345678901234567890123456789012",
-            1_800_000L,
-            1_209_600_000L
-    ));
+    private final TokenParsePort tokenParsePort = mock(TokenParsePort.class);
 
     private LogoutService logoutService;
 
     @BeforeEach
     void setUp() {
-        logoutService = new LogoutService(jwtProvider, authSessionRepository);
+        logoutService = new LogoutService(tokenParsePort, authSessionRepository);
     }
 
     @Test
-    void 저장된_리프레시_토큰이면_로그아웃에_성공한다() {
-        String refreshToken = jwtProvider.generateRefreshToken("public-id-1", "USER");
-        var claims = jwtProvider.parseAndValidate(refreshToken);
-        String tokenId = jwtProvider.extractTokenId(claims);
+    void 저장된_리프레시_토큰이면_세션을_삭제한다() {
+        String refreshToken = "refresh-token";
+        String tokenId = "session-id";
 
+        when(tokenParsePort.parseRefreshToken(refreshToken))
+                .thenReturn(new ParseRefreshTokenResult("public-id-1", tokenId));
         when(authSessionRepository.findByRefreshTokenId(tokenId))
                 .thenReturn(Optional.of(AuthSession.create(
                         tokenId,
-                        1L,
                         "public-id-1",
                         UserRole.USER,
                         Instant.parse("2026-04-17T00:00:00Z"),
                         Instant.parse("2026-04-17T00:01:00Z")
                 )));
 
-        logoutService.logout(new LogoutCommand(refreshToken));
+        logoutService.execute(new LogoutCommand(refreshToken));
 
         verify(authSessionRepository).deleteBySessionId(tokenId);
     }
 
     @Test
-    void 저장되지_않은_리프레시_토큰이면_예외가_발생한다() {
-        String refreshToken = jwtProvider.generateRefreshToken("public-id-1", "USER");
-        var claims = jwtProvider.parseAndValidate(refreshToken);
-        String tokenId = jwtProvider.extractTokenId(claims);
+    void 세션이_이미_없어도_조용히_무시한다() {
+        String refreshToken = "refresh-token";
+        String tokenId = "session-id";
 
+        when(tokenParsePort.parseRefreshToken(refreshToken))
+                .thenReturn(new ParseRefreshTokenResult("public-id-1", tokenId));
         when(authSessionRepository.findByRefreshTokenId(tokenId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> logoutService.logout(new LogoutCommand(refreshToken)))
-                .isInstanceOf(BaseException.class);
+        logoutService.execute(new LogoutCommand(refreshToken));
+
+        verify(authSessionRepository, never()).deleteBySessionId(anyString());
+    }
+
+    @Test
+    void 유효하지_않은_리프레시_토큰이면_조용히_무시한다() {
+        String refreshToken = "invalid-token";
+
+        when(tokenParsePort.parseRefreshToken(refreshToken))
+                .thenThrow(new BaseException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+
+        logoutService.execute(new LogoutCommand(refreshToken));
+
+        verifyNoInteractions(authSessionRepository);
     }
 }

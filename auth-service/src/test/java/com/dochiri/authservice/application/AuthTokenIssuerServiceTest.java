@@ -43,7 +43,7 @@ class AuthTokenIssuerServiceTest {
                         EXPIRES_AT
                 ));
 
-        var result = authTokenIssuerService.issue(new IssueAuthTokenCommand(1L, "public-id-1", UserRole.USER));
+        var result = authTokenIssuerService.execute(new IssueAuthTokenCommand("public-id-1", UserRole.USER));
 
         ArgumentCaptor<AuthSession> authSessionCaptor = ArgumentCaptor.forClass(AuthSession.class);
         verify(authSessionRepository).saveReplacingUserSessions(authSessionCaptor.capture());

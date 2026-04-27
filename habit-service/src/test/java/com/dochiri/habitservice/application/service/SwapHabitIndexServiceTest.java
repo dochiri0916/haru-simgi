@@ -1,5 +1,6 @@
 package com.dochiri.habitservice.application.service;
 
+import com.dochiri.habitservice.application.port.in.dto.HabitView;
 import com.dochiri.habitservice.application.port.in.dto.SwapHabitIndexCommand;
 import com.dochiri.habitservice.application.port.in.dto.SwapHabitIndexResult;
 import com.dochiri.habitservice.application.port.out.HabitRepository;
@@ -44,7 +45,7 @@ class SwapHabitIndexServiceTest {
         SwapHabitIndexResult result = service.execute(command);
 
         assertThat(result.habits())
-                .extracting(SwapHabitIndexResult.HabitDto::id, SwapHabitIndexResult.HabitDto::index)
+                .extracting(HabitView::id, HabitView::index)
                 .containsExactly(
                         org.assertj.core.groups.Tuple.tuple(sourceHabitId.value(), 2),
                         org.assertj.core.groups.Tuple.tuple(targetHabitId.value(), 0)

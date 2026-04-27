@@ -54,7 +54,7 @@ class AuthControllerTransportTest {
 
     @Test
     void 기본_로그인은_쿠키를_발급한다() throws Exception {
-        given(kakaoLoginUseCase.login(any())).willReturn(tokenResult());
+        given(kakaoLoginUseCase.execute(any())).willReturn(tokenResult());
 
         mockMvc.perform(post("/api/auth/login/kakao")
                         .contentType(APPLICATION_JSON)
@@ -72,7 +72,7 @@ class AuthControllerTransportTest {
 
     @Test
     void bearer_로그인은_쿠키를_발급하지_않는다() throws Exception {
-        given(kakaoLoginUseCase.login(any())).willReturn(tokenResult());
+        given(kakaoLoginUseCase.execute(any())).willReturn(tokenResult());
 
         mockMvc.perform(post("/api/auth/login/kakao")
                         .header(AUTH_TRANSPORT_HEADER, "bearer")
@@ -90,7 +90,7 @@ class AuthControllerTransportTest {
 
     @Test
     void bearer_재발급은_쿠키를_발급하지_않는다() throws Exception {
-        given(reissueTokenUseCase.reissue(any())).willReturn(tokenResult());
+        given(reissueTokenUseCase.execute(any())).willReturn(tokenResult());
 
         mockMvc.perform(post("/api/auth/refresh")
                         .header(AUTH_TRANSPORT_HEADER, "bearer")
@@ -107,7 +107,7 @@ class AuthControllerTransportTest {
 
     @Test
     void bearer_로그아웃은_쿠키_삭제_헤더를_내리지_않는다() throws Exception {
-        willDoNothing().given(logoutUseCase).logout(any());
+        willDoNothing().given(logoutUseCase).execute(any());
 
         mockMvc.perform(post("/api/auth/logout")
                         .header(AUTH_TRANSPORT_HEADER, "bearer")
@@ -123,7 +123,7 @@ class AuthControllerTransportTest {
 
     @Test
     void bearer_콜백은_리다이렉트만_하고_쿠키를_발급하지_않는다() throws Exception {
-        given(kakaoLoginUseCase.login(any())).willReturn(tokenResult());
+        given(kakaoLoginUseCase.execute(any())).willReturn(tokenResult());
 
         mockMvc.perform(get("/api/auth/login/kakao/callback")
                         .header(AUTH_TRANSPORT_HEADER, "bearer")

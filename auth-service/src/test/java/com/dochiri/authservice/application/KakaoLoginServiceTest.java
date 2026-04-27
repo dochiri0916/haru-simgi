@@ -42,7 +42,7 @@ class KakaoLoginServiceTest {
                 authAccountRepository,
                 authTokenIssueUseCase
         );
-        when(authTokenIssueUseCase.issue(any(IssueAuthTokenCommand.class)))
+        when(authTokenIssueUseCase.execute(any(IssueAuthTokenCommand.class)))
                 .thenReturn(new IssueAuthTokenResult("access-token", "refresh-token", Instant.now().plusSeconds(3600), UserRole.USER));
     }
 
@@ -55,16 +55,15 @@ class KakaoLoginServiceTest {
                         "alice",
                         "https://example.com/alice.png"
                 ));
-        when(authAccountRepository.findByProviderAndProviderId("KAKAO", "100"))
+        when(authAccountRepository.findByProviderAndProviderId(AuthProvider.KAKAO, "100"))
                 .thenReturn(java.util.Optional.of(new AuthAccount(
-                        1L,
                         "public-id-1",
                         AuthProvider.KAKAO,
                         "100",
                         UserRole.USER
                 )));
 
-        var result = kakaoLoginService.login(new KakaoLoginCommand("auth-code"));
+        var result = kakaoLoginService.execute(new KakaoLoginCommand("auth-code"));
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
@@ -81,21 +80,21 @@ class KakaoLoginServiceTest {
                         "kakao-user",
                         "https://example.com/profile.png"
                 ));
-        when(authAccountRepository.findByProviderAndProviderId("KAKAO", "200"))
+        when(authAccountRepository.findByProviderAndProviderId(AuthProvider.KAKAO, "200"))
                 .thenReturn(java.util.Optional.empty());
-        when(socialUserCreatePort.create(new CreateSocialUserCommand("kakao-user", "https://example.com/profile.png")))
-                .thenReturn(new CreateSocialUserResult(7L, "public-id-7", "kakao-user", "https://example.com/profile.png"));
+        when(socialUserCreatePort.create(new CreateSocialUserCommand("KAKAO:200", "kakao-user", "https://example.com/profile.png")))
+                .thenReturn(new CreateSocialUserResult("public-id-7", "kakao-user", "https://example.com/profile.png"));
         when(authAccountRepository.save(any(AuthAccount.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        var result = kakaoLoginService.login(new KakaoLoginCommand("auth-code"));
+        var result = kakaoLoginService.execute(new KakaoLoginCommand("auth-code"));
 
         ArgumentCaptor<AuthAccount> authAccountCaptor = ArgumentCaptor.forClass(AuthAccount.class);
         verify(authAccountRepository).save(authAccountCaptor.capture());
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
-        assertThat(authAccountCaptor.getValue().userId()).isEqualTo(7L);
+        assertThat(authAccountCaptor.getValue().publicId()).isEqualTo("public-id-7");
         assertThat(authAccountCaptor.getValue().provider()).isEqualTo(AuthProvider.KAKAO);
         assertThat(authAccountCaptor.getValue().providerId()).isEqualTo("200");
         assertThat(authAccountCaptor.getValue().role()).isEqualTo(UserRole.USER);

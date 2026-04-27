@@ -54,15 +54,14 @@ class ReissueTokenServiceTest {
         when(authSessionRepository.findByRefreshTokenId(tokenId))
                 .thenReturn(Optional.of(AuthSession.create(
                         tokenId,
-                        1L,
                         "public-id-1",
                         UserRole.USER,
                         Instant.parse("2026-04-17T00:00:00Z"),
                         Instant.parse("2026-04-17T00:01:00Z")
                 )));
         when(authAccountRepository.findByPublicId("public-id-1"))
-                .thenReturn(Optional.of(new AuthAccount(1L, "public-id-1", AuthProvider.KAKAO, "100", UserRole.USER)));
-        when(authTokenIssueUseCase.issue(any(IssueAuthTokenCommand.class)))
+                .thenReturn(Optional.of(new AuthAccount("public-id-1", AuthProvider.KAKAO, "100", UserRole.USER)));
+        when(authTokenIssueUseCase.execute(any(IssueAuthTokenCommand.class)))
                 .thenReturn(new IssueAuthTokenResult(
                         "new-access-token",
                         "new-refresh-token",
@@ -70,12 +69,12 @@ class ReissueTokenServiceTest {
                         UserRole.USER
                 ));
 
-        var result = reissueTokenService.reissue(new RefreshTokenCommand(refreshToken));
+        var result = reissueTokenService.execute(new RefreshTokenCommand(refreshToken));
 
         assertThat(result.accessToken()).isNotBlank();
         assertThat(result.refreshToken()).isNotBlank();
         assertThat(result.role()).isEqualTo(UserRole.USER);
-        verify(authTokenIssueUseCase).issue(any(IssueAuthTokenCommand.class));
+        verify(authTokenIssueUseCase).execute(any(IssueAuthTokenCommand.class));
     }
 
     @Test
@@ -87,7 +86,7 @@ class ReissueTokenServiceTest {
                 .thenReturn(new ParseRefreshTokenResult("public-id-1", tokenId));
         when(authSessionRepository.findByRefreshTokenId(tokenId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> reissueTokenService.reissue(new RefreshTokenCommand(refreshToken)))
+        assertThatThrownBy(() -> reissueTokenService.execute(new RefreshTokenCommand(refreshToken)))
                 .isInstanceOf(BaseException.class);
     }
 }
