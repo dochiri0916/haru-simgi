@@ -75,9 +75,12 @@ public class AuthController {
             @Valid @RequestBody KakaoLoginRequest request,
             HttpServletRequest httpServletRequest
     ) {
-        var result = kakaoLoginUseCase.execute(request.toCommand());
+        String guestSessionToken = guestSessionCookieManager.resolveOptionalGuestSessionToken(httpServletRequest)
+                .orElse(null);
+        var result = kakaoLoginUseCase.execute(request.toCommand(guestSessionToken));
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
         applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
+        clearGuestSessionCookieIfPresent(responseBuilder, guestSessionToken);
         return responseBuilder.body(AuthTokenResponse.from(result));
     }
 
@@ -86,10 +89,13 @@ public class AuthController {
             @RequestParam String code,
             HttpServletRequest httpServletRequest
     ) {
-        var result = kakaoLoginUseCase.execute(new KakaoLoginCommand(code));
+        String guestSessionToken = guestSessionCookieManager.resolveOptionalGuestSessionToken(httpServletRequest)
+                .orElse(null);
+        var result = kakaoLoginUseCase.execute(new KakaoLoginCommand(code, guestSessionToken));
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(302)
                 .location(URI.create(kakaoLoginProperties.frontendRedirectUri()));
         applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
+        clearGuestSessionCookieIfPresent(responseBuilder, guestSessionToken);
         return responseBuilder.build();
     }
 
@@ -138,6 +144,15 @@ public class AuthController {
     ) {
         if (AuthTransport.from(request).usesCookies()) {
             responseBuilder.header(HttpHeaders.SET_COOKIE, cookieHeaders.toArray(String[]::new));
+        }
+    }
+
+    private void clearGuestSessionCookieIfPresent(
+            ResponseEntity.HeadersBuilder<?> responseBuilder,
+            String guestSessionToken
+    ) {
+        if (guestSessionToken != null) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, guestSessionCookieManager.clearGuestSessionCookieHeader());
         }
     }
 }

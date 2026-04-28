@@ -18,7 +18,8 @@ public enum AuthErrorCode implements ErrorCode {
     INVALID_GUEST_SESSION(HttpStatus.UNAUTHORIZED, "유효하지 않은 게스트 세션입니다."),
     AUTH_SESSION_SERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "인증 세션을 저장할 수 없습니다."),
     AUTH_SESSION_DESERIALIZATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "인증 세션을 읽을 수 없습니다."),
-    USER_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "사용자 서비스와 통신할 수 없습니다.");
+    USER_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "사용자 서비스와 통신할 수 없습니다."),
+    HABIT_SERVICE_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "습관 서비스와 통신할 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

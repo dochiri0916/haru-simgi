@@ -184,6 +184,7 @@ services:
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:-4ba447379feeb0ebcbb13150fd9e9fb4114927c3a9e6faf7c29f589457be19d1}
 
   gateway:
     build:

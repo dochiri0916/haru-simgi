@@ -9,4 +9,8 @@ public record KakaoLoginRequest(
     public KakaoLoginCommand toCommand() {
         return new KakaoLoginCommand(code);
     }
+
+    public KakaoLoginCommand toCommand(String guestSessionToken) {
+        return new KakaoLoginCommand(code, guestSessionToken);
+    }
 }

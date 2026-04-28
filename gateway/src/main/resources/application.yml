@@ -40,8 +40,6 @@ spring:
               uri: lb://habit-service
               predicates:
                 - Path=/api/habits/**
-              filters:
-                - AuthRequired
             - id: auth-service-docs
               uri: lb://auth-service
               predicates:

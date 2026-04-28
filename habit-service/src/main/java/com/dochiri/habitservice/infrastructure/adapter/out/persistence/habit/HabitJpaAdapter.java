@@ -54,6 +54,25 @@ public class HabitJpaAdapter implements HabitRepository {
     }
 
     @Override
+    public int migrateOwner(HabitOwner sourceOwner, HabitOwner targetOwner) {
+        List<HabitEntity> sourceHabits = habitJpaRepository.findByOwnerTypeAndOwnerPublicIdOrderByIndexAscCreatedAtAsc(
+                sourceOwner.type(),
+                sourceOwner.ownerId()
+        );
+        if (sourceHabits.isEmpty()) {
+            return 0;
+        }
+
+        int nextIndex = nextIndex(targetOwner).value();
+        for (int i = 0; i < sourceHabits.size(); i++) {
+            sourceHabits.get(i).migrateOwner(targetOwner.type(), targetOwner.ownerId(), nextIndex + i);
+        }
+
+        habitJpaRepository.saveAll(sourceHabits);
+        return sourceHabits.size();
+    }
+
+    @Override
     public void delete(HabitId id) {
         HabitEntity entity = habitJpaRepository.findByPublicId(id.value())
                 .orElseThrow(() -> new HabitNotFoundException(id));

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
+
 @Component
 public class GuestSessionCookieManager {
 
@@ -36,17 +38,22 @@ public class GuestSessionCookieManager {
     }
 
     public String resolveGuestSessionToken(HttpServletRequest request) {
+        return resolveOptionalGuestSessionToken(request)
+                .orElseThrow(() -> new BaseException(AuthErrorCode.INVALID_GUEST_SESSION));
+    }
+
+    public Optional<String> resolveOptionalGuestSessionToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (GUEST_SESSION_COOKIE_NAME.equals(cookie.getName())
                         && StringUtils.hasText(cookie.getValue())) {
-                    return cookie.getValue();
+                    return Optional.of(cookie.getValue());
                 }
             }
         }
 
-        throw new BaseException(AuthErrorCode.INVALID_GUEST_SESSION);
+        return Optional.empty();
     }
 
     private ResponseCookie buildCookie(String value, long maxAgeSeconds) {

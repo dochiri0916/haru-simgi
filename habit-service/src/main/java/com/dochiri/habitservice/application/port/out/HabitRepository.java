@@ -17,6 +17,8 @@ public interface HabitRepository {
 
     HabitIndex nextIndex(HabitOwner owner);
 
+    int migrateOwner(HabitOwner sourceOwner, HabitOwner targetOwner);
+
     void delete(HabitId id);
 
 }

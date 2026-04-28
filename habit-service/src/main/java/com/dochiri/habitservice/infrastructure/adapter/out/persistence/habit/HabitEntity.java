@@ -74,4 +74,10 @@ public class HabitEntity extends BaseEntity {
         this.index = sortIndex;
     }
 
+    public void migrateOwner(OwnerType ownerType, String ownerPublicId, int sortIndex) {
+        this.ownerType = requireNonNull(ownerType);
+        this.ownerPublicId = requireNonNull(ownerPublicId);
+        this.index = sortIndex;
+    }
+
 }

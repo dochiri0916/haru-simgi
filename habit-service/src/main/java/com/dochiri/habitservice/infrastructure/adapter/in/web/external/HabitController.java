@@ -32,7 +32,7 @@ import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.SwapHabitIndexResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitNameResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitRecordResponse;
-import com.dochiri.security.jwt.JwtPrincipal;
+import com.dochiri.habitservice.infrastructure.security.HabitOwnerResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -44,7 +44,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -75,13 +74,14 @@ public class HabitController {
     private final GetHabitRecordsUseCase getHabitRecordsUseCase;
     private final UpdateHabitRecordUseCase updateHabitRecordUseCase;
     private final DeleteHabitRecordUseCase deleteHabitRecordUseCase;
+    private final HabitOwnerResolver habitOwnerResolver;
 
     @Operation(summary = "습관 목록 조회", description = "로그인한 사용자의 전체 습관 목록을 반환합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공",
             content = @Content(schema = @Schema(implementation = GetHabitsResponse.class)))
     @GetMapping
-    public ResponseEntity<GetHabitsResponse> getHabits(@AuthenticationPrincipal JwtPrincipal principal) {
-        return ResponseEntity.ok(GetHabitsResponse.from(getHabitsUseCase.execute(new GetHabitsCommand(owner(principal)))));
+    public ResponseEntity<GetHabitsResponse> getHabits() {
+        return ResponseEntity.ok(GetHabitsResponse.from(getHabitsUseCase.execute(new GetHabitsCommand(owner()))));
     }
 
     @Operation(summary = "습관 생성", description = "새로운 습관을 생성합니다.")
@@ -89,10 +89,9 @@ public class HabitController {
             content = @Content(schema = @Schema(implementation = CreateHabitResponse.class)))
     @PostMapping
     public ResponseEntity<CreateHabitResponse> createHabit(
-            @AuthenticationPrincipal JwtPrincipal principal,
             @Valid @RequestBody CreateHabitRequest request
     ) {
-        return ResponseEntity.ok(CreateHabitResponse.from(createHabitUseCase.execute(request.toCommand(owner(principal)))));
+        return ResponseEntity.ok(CreateHabitResponse.from(createHabitUseCase.execute(request.toCommand(owner()))));
     }
 
     @Operation(summary = "습관 상세 조회", description = "특정 습관의 상세 정보를 반환합니다.")
@@ -101,10 +100,9 @@ public class HabitController {
     @ApiResponse(responseCode = "404", description = "습관을 찾을 수 없음", content = @Content)
     @GetMapping("/{habitId}")
     public ResponseEntity<GetHabitDetailResponse> getHabitDetail(
-            @Parameter(description = "습관 ID") @PathVariable String habitId,
-            @AuthenticationPrincipal JwtPrincipal principal
+            @Parameter(description = "습관 ID") @PathVariable String habitId
     ) {
-        return ResponseEntity.ok(GetHabitDetailResponse.from(getHabitDetailUseCase.execute(new GetHabitDetailCommand(habitId, owner(principal)))));
+        return ResponseEntity.ok(GetHabitDetailResponse.from(getHabitDetailUseCase.execute(new GetHabitDetailCommand(habitId, owner()))));
     }
 
     @Operation(summary = "습관 이름 수정", description = "특정 습관의 이름을 수정합니다.")
@@ -114,10 +112,9 @@ public class HabitController {
     @PatchMapping("/{habitId}")
     public ResponseEntity<UpdateHabitNameResponse> updateHabitName(
             @Parameter(description = "습관 ID") @PathVariable String habitId,
-            @AuthenticationPrincipal JwtPrincipal principal,
             @Valid @RequestBody UpdateHabitNameRequest request
     ) {
-        return ResponseEntity.ok(UpdateHabitNameResponse.from(updateHabitNameUseCase.execute(request.toCommand(habitId, owner(principal)))));
+        return ResponseEntity.ok(UpdateHabitNameResponse.from(updateHabitNameUseCase.execute(request.toCommand(habitId, owner()))));
     }
 
     @Operation(summary = "습관 정렬 순서 교환", description = "두 습관의 정렬 순서를 서로 교환합니다.")
@@ -126,10 +123,9 @@ public class HabitController {
     @ApiResponse(responseCode = "404", description = "습관을 찾을 수 없음", content = @Content)
     @PatchMapping("/index/swap")
     public ResponseEntity<SwapHabitIndexResponse> swapHabitIndex(
-            @AuthenticationPrincipal JwtPrincipal principal,
             @Valid @RequestBody SwapHabitIndexRequest request
     ) {
-        return ResponseEntity.ok(SwapHabitIndexResponse.from(swapHabitIndexUseCase.execute(request.toCommand(owner(principal)))));
+        return ResponseEntity.ok(SwapHabitIndexResponse.from(swapHabitIndexUseCase.execute(request.toCommand(owner()))));
     }
 
     @Operation(summary = "습관 삭제", description = "특정 습관을 삭제합니다.")
@@ -137,10 +133,9 @@ public class HabitController {
     @ApiResponse(responseCode = "404", description = "습관을 찾을 수 없음", content = @Content)
     @DeleteMapping("/{habitId}")
     public ResponseEntity<Void> deleteHabit(
-            @Parameter(description = "습관 ID") @PathVariable String habitId,
-            @AuthenticationPrincipal JwtPrincipal principal
+            @Parameter(description = "습관 ID") @PathVariable String habitId
     ) {
-        deleteHabitUseCase.execute(new DeleteHabitCommand(habitId, owner(principal)));
+        deleteHabitUseCase.execute(new DeleteHabitCommand(habitId, owner()));
         return ResponseEntity.noContent().build();
     }
 
@@ -151,11 +146,10 @@ public class HabitController {
     @GetMapping("/{habitId}/records")
     public ResponseEntity<GetHabitRecordsResponse> getHabitRecords(
             @Parameter(description = "습관 ID") @PathVariable String habitId,
-            @AuthenticationPrincipal JwtPrincipal principal,
             @Parameter(description = "조회 시작일 (ISO 8601, 예: 2024-01-01)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "조회 종료일 (ISO 8601, 예: 2024-01-31)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
-        return ResponseEntity.ok(GetHabitRecordsResponse.from(getHabitRecordsUseCase.execute(GetHabitRecordsCommand.of(habitId, owner(principal), from, to))));
+        return ResponseEntity.ok(GetHabitRecordsResponse.from(getHabitRecordsUseCase.execute(GetHabitRecordsCommand.of(habitId, owner(), from, to))));
     }
 
     @Operation(summary = "습관 완료 기록 생성", description = "특정 습관의 완료 기록을 추가합니다.")
@@ -165,10 +159,9 @@ public class HabitController {
     @PostMapping("/{habitId}/records")
     public ResponseEntity<CreateHabitRecordResponse> createHabitRecord(
             @Parameter(description = "습관 ID") @PathVariable String habitId,
-            @AuthenticationPrincipal JwtPrincipal principal,
             @RequestBody CreateHabitRecordRequest request
     ) {
-        return ResponseEntity.ok(CreateHabitRecordResponse.from(createHabitRecordUseCase.execute(request.toCommand(habitId, owner(principal)))));
+        return ResponseEntity.ok(CreateHabitRecordResponse.from(createHabitRecordUseCase.execute(request.toCommand(habitId, owner()))));
     }
 
     @Operation(summary = "습관 완료 기록 수정", description = "특정 습관의 완료 기록을 수정합니다. completedAt 또는 minutes 중 필요한 필드만 보낼 수 있습니다.")
@@ -179,10 +172,9 @@ public class HabitController {
     public ResponseEntity<UpdateHabitRecordResponse> updateHabitRecord(
             @Parameter(description = "습관 ID") @PathVariable String habitId,
             @Parameter(description = "기록 ID") @PathVariable String recordId,
-            @AuthenticationPrincipal JwtPrincipal principal,
             @Valid @RequestBody UpdateHabitRecordRequest request
     ) {
-        return ResponseEntity.ok(UpdateHabitRecordResponse.from(updateHabitRecordUseCase.execute(request.toCommand(habitId, recordId, owner(principal)))));
+        return ResponseEntity.ok(UpdateHabitRecordResponse.from(updateHabitRecordUseCase.execute(request.toCommand(habitId, recordId, owner()))));
     }
 
     @Operation(summary = "습관 완료 기록 삭제", description = "특정 습관의 완료 기록을 삭제합니다.")
@@ -191,10 +183,9 @@ public class HabitController {
     @DeleteMapping("/{habitId}/records/{recordId}")
     public ResponseEntity<Void> deleteHabitRecord(
             @Parameter(description = "습관 ID") @PathVariable String habitId,
-            @Parameter(description = "기록 ID") @PathVariable String recordId,
-            @AuthenticationPrincipal JwtPrincipal principal
+            @Parameter(description = "기록 ID") @PathVariable String recordId
     ) {
-        deleteHabitRecordUseCase.execute(new DeleteHabitRecordCommand(habitId, recordId, owner(principal)));
+        deleteHabitRecordUseCase.execute(new DeleteHabitRecordCommand(habitId, recordId, owner()));
         return ResponseEntity.noContent().build();
     }
 
@@ -203,15 +194,14 @@ public class HabitController {
             content = @Content(schema = @Schema(implementation = GetHabitGrassResponse.class)))
     @GetMapping("/grass")
     public ResponseEntity<GetHabitGrassResponse> getGrass(
-            @AuthenticationPrincipal JwtPrincipal principal,
             @Parameter(description = "조회 시작일 (ISO 8601, 예: 2024-01-01)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "조회 종료일 (ISO 8601, 예: 2024-04-12)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
-        return ResponseEntity.ok(GetHabitGrassResponse.from(getHabitGrassUseCase.execute(new GetHabitGrassCommand(owner(principal), from, to))));
+        return ResponseEntity.ok(GetHabitGrassResponse.from(getHabitGrassUseCase.execute(new GetHabitGrassCommand(owner(), from, to))));
     }
 
-    private HabitOwner owner(JwtPrincipal principal) {
-        return HabitOwner.user(principal.publicId());
+    private HabitOwner owner() {
+        return habitOwnerResolver.resolve();
     }
 
 }
