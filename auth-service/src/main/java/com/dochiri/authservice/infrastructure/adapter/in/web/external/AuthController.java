@@ -7,8 +7,10 @@ import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
 import com.dochiri.authservice.application.port.in.IssueGuestSessionUseCase;
 import com.dochiri.authservice.application.port.in.GetGuestSessionUseCase;
 import com.dochiri.authservice.application.port.in.dto.GetGuestSessionCommand;
+import com.dochiri.authservice.application.port.in.dto.GuestMergeStatus;
 import com.dochiri.authservice.application.port.in.dto.KakaoAuthorizeCommand;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
+import com.dochiri.authservice.application.port.in.dto.KakaoLoginResult;
 import com.dochiri.authservice.application.port.in.dto.LogoutCommand;
 import com.dochiri.authservice.application.port.in.dto.RefreshTokenCommand;
 import com.dochiri.authservice.infrastructure.adapter.in.web.external.request.KakaoLoginRequest;
@@ -77,10 +79,10 @@ public class AuthController {
     ) {
         String guestSessionToken = guestSessionCookieManager.resolveOptionalGuestSessionToken(httpServletRequest)
                 .orElse(null);
-        var result = kakaoLoginUseCase.execute(request.toCommand(guestSessionToken));
+        KakaoLoginResult result = kakaoLoginUseCase.execute(request.toCommand(guestSessionToken));
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok();
-        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
-        clearGuestSessionCookieIfPresent(responseBuilder, guestSessionToken);
+        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result.tokens()));
+        clearGuestSessionCookieIfMerged(responseBuilder, guestSessionToken, result.guestMerge());
         return responseBuilder.body(AuthTokenResponse.from(result));
     }
 
@@ -91,11 +93,11 @@ public class AuthController {
     ) {
         String guestSessionToken = guestSessionCookieManager.resolveOptionalGuestSessionToken(httpServletRequest)
                 .orElse(null);
-        var result = kakaoLoginUseCase.execute(new KakaoLoginCommand(code, guestSessionToken));
+        KakaoLoginResult result = kakaoLoginUseCase.execute(new KakaoLoginCommand(code, guestSessionToken));
         ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.status(302)
                 .location(URI.create(kakaoLoginProperties.frontendRedirectUri()));
-        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result));
-        clearGuestSessionCookieIfPresent(responseBuilder, guestSessionToken);
+        applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.createAuthCookieHeaders(result.tokens()));
+        clearGuestSessionCookieIfMerged(responseBuilder, guestSessionToken, result.guestMerge());
         return responseBuilder.build();
     }
 
@@ -134,6 +136,7 @@ public class AuthController {
 
         ResponseEntity.HeadersBuilder<?> responseBuilder = ResponseEntity.noContent();
         applyAuthCookiesIfNeeded(responseBuilder, httpServletRequest, authTokenCookieManager.clearAuthCookieHeaders());
+        clearGuestSessionCookieAlways(responseBuilder, httpServletRequest);
         return responseBuilder.build();
     }
 
@@ -147,12 +150,27 @@ public class AuthController {
         }
     }
 
-    private void clearGuestSessionCookieIfPresent(
+    private void clearGuestSessionCookieIfMerged(
             ResponseEntity.HeadersBuilder<?> responseBuilder,
-            String guestSessionToken
+            String guestSessionToken,
+            GuestMergeStatus guestMerge
     ) {
-        if (guestSessionToken != null) {
+        if (guestSessionToken == null) {
+            return;
+        }
+        if (guestMerge == GuestMergeStatus.SUCCEEDED || guestMerge == GuestMergeStatus.SKIPPED) {
             responseBuilder.header(HttpHeaders.SET_COOKIE, guestSessionCookieManager.clearGuestSessionCookieHeader());
         }
+    }
+
+    private void clearGuestSessionCookieAlways(
+            ResponseEntity.HeadersBuilder<?> responseBuilder,
+            HttpServletRequest httpServletRequest
+    ) {
+        guestSessionCookieManager.resolveOptionalGuestSessionToken(httpServletRequest)
+                .ifPresent(token -> responseBuilder.header(
+                        HttpHeaders.SET_COOKIE,
+                        guestSessionCookieManager.clearGuestSessionCookieHeader()
+                ));
     }
 }

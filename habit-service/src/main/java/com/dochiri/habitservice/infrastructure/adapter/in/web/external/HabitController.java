@@ -56,8 +56,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 
-@Tag(name = "Habit", description = "습관 관리 API")
+@Tag(name = "Habit", description = "습관 관리 API. JWT(Authorization 헤더 또는 access_token 쿠키) 또는 게스트 세션 쿠키(guest_session)로 인증한다.")
 @SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "guestSession")
 @RestController
 @RequestMapping("/api/habits")
 @RequiredArgsConstructor

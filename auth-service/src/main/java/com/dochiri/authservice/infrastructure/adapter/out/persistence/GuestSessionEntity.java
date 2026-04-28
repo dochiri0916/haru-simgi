@@ -37,9 +37,6 @@ public class GuestSessionEntity extends BaseEntity {
     @Column(nullable = false, length = 20)
     private GuestSessionStatus status;
 
-    @Column(nullable = false, updatable = false)
-    private Instant issuedAt;
-
     @Column(nullable = false)
     private Instant lastSeenAt;
 
@@ -55,7 +52,6 @@ public class GuestSessionEntity extends BaseEntity {
             String publicId,
             String tokenHash,
             GuestSessionStatus status,
-            Instant issuedAt,
             Instant lastSeenAt,
             Instant expiresAt,
             String linkedUserPublicId,
@@ -64,7 +60,6 @@ public class GuestSessionEntity extends BaseEntity {
         this.publicId = requireNonNull(publicId);
         this.tokenHash = requireNonNull(tokenHash);
         this.status = requireNonNull(status);
-        this.issuedAt = requireNonNull(issuedAt);
         this.lastSeenAt = requireNonNull(lastSeenAt);
         this.expiresAt = requireNonNull(expiresAt);
         this.linkedUserPublicId = linkedUserPublicId;

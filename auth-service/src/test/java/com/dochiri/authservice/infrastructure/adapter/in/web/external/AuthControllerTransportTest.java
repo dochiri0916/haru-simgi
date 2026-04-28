@@ -3,7 +3,9 @@ package com.dochiri.authservice.infrastructure.adapter.in.web.external;
 import com.dochiri.authservice.application.port.in.KakaoLoginUseCase;
 import com.dochiri.authservice.application.port.in.LogoutUseCase;
 import com.dochiri.authservice.application.port.in.ReissueTokenUseCase;
+import com.dochiri.authservice.application.port.in.dto.GuestMergeStatus;
 import com.dochiri.authservice.application.port.in.dto.IssueAuthTokenResult;
+import com.dochiri.authservice.application.port.in.dto.KakaoLoginResult;
 import com.dochiri.security.role.UserRole;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +56,7 @@ class AuthControllerTransportTest {
 
     @Test
     void 기본_로그인은_쿠키를_발급한다() throws Exception {
-        given(kakaoLoginUseCase.execute(any())).willReturn(tokenResult());
+        given(kakaoLoginUseCase.execute(any())).willReturn(loginResult());
 
         mockMvc.perform(post("/api/auth/login/kakao")
                         .contentType(APPLICATION_JSON)
@@ -72,7 +74,7 @@ class AuthControllerTransportTest {
 
     @Test
     void bearer_로그인은_쿠키를_발급하지_않는다() throws Exception {
-        given(kakaoLoginUseCase.execute(any())).willReturn(tokenResult());
+        given(kakaoLoginUseCase.execute(any())).willReturn(loginResult());
 
         mockMvc.perform(post("/api/auth/login/kakao")
                         .header(AUTH_TRANSPORT_HEADER, "bearer")
@@ -123,7 +125,7 @@ class AuthControllerTransportTest {
 
     @Test
     void bearer_콜백은_리다이렉트만_하고_쿠키를_발급하지_않는다() throws Exception {
-        given(kakaoLoginUseCase.execute(any())).willReturn(tokenResult());
+        given(kakaoLoginUseCase.execute(any())).willReturn(loginResult());
 
         mockMvc.perform(get("/api/auth/login/kakao/callback")
                         .header(AUTH_TRANSPORT_HEADER, "bearer")
@@ -140,5 +142,9 @@ class AuthControllerTransportTest {
                 Instant.parse("2026-04-09T00:00:00Z"),
                 UserRole.USER
         );
+    }
+
+    private KakaoLoginResult loginResult() {
+        return new KakaoLoginResult(tokenResult(), GuestMergeStatus.SKIPPED);
     }
 }
