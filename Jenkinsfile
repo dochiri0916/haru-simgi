@@ -72,6 +72,7 @@ pipeline {
                         if (
                             file.startsWith("modules/") ||
                             file.startsWith("infra/docker/") ||
+                            file == "Jenkinsfile" ||
                             file == "settings.gradle" ||
                             file == "build.gradle" ||
                             file == "gradlew" ||
