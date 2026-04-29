@@ -8,7 +8,8 @@ import org.springframework.context.annotation.Import;
         JwtAutoConfiguration.class,
         SecurityFilterChainAutoConfiguration.class,
         CorsAutoConfiguration.class,
-        SecurityAuditAutoConfiguration.class
+        SecurityAuditAutoConfiguration.class,
+        InternalApiAutoConfiguration.class
 })
 public class SecurityAutoConfiguration {
 

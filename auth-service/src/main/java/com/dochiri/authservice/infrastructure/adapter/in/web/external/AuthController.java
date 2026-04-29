@@ -8,6 +8,7 @@ import com.dochiri.authservice.application.port.in.IssueGuestSessionUseCase;
 import com.dochiri.authservice.application.port.in.GetGuestSessionUseCase;
 import com.dochiri.authservice.application.port.in.dto.GetGuestSessionCommand;
 import com.dochiri.authservice.application.port.in.dto.GuestMergeStatus;
+import com.dochiri.authservice.application.port.in.dto.IssueGuestSessionCommand;
 import com.dochiri.authservice.application.port.in.dto.KakaoAuthorizeCommand;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginCommand;
 import com.dochiri.authservice.application.port.in.dto.KakaoLoginResult;
@@ -57,7 +58,7 @@ public class AuthController {
 
     @PostMapping("/guest")
     public ResponseEntity<GuestSessionResponse> issueGuestSession() {
-        var result = issueGuestSessionUseCase.execute();
+        var result = issueGuestSessionUseCase.execute(new IssueGuestSessionCommand());
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, guestSessionCookieManager.createGuestSessionCookieHeader(result))
                 .body(GuestSessionResponse.from(result));

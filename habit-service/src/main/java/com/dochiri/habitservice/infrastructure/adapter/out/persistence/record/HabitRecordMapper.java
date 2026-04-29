@@ -8,14 +8,11 @@ import com.dochiri.habitservice.domain.record.HabitRecordId;
 
 public class HabitRecordMapper {
 
-    private static final boolean COMPLETED = true;
-
     public static HabitRecordEntity toEntity(HabitRecord domain) {
         return new HabitRecordEntity(
                 domain.getId().value(),
                 domain.getHabitId().value(),
                 domain.getCompletedAt(),
-                COMPLETED,
                 domain.getDuration() != null
                         ? domain.getDuration().minutes()
                         : null,

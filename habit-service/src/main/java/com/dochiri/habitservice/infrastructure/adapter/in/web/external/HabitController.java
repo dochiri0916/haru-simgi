@@ -17,6 +17,7 @@ import com.dochiri.habitservice.application.port.in.dto.GetHabitDetailCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitGrassCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitRecordsCommand;
 import com.dochiri.habitservice.application.port.in.dto.GetHabitsCommand;
+import com.dochiri.habitservice.application.security.HabitOwnerProvider;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.CreateHabitRecordRequest;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.request.CreateHabitRequest;
@@ -32,7 +33,6 @@ import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.SwapHabitIndexResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitNameResponse;
 import com.dochiri.habitservice.infrastructure.adapter.in.web.external.response.UpdateHabitRecordResponse;
-import com.dochiri.habitservice.infrastructure.security.HabitOwnerResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -75,7 +75,7 @@ public class HabitController {
     private final GetHabitRecordsUseCase getHabitRecordsUseCase;
     private final UpdateHabitRecordUseCase updateHabitRecordUseCase;
     private final DeleteHabitRecordUseCase deleteHabitRecordUseCase;
-    private final HabitOwnerResolver habitOwnerResolver;
+    private final HabitOwnerProvider habitOwnerProvider;
 
     @Operation(summary = "습관 목록 조회", description = "로그인한 사용자의 전체 습관 목록을 반환합니다.")
     @ApiResponse(responseCode = "200", description = "조회 성공",
@@ -202,7 +202,7 @@ public class HabitController {
     }
 
     private HabitOwner owner() {
-        return habitOwnerResolver.resolve();
+        return habitOwnerProvider.currentOwner();
     }
 
 }

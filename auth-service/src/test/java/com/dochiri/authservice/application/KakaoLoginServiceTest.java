@@ -47,7 +47,7 @@ class KakaoLoginServiceTest {
         when(guestHabitMigrationCoordinator.migrate(null, "user-public-id"))
                 .thenReturn(GuestMergeStatus.SKIPPED);
 
-        KakaoLoginResult result = kakaoLoginService.execute(new KakaoLoginCommand("auth-code"));
+        KakaoLoginResult result = kakaoLoginService.execute(new KakaoLoginCommand("auth-code", null));
 
         assertThat(result.tokens().accessToken()).isEqualTo("access-token");
         assertThat(result.tokens().refreshToken()).isEqualTo("refresh-token");

@@ -1,6 +1,5 @@
-package com.dochiri.habitservice.infrastructure.security;
+package com.dochiri.security.internalapi;
 
-import com.dochiri.habitservice.infrastructure.configuration.InternalApiServerProperties;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

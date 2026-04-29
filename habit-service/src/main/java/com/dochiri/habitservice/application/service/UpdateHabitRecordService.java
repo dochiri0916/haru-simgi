@@ -11,7 +11,6 @@ import com.dochiri.habitservice.domain.habit.HabitOwner;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.record.HabitRecordId;
 import com.dochiri.habitservice.domain.record.exception.HabitRecordNotFoundException;
-import org.openapitools.jackson.nullable.JsonNullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,9 +45,9 @@ public class UpdateHabitRecordService implements UpdateHabitRecordUseCase {
         Integer minutes = command.minutes() != null
                 ? command.minutes()
                 : record.hasDuration() ? record.getDuration().minutes() : null;
-        String memo = JsonNullable.undefined().equals(command.memo())
-                ? record.getMemo().value()
-                : command.memo().orElse(null);
+        String memo = command.memo().isPresent()
+                ? command.memo().orElse(null)
+                : record.getMemo().value();
 
         HabitRecord updated = record.update(completedAt, minutes, memo);
         HabitRecord saved = habitRecordRepository.save(updated);

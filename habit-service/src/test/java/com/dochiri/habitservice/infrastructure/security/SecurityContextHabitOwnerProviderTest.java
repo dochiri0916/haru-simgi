@@ -13,9 +13,9 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class HabitOwnerResolverTest {
+class SecurityContextHabitOwnerProviderTest {
 
-    private final HabitOwnerResolver resolver = new HabitOwnerResolver();
+    private final SecurityContextHabitOwnerProvider provider = new SecurityContextHabitOwnerProvider();
 
     @AfterEach
     void tearDown() {
@@ -28,7 +28,7 @@ class HabitOwnerResolverTest {
                 new UsernamePasswordAuthenticationToken(new JwtPrincipal("user-public-id", "USER"), null, List.of())
         );
 
-        var owner = resolver.resolve();
+        var owner = provider.currentOwner();
 
         assertThat(owner.type()).isEqualTo(OwnerType.USER);
         assertThat(owner.ownerId()).isEqualTo("user-public-id");
@@ -40,7 +40,7 @@ class HabitOwnerResolverTest {
                 new UsernamePasswordAuthenticationToken(new GuestPrincipal("guest-public-id"), null, List.of())
         );
 
-        var owner = resolver.resolve();
+        var owner = provider.currentOwner();
 
         assertThat(owner.type()).isEqualTo(OwnerType.GUEST);
         assertThat(owner.ownerId()).isEqualTo("guest-public-id");
@@ -48,7 +48,7 @@ class HabitOwnerResolverTest {
 
     @Test
     void 인증이_없으면_예외가_발생한다() {
-        assertThatThrownBy(resolver::resolve)
+        assertThatThrownBy(provider::currentOwner)
                 .isInstanceOf(AuthenticationCredentialsNotFoundException.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.dochiri.habitservice.infrastructure.security;
 
+import com.dochiri.habitservice.application.security.HabitOwnerProvider;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 import com.dochiri.security.jwt.JwtPrincipal;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -8,9 +9,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HabitOwnerResolver {
+public class SecurityContextHabitOwnerProvider implements HabitOwnerProvider {
 
-    public HabitOwner resolve() {
+    @Override
+    public HabitOwner currentOwner() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new AuthenticationCredentialsNotFoundException("습관 소유자를 확인할 수 없습니다.");

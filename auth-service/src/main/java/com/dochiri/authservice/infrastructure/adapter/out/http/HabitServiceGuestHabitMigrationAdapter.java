@@ -4,57 +4,39 @@ import com.dochiri.authservice.application.port.out.GuestHabitMigrationPort;
 import com.dochiri.authservice.domain.exception.AuthErrorCode;
 import com.dochiri.authservice.infrastructure.adapter.out.http.request.MigrateGuestHabitsRequest;
 import com.dochiri.authservice.infrastructure.adapter.out.http.response.MigrateGuestHabitsResponse;
-import com.dochiri.authservice.infrastructure.configuration.InternalApiClientProperties;
 import com.dochiri.errorhandling.BaseException;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.http.MediaType;
+import com.dochiri.security.internalapi.InternalRestClient;
+import com.dochiri.security.internalapi.InternalRestClient.InternalRpcRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 @Component
 public class HabitServiceGuestHabitMigrationAdapter implements GuestHabitMigrationPort {
 
     private static final String HABIT_SERVICE_NAME = "habit-service";
-    private static final String INTERNAL_API_TOKEN_HEADER = "X-Internal-Api-Token";
+    private static final String MIGRATE_HABITS_PATH = "/internal/habits/guest-owner";
 
-    private final RestClient restClient;
-    private final LoadBalancerClient loadBalancerClient;
-    private final String internalApiToken;
+    private final InternalRestClient internalRestClient;
 
-    public HabitServiceGuestHabitMigrationAdapter(
-            LoadBalancerClient loadBalancerClient,
-            InternalApiClientProperties internalApiClientProperties
-    ) {
-        this.restClient = RestClient.builder().build();
-        this.loadBalancerClient = loadBalancerClient;
-        this.internalApiToken = internalApiClientProperties.token();
+    public HabitServiceGuestHabitMigrationAdapter(InternalRestClient internalRestClient) {
+        this.internalRestClient = internalRestClient;
     }
 
     @Override
     public int migrate(String guestId, String userPublicId) {
-        ServiceInstance instance = loadBalancerClient.choose(HABIT_SERVICE_NAME);
-        if (instance == null) {
+        MigrateGuestHabitsResponse response = internalRestClient.exchange(
+                InternalRpcRequest.patch(
+                        HABIT_SERVICE_NAME,
+                        MIGRATE_HABITS_PATH,
+                        new MigrateGuestHabitsRequest(guestId, userPublicId),
+                        MigrateGuestHabitsResponse.class,
+                        AuthErrorCode.HABIT_SERVICE_UNAVAILABLE
+                )
+        );
+
+        if (response == null) {
             throw new BaseException(AuthErrorCode.HABIT_SERVICE_UNAVAILABLE);
         }
 
-        try {
-            MigrateGuestHabitsResponse response = restClient.patch()
-                    .uri(instance.getUri() + "/internal/habits/guest-owner")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .header(INTERNAL_API_TOKEN_HEADER, internalApiToken)
-                    .body(new MigrateGuestHabitsRequest(guestId, userPublicId))
-                    .retrieve()
-                    .body(MigrateGuestHabitsResponse.class);
-
-            if (response == null) {
-                throw new BaseException(AuthErrorCode.HABIT_SERVICE_UNAVAILABLE);
-            }
-
-            return response.migratedCount();
-        } catch (RestClientException exception) {
-            throw new BaseException(AuthErrorCode.HABIT_SERVICE_UNAVAILABLE, exception);
-        }
+        return response.migratedCount();
     }
 }

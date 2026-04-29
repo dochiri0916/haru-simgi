@@ -71,25 +71,21 @@ public class GetHabitRecordsService implements GetHabitRecordsUseCase {
     }
 
     private GetHabitRecordsResult.RecordDto toDto(HabitRecord record) {
-        Integer minutes = minutesOf(record);
+        int minutes = minutesOf(record);
 
         return new GetHabitRecordsResult.RecordDto(
                 record.getId().value(),
                 record.getCompletedAt(),
-                minutes != null ? minutes : 0,
-                calculateLevel(minutes),
+                minutes,
+                GrassLevelPolicy.forCompletedRecord(minutes).getLevel(),
                 record.getMemo().value()
         );
     }
 
-    private Integer minutesOf(HabitRecord record) {
+    private int minutesOf(HabitRecord record) {
         return Optional.ofNullable(record.getDuration())
                 .map(HabitDuration::minutes)
-                .orElse(null);
-    }
-
-    private int calculateLevel(Integer minutes) {
-        return Math.max(1, GrassLevelPolicy.calculate(minutes != null ? minutes : 0).getLevel());
+                .orElse(0);
     }
 
 }

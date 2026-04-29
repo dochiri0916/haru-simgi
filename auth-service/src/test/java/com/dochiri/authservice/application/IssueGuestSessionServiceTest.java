@@ -1,5 +1,6 @@
 package com.dochiri.authservice.application;
 
+import com.dochiri.authservice.application.port.in.dto.IssueGuestSessionCommand;
 import com.dochiri.authservice.application.port.out.GuestSessionRepository;
 import com.dochiri.authservice.application.port.out.GuestSessionTokenPort;
 import com.dochiri.authservice.application.port.out.dto.GeneratedGuestSessionToken;
@@ -39,7 +40,7 @@ class IssueGuestSessionServiceTest {
         when(guestSessionRepository.save(any(GuestSession.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        var result = issueGuestSessionService.execute();
+        var result = issueGuestSessionService.execute(new IssueGuestSessionCommand());
 
         ArgumentCaptor<GuestSession> sessionCaptor = ArgumentCaptor.forClass(GuestSession.class);
         verify(guestSessionRepository).save(sessionCaptor.capture());

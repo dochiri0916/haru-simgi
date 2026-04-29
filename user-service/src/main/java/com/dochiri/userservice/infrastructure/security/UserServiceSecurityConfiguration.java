@@ -1,10 +1,10 @@
 package com.dochiri.userservice.infrastructure.security;
 
+import com.dochiri.security.internalapi.InternalApiTokenAuthenticationFilter;
 import com.dochiri.security.jwt.JwtAuthenticationFilter;
 import com.dochiri.security.properties.SecurityProperties;
 import com.dochiri.security.web.JwtAccessDeniedHandler;
 import com.dochiri.security.web.JwtAuthenticationEntryPoint;
-import com.dochiri.userservice.infrastructure.configuration.InternalApiServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -15,17 +15,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import static com.dochiri.userservice.infrastructure.security.InternalApiTokenAuthenticationFilter.INTERNAL_API_PATH_PREFIX;
-
 @Configuration(proxyBeanMethods = false)
 public class UserServiceSecurityConfiguration {
-
-    @Bean
-    public InternalApiTokenAuthenticationFilter internalApiTokenAuthenticationFilter(
-            InternalApiServerProperties internalApiServerProperties
-    ) {
-        return new InternalApiTokenAuthenticationFilter(internalApiServerProperties);
-    }
 
     @Bean
     SecurityFilterChain userServiceSecurityFilterChain(
@@ -47,7 +38,7 @@ public class UserServiceSecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(securityProperties.publicEndpoints().toArray(String[]::new))
                         .permitAll()
-                        .requestMatchers(INTERNAL_API_PATH_PREFIX + "**")
+                        .requestMatchers(InternalApiTokenAuthenticationFilter.INTERNAL_API_PATH_PREFIX + "**")
                         .hasRole("INTERNAL_API")
                         .anyRequest().authenticated()
                 )

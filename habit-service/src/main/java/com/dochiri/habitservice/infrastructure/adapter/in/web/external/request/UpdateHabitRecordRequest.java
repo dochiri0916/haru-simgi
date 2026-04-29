@@ -1,11 +1,11 @@
 package com.dochiri.habitservice.infrastructure.adapter.in.web.external.request;
 
+import com.dochiri.habitservice.application.common.Patchable;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitRecordCommand;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import org.openapitools.jackson.nullable.JsonNullable;
 
 import java.time.Instant;
 
@@ -57,7 +57,7 @@ public class UpdateHabitRecordRequest {
                 owner,
                 completedAt,
                 minutes,
-                memoPresent ? JsonNullable.of(memo) : JsonNullable.undefined()
+                memoPresent ? Patchable.of(memo) : Patchable.undefined()
         );
     }
 }

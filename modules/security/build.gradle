@@ -10,8 +10,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
 
     implementation 'org.springframework:spring-web'
+    implementation project(':modules:error-handling')
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    compileOnly 'org.springframework.cloud:spring-cloud-commons'
     compileOnly 'org.springframework.data:spring-data-commons'
     compileOnly 'jakarta.servlet:jakarta.servlet-api'
     testImplementation 'jakarta.servlet:jakarta.servlet-api'

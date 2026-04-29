@@ -9,6 +9,7 @@ import com.dochiri.habitservice.domain.habit.Habit;
 import com.dochiri.habitservice.domain.habit.HabitId;
 import com.dochiri.habitservice.domain.habit.HabitOwner;
 import com.dochiri.habitservice.domain.record.HabitRecord;
+import com.dochiri.time.Zones;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,13 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
 public class CreateHabitRecordService implements CreateHabitRecordUseCase {
-
-    private static final ZoneId DATABASE_ZONE = ZoneId.of("Asia/Seoul");
 
     private final HabitRepository habitRepository;
     private final HabitRecordRepository habitRecordRepository;
@@ -38,7 +36,7 @@ public class CreateHabitRecordService implements CreateHabitRecordUseCase {
         habit.assertOwner(owner);
 
         Instant completedAt = command.completedAt() != null ? command.completedAt() : Instant.now(clock);
-        LocalDate completedDate = completedAt.atZone(DATABASE_ZONE).toLocalDate();
+        LocalDate completedDate = completedAt.atZone(Zones.DATABASE).toLocalDate();
 
         return habitRecordRepository.findByHabitIdAndCompletedDate(habitId, completedDate)
                 .map(CreateHabitRecordResult::from)

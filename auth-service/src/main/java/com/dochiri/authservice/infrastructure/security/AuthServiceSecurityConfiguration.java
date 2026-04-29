@@ -1,4 +1,4 @@
-package com.dochiri.habitservice.infrastructure.security;
+package com.dochiri.authservice.infrastructure.security;
 
 import com.dochiri.security.internalapi.InternalApiTokenAuthenticationFilter;
 import com.dochiri.security.jwt.JwtAuthenticationFilter;
@@ -16,14 +16,13 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration(proxyBeanMethods = false)
-public class HabitServiceSecurityConfiguration {
+public class AuthServiceSecurityConfiguration {
 
     @Bean
-    SecurityFilterChain habitServiceSecurityFilterChain(
+    SecurityFilterChain authServiceSecurityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
             InternalApiTokenAuthenticationFilter internalApiTokenAuthenticationFilter,
-            GuestSessionAuthenticationFilter guestSessionAuthenticationFilter,
             JwtAccessDeniedHandler jwtAccessDeniedHandler,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
             SecurityProperties securityProperties
@@ -45,7 +44,6 @@ public class HabitServiceSecurityConfiguration {
                 )
                 .addFilterBefore(internalApiTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(guestSessionAuthenticationFilter, JwtAuthenticationFilter.class)
                 .cors(Customizer.withDefaults())
                 .build();
     }

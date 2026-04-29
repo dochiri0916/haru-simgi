@@ -1,6 +1,7 @@
 package com.dochiri.habitservice.infrastructure.adapter.out.persistence.record;
 
 import com.dochiri.jpa.entity.BaseEntity;
+import com.dochiri.time.Zones;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,8 +29,6 @@ import static java.util.Objects.requireNonNull;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class HabitRecordEntity extends BaseEntity {
 
-    private static final ZoneId DATABASE_ZONE = ZoneId.of("Asia/Seoul");
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,9 +45,6 @@ public class HabitRecordEntity extends BaseEntity {
     @Column(nullable = false)
     private LocalDate completedDate;
 
-    @Column(nullable = false)
-    private boolean completed;
-
     @Column
     private Integer durationMinutes;
 
@@ -60,7 +55,6 @@ public class HabitRecordEntity extends BaseEntity {
             String publicId,
             String habitId,
             Instant completedAt,
-            boolean completed,
             Integer durationMinutes,
             String memo
     ) {
@@ -68,7 +62,6 @@ public class HabitRecordEntity extends BaseEntity {
         this.habitId = requireNonNull(habitId);
         this.completedAt = requireNonNull(completedAt);
         this.completedDate = toDatabaseDate(completedAt);
-        this.completed = completed;
         this.durationMinutes = durationMinutes;
         this.memo = memo;
     }
@@ -81,7 +74,7 @@ public class HabitRecordEntity extends BaseEntity {
     }
 
     private static LocalDate toDatabaseDate(Instant completedAt) {
-        return completedAt.atZone(DATABASE_ZONE).toLocalDate();
+        return completedAt.atZone(Zones.DATABASE).toLocalDate();
     }
 
 }

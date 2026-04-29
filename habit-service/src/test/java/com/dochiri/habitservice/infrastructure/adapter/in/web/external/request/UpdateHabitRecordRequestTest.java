@@ -25,7 +25,7 @@ class UpdateHabitRecordRequestTest {
         UpdateHabitRecordCommand command = request.toCommand("habit-id", "record-id", HabitOwner.user("user-id"));
 
         assertThat(command.memo().isPresent()).isTrue();
-        assertThat(command.memo().get()).isEqualTo("새 메모");
+        assertThat(command.memo().orElse(null)).isEqualTo("새 메모");
     }
 
     @Test
@@ -36,7 +36,7 @@ class UpdateHabitRecordRequestTest {
         UpdateHabitRecordCommand command = request.toCommand("habit-id", "record-id", HabitOwner.user("user-id"));
 
         assertThat(command.memo().isPresent()).isTrue();
-        assertThat(command.memo().get()).isNull();
+        assertThat(command.memo().orElse(null)).isNull();
     }
 
 }

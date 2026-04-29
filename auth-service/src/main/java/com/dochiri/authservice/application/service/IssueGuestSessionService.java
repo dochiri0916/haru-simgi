@@ -1,6 +1,7 @@
 package com.dochiri.authservice.application.service;
 
 import com.dochiri.authservice.application.port.in.IssueGuestSessionUseCase;
+import com.dochiri.authservice.application.port.in.dto.IssueGuestSessionCommand;
 import com.dochiri.authservice.application.port.in.dto.IssueGuestSessionResult;
 import com.dochiri.authservice.application.port.out.GuestSessionRepository;
 import com.dochiri.authservice.application.port.out.GuestSessionTokenPort;
@@ -25,7 +26,7 @@ public class IssueGuestSessionService implements IssueGuestSessionUseCase {
 
     @Transactional
     @Override
-    public IssueGuestSessionResult execute() {
+    public IssueGuestSessionResult execute(IssueGuestSessionCommand command) {
         Instant now = clock.instant();
         Instant expiresAt = now.plus(guestSessionProperties.expiration());
         var generatedToken = guestSessionTokenPort.generate();

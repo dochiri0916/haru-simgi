@@ -1,5 +1,6 @@
 package com.dochiri.habitservice.application.service;
 
+import com.dochiri.habitservice.application.common.Patchable;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitRecordCommand;
 import com.dochiri.habitservice.application.port.in.dto.UpdateHabitRecordResult;
 import com.dochiri.habitservice.application.port.out.HabitRecordRepository;
@@ -16,7 +17,6 @@ import com.dochiri.habitservice.domain.record.HabitMemo;
 import com.dochiri.habitservice.domain.record.HabitRecord;
 import com.dochiri.habitservice.domain.record.HabitRecordId;
 import org.junit.jupiter.api.Test;
-import org.openapitools.jackson.nullable.JsonNullable;
 
 import java.time.Instant;
 
@@ -87,7 +87,7 @@ class UpdateHabitRecordServiceTest {
                 owner,
                 null,
                 null,
-                JsonNullable.of(null)
+                Patchable.of(null)
         );
 
         when(habitRepository.loadById(habitId)).thenReturn(habit);
@@ -120,7 +120,7 @@ class UpdateHabitRecordServiceTest {
                 owner,
                 null,
                 null,
-                JsonNullable.undefined()
+                Patchable.undefined()
         );
 
         when(habitRepository.loadById(habitId)).thenReturn(habit);

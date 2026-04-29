@@ -12,13 +12,20 @@ public class RefreshTokenVerifier {
     }
 
     public String verifyAndExtractPublicId(String refreshToken) {
+        return verify(refreshToken).publicId();
+    }
+
+    public RefreshTokenInfo verify(String refreshToken) {
         Claims claims = jwtProvider.parseAndValidate(refreshToken);
 
         if (!jwtProvider.isRefreshToken(claims)) {
             throw new BadCredentialsException("유효하지 않은 리프레시 토큰입니다.");
         }
 
-        return jwtProvider.extractPublicId(claims);
+        return new RefreshTokenInfo(
+                jwtProvider.extractPublicId(claims),
+                jwtProvider.extractTokenId(claims)
+        );
     }
 
 }

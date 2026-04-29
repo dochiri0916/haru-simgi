@@ -9,8 +9,4 @@ public record KakaoLoginCommand(
     public KakaoLoginCommand {
         requireNonNull(code);
     }
-
-    public KakaoLoginCommand(String code) {
-        this(code, null);
-    }
 }

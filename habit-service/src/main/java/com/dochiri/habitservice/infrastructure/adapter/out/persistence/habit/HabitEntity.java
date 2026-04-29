@@ -11,15 +11,7 @@ import lombok.NoArgsConstructor;
 import static java.util.Objects.requireNonNull;
 
 @Entity
-@Table(
-        name = "habits",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uk_owner_public_id",
-                        columnNames = {"owner_type", "owner_public_id", "public_id"}
-                )
-        }
-)
+@Table(name = "habits")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class HabitEntity extends BaseEntity {

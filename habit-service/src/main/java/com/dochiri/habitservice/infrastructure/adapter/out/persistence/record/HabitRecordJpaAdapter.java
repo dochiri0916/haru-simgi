@@ -53,16 +53,6 @@ public class HabitRecordJpaAdapter implements HabitRecordRepository {
     }
 
     @Override
-    public Optional<HabitRecord> findByHabitIdAndCompletedAt(
-            HabitId habitId,
-            Instant completedAt
-    ) {
-        return habitRecordJpaRepository
-                .findByHabitIdAndCompletedAt(habitId.value(), completedAt)
-                .map(HabitRecordMapper::toDomain);
-    }
-
-    @Override
     public Optional<HabitRecord> findByHabitIdAndCompletedDate(
             HabitId habitId,
             LocalDate completedDate

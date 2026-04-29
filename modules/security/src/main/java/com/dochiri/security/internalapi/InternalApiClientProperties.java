@@ -1,4 +1,4 @@
-package com.dochiri.authservice.infrastructure.configuration;
+package com.dochiri.security.internalapi;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

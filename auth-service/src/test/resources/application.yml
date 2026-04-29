@@ -27,5 +27,7 @@ auth:
     expiration-days: 90
 
 internal-api:
+  server:
+    token: test-internal-token
   client:
     token: test-internal-token

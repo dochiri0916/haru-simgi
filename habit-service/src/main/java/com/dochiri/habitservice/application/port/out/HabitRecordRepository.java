@@ -19,8 +19,6 @@ public interface HabitRecordRepository {
 
     List<HabitRecord> findByHabitId(HabitId habitId);
 
-    Optional<HabitRecord> findByHabitIdAndCompletedAt(HabitId habitId, Instant completedAt);
-
     Optional<HabitRecord> findByHabitIdAndCompletedDate(HabitId habitId, LocalDate completedDate);
 
     List<HabitRecord> findByHabitIdAndCompletedAtBetween(HabitId habitId, Instant from, Instant to);

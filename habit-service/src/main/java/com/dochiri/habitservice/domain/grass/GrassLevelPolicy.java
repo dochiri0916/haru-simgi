@@ -26,4 +26,9 @@ public class GrassLevelPolicy {
         return GrassLevel.FULL;
     }
 
+    public GrassLevel forCompletedRecord(int minutes) {
+        GrassLevel level = calculate(minutes);
+        return level == GrassLevel.NONE ? GrassLevel.LOW : level;
+    }
+
 }

@@ -15,8 +15,6 @@ public interface HabitRecordJpaRepository extends JpaRepository<HabitRecordEntit
 
     List<HabitRecordEntity> findByHabitId(String habitId);
 
-    Optional<HabitRecordEntity> findByHabitIdAndCompletedAt(String habitId, Instant completedAt);
-
     Optional<HabitRecordEntity> findByHabitIdAndCompletedDate(String habitId, LocalDate completedDate);
 
     List<HabitRecordEntity> findByHabitIdAndCompletedAtBetween(String habitId, Instant fromDate, Instant toDate);
