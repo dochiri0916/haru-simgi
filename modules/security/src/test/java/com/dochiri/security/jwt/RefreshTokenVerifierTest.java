@@ -23,18 +23,18 @@ class RefreshTokenVerifierTest {
 
     @Test
     void 유효한_리프레시_토큰에서_userId를_추출할_수_있다() {
-        String refreshToken = jwtProvider.generateRefreshToken(42L, "USER");
+        String refreshToken = jwtProvider.generateRefreshToken("public-id-42", "USER");
 
-        Long userId = verifier.verifyAndExtractUserId(refreshToken);
+        String publicId = verifier.verifyAndExtractPublicId(refreshToken);
 
-        assertThat(userId).isEqualTo(42L);
+        assertThat(publicId).isEqualTo("public-id-42");
     }
 
     @Test
     void 액세스_토큰으로_검증하면_BadCredentialsException이_발생한다() {
-        String accessToken = jwtProvider.generateAccessToken(1L, "USER");
+        String accessToken = jwtProvider.generateAccessToken("public-id-1", "USER");
 
-        assertThatThrownBy(() -> verifier.verifyAndExtractUserId(accessToken))
+        assertThatThrownBy(() -> verifier.verifyAndExtractPublicId(accessToken))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("리프레시 토큰");
     }
@@ -42,9 +42,9 @@ class RefreshTokenVerifierTest {
     @Test
     void 만료된_리프레시_토큰으로_검증하면_예외가_발생한다() {
         JwtProvider expiredProvider = new JwtProvider(new JwtProperties(SECRET, 0L, 0L));
-        String expiredToken = expiredProvider.generateRefreshToken(1L, "USER");
+        String expiredToken = expiredProvider.generateRefreshToken("public-id-1", "USER");
 
-        assertThatThrownBy(() -> verifier.verifyAndExtractUserId(expiredToken))
+        assertThatThrownBy(() -> verifier.verifyAndExtractPublicId(expiredToken))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("만료된 JWT");
     }

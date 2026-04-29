@@ -36,7 +36,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void 유효한_Bearer_토큰이_있으면_SecurityContext에_인증정보가_설정된다() throws ServletException, IOException {
-        String token = jwtProvider.generateAccessToken(1L, "USER");
+        String token = jwtProvider.generateAccessToken("public-id-1", "USER");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + token);
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -45,7 +45,7 @@ class JwtAuthenticationFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
         JwtPrincipal principal = (JwtPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        assertThat(principal.userId()).isEqualTo(1L);
+        assertThat(principal.publicId()).isEqualTo("public-id-1");
         assertThat(principal.role()).isEqualTo("USER");
         verify(filterChain).doFilter(request, response);
     }
@@ -63,7 +63,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void Authorization_헤더가_없어도_access_token_쿠키가_있으면_인증된다() throws ServletException, IOException {
-        String token = jwtProvider.generateAccessToken(1L, "USER");
+        String token = jwtProvider.generateAccessToken("public-id-1", "USER");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setCookies(new Cookie("access_token", token));
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -72,7 +72,7 @@ class JwtAuthenticationFilterTest {
 
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
         JwtPrincipal principal = (JwtPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        assertThat(principal.userId()).isEqualTo(1L);
+        assertThat(principal.publicId()).isEqualTo("public-id-1");
         assertThat(principal.role()).isEqualTo("USER");
     }
 
@@ -102,7 +102,7 @@ class JwtAuthenticationFilterTest {
 
     @Test
     void 리프레시_토큰으로_인증하면_SecurityContext가_클리어된다() throws ServletException, IOException {
-        String refreshToken = jwtProvider.generateRefreshToken(1L, "USER");
+        String refreshToken = jwtProvider.generateRefreshToken("public-id-1", "USER");
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("Authorization", "Bearer " + refreshToken);
         MockHttpServletResponse response = new MockHttpServletResponse();

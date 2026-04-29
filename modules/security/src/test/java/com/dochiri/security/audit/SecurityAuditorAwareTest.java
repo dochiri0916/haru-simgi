@@ -15,7 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SecurityAuditorAwareTest {
 
-    private final SecurityAuditorAware auditorAware = new SecurityAuditorAware(0L);
+    private final SecurityAuditorAware auditorAware = new SecurityAuditorAware("system");
 
     @AfterEach
     void tearDown() {
@@ -23,52 +23,52 @@ class SecurityAuditorAwareTest {
     }
 
     @Test
-    void 인증정보가_없으면_시스템_사용자_ID를_반환한다() {
-        Optional<Long> auditor = auditorAware.getCurrentAuditor();
+    void 인증정보가_없으면_시스템_publicId를_반환한다() {
+        Optional<String> auditor = auditorAware.getCurrentAuditor();
 
-        assertThat(auditor).hasValue(0L);
+        assertThat(auditor).hasValue("system");
     }
 
     @Test
-    void JwtPrincipal_인증이면_해당_userId를_반환한다() {
-        JwtPrincipal principal = new JwtPrincipal(42L, "USER");
+    void JwtPrincipal_인증이면_해당_publicId를_반환한다() {
+        JwtPrincipal principal = new JwtPrincipal("public-id-42", "USER");
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        Optional<Long> auditor = auditorAware.getCurrentAuditor();
+        Optional<String> auditor = auditorAware.getCurrentAuditor();
 
-        assertThat(auditor).hasValue(42L);
+        assertThat(auditor).hasValue("public-id-42");
     }
 
     @Test
-    void 익명_인증이면_시스템_사용자_ID를_반환한다() {
+    void 익명_인증이면_시스템_publicId를_반환한다() {
         AnonymousAuthenticationToken auth = new AnonymousAuthenticationToken(
                 "key", "anonymous", List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        Optional<Long> auditor = auditorAware.getCurrentAuditor();
+        Optional<String> auditor = auditorAware.getCurrentAuditor();
 
-        assertThat(auditor).hasValue(0L);
+        assertThat(auditor).hasValue("system");
     }
 
     @Test
-    void JwtPrincipal이_아닌_다른_Principal이면_시스템_사용자_ID를_반환한다() {
+    void JwtPrincipal이_아닌_다른_Principal이면_시스템_publicId를_반환한다() {
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                 "stringPrincipal", null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        Optional<Long> auditor = auditorAware.getCurrentAuditor();
+        Optional<String> auditor = auditorAware.getCurrentAuditor();
 
-        assertThat(auditor).hasValue(0L);
+        assertThat(auditor).hasValue("system");
     }
 
     @Test
-    void 커스텀_시스템_사용자_ID를_사용할_수_있다() {
-        SecurityAuditorAware customAuditor = new SecurityAuditorAware(999L);
+    void 커스텀_시스템_publicId를_사용할_수_있다() {
+        SecurityAuditorAware customAuditor = new SecurityAuditorAware("custom-system");
 
-        Optional<Long> auditor = customAuditor.getCurrentAuditor();
+        Optional<String> auditor = customAuditor.getCurrentAuditor();
 
-        assertThat(auditor).hasValue(999L);
+        assertThat(auditor).hasValue("custom-system");
     }
 }

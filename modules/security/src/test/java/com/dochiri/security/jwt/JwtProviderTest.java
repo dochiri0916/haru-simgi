@@ -36,11 +36,11 @@ class JwtProviderTest {
 
     @Test
     void 액세스_토큰을_생성하고_파싱할_수_있다() {
-        String token = jwtProvider.generateAccessToken(1L, "USER");
+        String token = jwtProvider.generateAccessToken("public-id-1", "USER");
 
         Claims claims = jwtProvider.parseAndValidate(token);
 
-        assertThat(jwtProvider.extractUserId(claims)).isEqualTo(1L);
+        assertThat(jwtProvider.extractPublicId(claims)).isEqualTo("public-id-1");
         assertThat(jwtProvider.extractRole(claims)).isEqualTo("USER");
         assertThat(jwtProvider.isAccessToken(claims)).isTrue();
         assertThat(jwtProvider.isRefreshToken(claims)).isFalse();
@@ -48,11 +48,11 @@ class JwtProviderTest {
 
     @Test
     void 리프레시_토큰을_생성하고_파싱할_수_있다() {
-        String token = jwtProvider.generateRefreshToken(2L, "ADMIN");
+        String token = jwtProvider.generateRefreshToken("public-id-2", "ADMIN");
 
         Claims claims = jwtProvider.parseAndValidate(token);
 
-        assertThat(jwtProvider.extractUserId(claims)).isEqualTo(2L);
+        assertThat(jwtProvider.extractPublicId(claims)).isEqualTo("public-id-2");
         assertThat(jwtProvider.extractRole(claims)).isEqualTo("ADMIN");
         assertThat(jwtProvider.extractTokenId(claims)).isNotBlank();
         assertThat(jwtProvider.extractExpiration(claims)).isAfter(Instant.now());
@@ -62,7 +62,7 @@ class JwtProviderTest {
 
     @Test
     void 액세스_토큰에는_jti_클레임이_없다() {
-        String token = jwtProvider.generateAccessToken(1L, "USER");
+        String token = jwtProvider.generateAccessToken("public-id-1", "USER");
         Claims claims = jwtProvider.parseAndValidate(token);
 
         assertThatThrownBy(() -> jwtProvider.extractTokenId(claims))
@@ -75,7 +75,7 @@ class JwtProviderTest {
         JwtProperties expiredProperties = new JwtProperties(SECRET, 0L, 0L);
         JwtProvider expiredProvider = new JwtProvider(expiredProperties);
 
-        String token = expiredProvider.generateAccessToken(1L, "USER");
+        String token = expiredProvider.generateAccessToken("public-id-1", "USER");
 
         assertThatThrownBy(() -> jwtProvider.parseAndValidate(token))
                 .isInstanceOf(BadCredentialsException.class)
@@ -88,7 +88,7 @@ class JwtProviderTest {
                 "another-secret-key-that-is-at-least-32-characters", ACCESS_EXPIRATION, REFRESH_EXPIRATION);
         JwtProvider otherProvider = new JwtProvider(otherProperties);
 
-        String token = otherProvider.generateAccessToken(1L, "USER");
+        String token = otherProvider.generateAccessToken("public-id-1", "USER");
 
         assertThatThrownBy(() -> jwtProvider.parseAndValidate(token))
                 .isInstanceOf(BadCredentialsException.class)
@@ -107,18 +107,18 @@ class JwtProviderTest {
 
     @Test
     void ROLE_접두사가_있는_role은_정규화된다() {
-        String token = jwtProvider.generateAccessToken(1L, "ROLE_ADMIN");
+        String token = jwtProvider.generateAccessToken("public-id-1", "ROLE_ADMIN");
         Claims claims = jwtProvider.parseAndValidate(token);
 
         assertThat(jwtProvider.extractRole(claims)).isEqualTo("ADMIN");
     }
 
     @Test
-    void sub_클레임이_숫자가_아니면_BadCredentialsException이_발생한다() {
-        String token = buildToken("not-a-number", "USER", "access", null, Instant.now().plusMillis(ACCESS_EXPIRATION));
+    void sub_클레임이_비어있으면_BadCredentialsException이_발생한다() {
+        String token = buildToken(" ", "USER", "access", null, Instant.now().plusMillis(ACCESS_EXPIRATION));
         Claims claims = jwtProvider.parseAndValidate(token);
 
-        assertThatThrownBy(() -> jwtProvider.extractUserId(claims))
+        assertThatThrownBy(() -> jwtProvider.extractPublicId(claims))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("sub");
     }
@@ -127,12 +127,12 @@ class JwtProviderTest {
     void userId가_null이면_토큰_생성에_실패한다() {
         assertThatThrownBy(() -> jwtProvider.generateAccessToken(null, "USER"))
                 .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("userId");
+                .hasMessageContaining("publicId");
     }
 
     @Test
     void role이_blank이면_토큰_생성에_실패한다() {
-        assertThatThrownBy(() -> jwtProvider.generateAccessToken(1L, " "))
+        assertThatThrownBy(() -> jwtProvider.generateAccessToken("public-id-1", " "))
                 .isInstanceOf(BadCredentialsException.class)
                 .hasMessageContaining("role");
     }

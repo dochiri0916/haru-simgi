@@ -22,7 +22,7 @@ class JwtTokenGeneratorTest {
 
     @Test
     void generateToken은_액세스_토큰과_리프레시_토큰을_모두_반환한다() {
-        JwtTokenResult result = tokenGenerator.generateToken(1L, "USER");
+        JwtTokenResult result = tokenGenerator.generateToken("public-id-1", "USER");
         Claims refreshClaims = jwtProvider.parseAndValidate(result.refreshToken());
 
         assertThat(result.accessToken()).isNotBlank();
@@ -33,7 +33,7 @@ class JwtTokenGeneratorTest {
 
     @Test
     void generateToken의_액세스_토큰은_access_카테고리이다() {
-        JwtTokenResult result = tokenGenerator.generateToken(1L, "USER");
+        JwtTokenResult result = tokenGenerator.generateToken("public-id-1", "USER");
 
         Claims accessClaims = jwtProvider.parseAndValidate(result.accessToken());
         assertThat(jwtProvider.isAccessToken(accessClaims)).isTrue();
@@ -41,7 +41,7 @@ class JwtTokenGeneratorTest {
 
     @Test
     void generateToken의_리프레시_토큰은_refresh_카테고리이다() {
-        JwtTokenResult result = tokenGenerator.generateToken(1L, "USER");
+        JwtTokenResult result = tokenGenerator.generateToken("public-id-1", "USER");
 
         Claims refreshClaims = jwtProvider.parseAndValidate(result.refreshToken());
         assertThat(jwtProvider.isRefreshToken(refreshClaims)).isTrue();
@@ -49,11 +49,11 @@ class JwtTokenGeneratorTest {
 
     @Test
     void generateAccessToken은_액세스_토큰만_반환한다() {
-        String accessToken = tokenGenerator.generateAccessToken(1L, "ADMIN");
+        String accessToken = tokenGenerator.generateAccessToken("public-id-1", "ADMIN");
 
         Claims claims = jwtProvider.parseAndValidate(accessToken);
         assertThat(jwtProvider.isAccessToken(claims)).isTrue();
-        assertThat(jwtProvider.extractUserId(claims)).isEqualTo(1L);
+        assertThat(jwtProvider.extractPublicId(claims)).isEqualTo("public-id-1");
         assertThat(jwtProvider.extractRole(claims)).isEqualTo("ADMIN");
     }
 }
