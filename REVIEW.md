@@ -1,358 +1,162 @@
-# 아키텍처 리뷰 — DDD · Hexagonal · MSA
+# 프로젝트 리팩토링 리뷰
 
-`auth-service`, `user-service`, `habit-service`, 그리고 공용 `modules/`를 대상으로
-DDD / 헥사고날 / MSA 관점에서 정합성을 점검한 결과입니다.
+## 요약
 
----
+전체 구조는 Gradle 멀티 모듈과 Spring Cloud 기반 MSA로 잘 분리되어 있고, `application/port`, `application/service`, `infrastructure/adapter`, `domain` 패키지 경계도 비교적 일관됩니다. 리팩토링의 핵심은 새 아키텍처를 도입하기보다 이미 만든 공통 모듈을 더 적극적으로 활용해서 중복과 운영 위험을 줄이는 쪽이 적절합니다.
 
-## 1. 전체 평가 요약
+우선순위는 다음 순서가 좋습니다.
 
-| 관점 | 평가 | 비고 |
-|---|---|---|
-| 헥사고날 패키지 구조 | 양호 | `domain` / `application(port·service)` / `infrastructure(adapter)` 3-layer가 일관되게 유지됨 |
-| 어그리게이트 · VO 설계 | 양호(habit) / 미흡(auth, user) | `Habit`, `HabitRecord`는 모범. `AuthAccount`, `User`는 anemic |
-| 포트–어댑터 분리 | 대체로 양호 | 일부 use case가 패턴을 깨뜨림 (KakaoAuthorize, GetCurrentUser, Logout) |
-| 트랜잭션 경계 | 양호 | `@Transactional`이 application service에 위치 |
-| MSA 경계 | 양호 | auth-service는 자체 PK + `publicId`만 보관, 내부 통신은 `lb://`+토큰 검증 |
-| 데드 코드 / 일관성 | 다수 발견 | RefreshToken 계열 전체, `findByHabitIdAndCompletedAt` 등 |
+1. 인증/내부 API/세션 저장소의 운영 안정성 보강
+2. 서비스별 SecurityFilterChain 중복 제거
+3. 내부 HTTP 클라이언트 오류 처리와 타임아웃 표준화
+4. habit-service 정렬/잔디 집계 성능 개선
+5. 설정 기본값, 테스트, 문서의 실제 동작 일치화
 
----
+## P0: 먼저 손봐야 할 안정성 이슈
 
-## 2. DDD 관점
+### 1. 내부 API 토큰 기본값 제거
 
-### 2.1 잘 된 점
+- 근거: `auth-service/src/main/resources/application.yml:36`, `habit-service/src/main/resources/application.yml`, `user-service/src/main/resources/application.yml`에서 `INTERNAL_API_TOKEN` 기본값이 `internal-default-token-change-me`로 잡혀 있습니다.
+- 위험: 환경 변수 누락 시 내부 API 인증이 예측 가능한 토큰으로 동작합니다. 운영 설정 실수 하나가 서비스 간 내부 API 전체 노출로 이어질 수 있습니다.
+- 제안:
+  - 운영/공용 compose에서는 기본값 없이 `${INTERNAL_API_TOKEN:?INTERNAL_API_TOKEN is required}` 형태로 강제합니다.
+  - 로컬 전용 profile에만 명시적인 dev 토큰을 둡니다.
+  - `InternalApiClientProperties`, `InternalApiServerProperties`에 `@NotBlank` 검증을 추가합니다.
 
-- **`habit-service` 도메인이 모범적이다.**
-  - `HabitId`, `HabitName`, `HabitColor`, `HabitIndex`, `HabitOwner`, `HabitMemo`,
-    `HabitDuration`, `HabitCompletion`, `HabitRecordId` — 모두 record 기반 VO로
-    compact constructor에서 invariant를 검증한다.
-  - `Habit`, `HabitRecord`는 immutable + private constructor + 정적 팩토리
-    (`create` / `from`) + 도메인 메서드 (`assertOwner`, `rename`, `reorder`,
-    `update`) 패턴을 일관되게 따른다.
-  - `HabitRecord`가 `Habit`을 객체 참조가 아닌 `HabitId`로 들고 있어
-    어그리게이트 경계가 깔끔하다.
-  - `GrassLevelPolicy`를 `@UtilityClass`로 분리한 도메인 서비스 정의도 적절하다.
-- **도메인 예외 분리** — 어그리게이트별 디렉토리(`domain/habit/exception`,
-  `domain/record/exception`)와 `ErrorCode` enum 매핑이 정리되어 있다.
+### 2. Gateway JWT 검증 로직 중복 제거
 
-### 2.2 개선 필요
+- 근거: `gateway/src/main/java/com/dochiri/gateway/filter/AuthRequiredGatewayFilterFactory.java:47`부터 직접 `jwt.secret`을 받아 `Jwts.parser()`로 검증합니다. 반면 servlet 서비스들은 `modules/security`의 `JwtProvider`, `JwtAuthenticationFilter`를 사용합니다.
+- 위험: JWT claim 이름, category 검증, 예외 메시지, secret 검증 규칙이 gateway와 서비스에서 갈라질 수 있습니다.
+- 제안:
+  - `modules/security`에 순수 JWT 검증 컴포넌트를 분리하고 gateway도 같은 컴포넌트를 사용합니다.
+  - WebFlux용 인증 실패 응답 writer를 공통화해 `ProblemDetail` 응답 포맷도 servlet 서비스와 맞춥니다.
+  - `@Value` 대신 `@ConfigurationProperties`를 사용해 gateway 설정 검증을 추가합니다.
 
-#### (D-1) `auth-service` / `user-service` 도메인이 anemic하다 — ✅ 수정 완료
-- `AuthAccount`, `User`, `RefreshToken`은 단순 데이터 홀더. validate / behavior
-  메서드가 없다.
-- `AuthAccount`는 `record`인데 compact constructor에서 null/포맷 검증이 없다.
-- `User`는 `nickname`, `profileImageUrl`을 raw `String`으로 보유 — 길이/포맷
-  invariant를 도메인이 보장하지 못한다 (현재는 `UserEntity`의
-  `requireNonNull`과 컬럼 길이에만 의존).
-- **권장**: `Nickname`, `ProfileImageUrl`, `ProviderId`, `PublicId`(공통),
-  `RefreshTokenId` 등 VO를 도입. `User.changeNickname(...)` 같은 도메인 메서드를
-  추가하고, 검증을 도메인으로 끌어올린다.
-- **수정 내용**: `Nickname`, `ProfileImageUrl` VO를 user-service 도메인에 도입.
-  `User`가 VO를 그대로 보유하고 `changeNickname`, `changeProfileImageUrl` 도메인
-  메서드 추가. `AuthAccount`에 compact constructor + `changeRole` 도메인 메서드
-  추가 (`RefreshToken`은 데드 코드라 별도 항목에서 제거 권고).
+### 3. Redis 세션 갱신을 원자적으로 처리
 
-#### (D-2) 도메인에 인프라 누수 — `AuthSession*Exception` — ✅ 수정 완료
-- `domain/exception/AuthSessionSerializationException`,
-  `AuthSessionDeserializationException`은 Jackson/Redis 직렬화 실패를 표현한다.
-  도메인은 “세션을 직렬화한다”는 사실을 알면 안 된다.
-- **권장**: 두 예외를 `infrastructure.adapter.out.cache`로 이동. 어댑터에서
-  잡아 `BaseException(AUTH_SESSION_SERIALIZATION_FAILED)`로 변환한다.
-- **수정 내용**: 두 예외 클래스를
-  `infrastructure.adapter.out.cache.exception` 패키지로 이동. 이전 `domain`
-  위치의 파일은 삭제. `AuthSessionRedisAdapter` import만 갱신.
+- 근거: `AuthSessionRedisAdapter.saveReplacingUserSessions()`는 `deleteByPublicId()` 후 session, refresh, userSessions 키를 순차 저장합니다. 관련 코드: `auth-service/src/main/java/com/dochiri/authservice/infrastructure/adapter/out/cache/AuthSessionRedisAdapter.java:33`.
+- 위험: 중간에 Redis 장애가 나면 기존 세션 삭제 후 새 세션 일부만 저장될 수 있습니다. 동시에 로그인/재발급이 들어오면 user session set과 실제 session key가 어긋날 수도 있습니다.
+- 제안:
+  - Redis transaction, Lua script, 또는 `SessionStore` 수준의 단일 원자 연산으로 묶습니다.
+  - `deleteByPublicId`와 신규 저장을 분리하지 말고 “사용자 단일 활성 세션 교체”라는 명령으로 명확히 모델링합니다.
+  - 동시 로그인/재발급 테스트를 추가합니다.
 
-#### (D-4) `HabitMemo` null 처리 패턴이 어색함 — ✅ 수정 완료
-- `HabitMemo.of(null)`이 `null`을 반환하는 정적 팩토리 — null-Object 또는
-  `Optional`로 표현하는 편이 의도가 명확하다.
-- `HabitRecord.getMemo()` 호출부마다 `record.getMemo() != null ? ... : null`
-  분기가 반복 (`HabitRecordMapper`, `UpdateHabitRecordService`,
-  `GetHabitRecordsService`).
-- **권장**: `HabitMemo.empty()` 싱글턴 또는 `Optional<HabitMemo>` 노출 후 매퍼
-  레이어에서만 null로 환원.
-- **수정 내용**: `HabitMemo`에 `EMPTY` 싱글턴 도입. `HabitMemo.of(null)`은
-  empty 싱글턴 반환. `HabitRecord.memo`는 항상 non-null. 호출부의
-  `!= null` 분기 제거 (`record.getMemo().value()`로 일원화).
+### 4. 외부 호출이 포함된 트랜잭션 경계 축소
 
-#### (D-5) 어그리게이트 명명 — `HabitRecord` vs `HabitCompletion` — ✅ 수정 완료
-- DB 테이블은 `habit_completions`, 도메인 record VO는 `HabitCompletion`,
-  엔티티/어그리게이트는 `HabitRecord`. 같은 개념을 두 어휘로 부른다.
-- **권장**: 한 쪽으로 통일. 도메인 어휘(유비쿼터스 언어)를 “Completion”으로
-  맞추는 편이 자연스럽다.
-- **수정 내용**: 파라미터 번들 역할이었던 `HabitCompletion` VO를 제거하고
-  `HabitRecord.create(habitId, completedAt, minutes, memo)` /
-  `record.update(completedAt, minutes, memo)` 시그니처로 흡수. 도메인 어휘는
-  `HabitRecord` 한쪽으로 통일했다. (DB 테이블/API URL 호환을 위해 “records”
-  명칭은 유지, 어그리게이트 이름과 정합성을 맞추려면 추후 일괄 rename 필요.)
+- 근거: `SocialAccountProvisioner.authenticateKakao()`가 `@Transactional` 안에서 카카오 인증, user-service 내부 호출, auth account 저장을 모두 수행합니다. 관련 코드: `auth-service/src/main/java/com/dochiri/authservice/application/service/SocialAccountProvisioner.java:25`.
+- 위험: DB 트랜잭션이 외부 HTTP 지연 시간만큼 길어지고, user-service 생성 성공 후 auth-service 저장 실패 같은 분산 일관성 문제가 남습니다.
+- 제안:
+  - 카카오 인증은 트랜잭션 밖에서 수행합니다.
+  - `find-or-create auth account`만 짧은 트랜잭션으로 묶습니다.
+  - user-service 생성과 auth account 저장 사이 실패에 대해 재시도 가능한 보상 흐름 또는 idempotency 기반 재진입 흐름을 명시합니다.
 
----
+## P1: 중복 제거와 설계 정리
 
-## 3. 헥사고날 관점
+### 5. 서비스별 SecurityFilterChain 템플릿화
 
-### 3.1 잘 된 점
+- 근거: `AuthServiceSecurityConfiguration`, `UserServiceSecurityConfiguration`, `HabitServiceSecurityConfiguration`가 거의 같은 설정을 반복합니다. 대표적으로 `auth-service/.../AuthServiceSecurityConfiguration.java:30`, `user-service/.../UserServiceSecurityConfiguration.java:30`, `habit-service/.../HabitServiceSecurityConfiguration.java:31` 이후가 동일 패턴입니다.
+- 문제: 내부 API 필터 순서, public endpoint, 예외 처리 설정 변경 시 서비스마다 수정해야 합니다.
+- 제안:
+  - `modules/security`에 `SecurityFilterChainBuilder` 또는 `SecurityChainCustomizer`를 둡니다.
+  - 기본 체인은 공통 모듈에서 만들고, habit-service만 guest filter를 추가하는 확장 지점을 둡니다.
+  - `ROLE_INTERNAL_API` 문자열도 공통 상수만 사용하게 정리합니다.
 
-- **포트가 도메인 객체를 그대로 노출**한다. `HabitRepository`, `AuthAccountRepository`
-  등이 entity가 아닌 도메인을 반환 → 응용 계층이 인프라에 종속되지 않음.
-- **JPA 어댑터가 매퍼로 도메인↔엔티티 변환**을 책임진다 (`HabitMapper`,
-  `HabitRecordMapper`, `AuthAccountMapper`, `UserMapper`).
-- **외부 시스템 어댑터를 `port.out`으로 추상화** — Kakao OAuth(`KakaoOAuthPort`),
-  내부 user-service 호출(`SocialUserCreatePort`), JWT(`TokenGeneratePort`,
-  `TokenParsePort`), Redis(`AuthSessionRepository`) 등.
-- **컨트롤러는 얇다.** 요청 DTO → Command → use case → 응답 DTO 변환만 한다.
+### 6. InternalRestClient 요청 생성 중복과 오류 은닉 개선
 
-### 3.2 개선 필요
+- 근거: `InternalRestClient.exchange()`와 `tryExchange()`가 거의 같은 요청 조립 코드를 반복합니다. 관련 코드: `modules/security/src/main/java/com/dochiri/security/internalapi/InternalRestClient.java:28`, `:54`.
+- 문제:
+  - `tryExchange()`는 모든 `RestClientException`을 `Optional.empty()`로 숨겨 인증 실패, 네트워크 장애, 5xx를 구분할 수 없습니다.
+  - 타임아웃, retry, circuit breaker, correlation id 전파가 없습니다.
+- 제안:
+  - 요청 생성 로직을 private method로 분리합니다.
+  - `tryExchange()`도 401/404처럼 의도된 실패만 empty로 처리하고, 5xx/네트워크 장애는 로깅 또는 도메인 에러로 구분합니다.
+  - `RestClient.Builder` bean을 받아 connect/read timeout, observation, 공통 헤더를 적용합니다.
 
-#### (H-1) `KakaoAuthorizeUseCase`가 use case 패턴을 깨뜨림 — ✅ 수정 완료
-```java
-public interface KakaoAuthorizeUseCase {
-    String buildAuthorizeUrl(String state);
-}
-```
-- 다른 use case는 모두 `Command`/`Result` DTO와 `execute(...)` 시그니처. 여기만
-  raw `String`.
-- 서비스 구현은 `KakaoOAuthPort`로 그대로 위임 — use case 추상화의 가치가 없다.
-- **권장**: `KakaoAuthorizeCommand(String state)` /
-  `KakaoAuthorizeResult(String url)` 도입하거나, 컨트롤러에서 포트를 직접 주입
-  받지 말고 use case 한 단계만 두되 서명을 다른 use case와 통일.
-- **수정 내용**: `KakaoAuthorizeCommand(String state)` /
-  `KakaoAuthorizeResult(String authorizeUrl)` record 도입.
-  `KakaoAuthorizeUseCase.execute(Command)` 시그니처로 통일하고
-  `KakaoAuthorizeService` · `AuthController`도 새 계약에 맞춰 갱신.
+### 7. 컨트롤러의 DTO 변환 반복 정리
 
-#### (H-2) `LogoutService`가 추상화를 우회한다 — ✅ 수정 완료
-- `ReissueTokenService`는 `TokenParsePort`로 토큰을 해석하지만,
-  `LogoutService`는 `JwtProvider`(security 모듈의 구체)를 직접 주입한다.
-- 같은 service 패키지에서 두 가지 추상화 레벨이 공존 → 일관성 깨짐.
-- **권장**: `LogoutService`도 `TokenParsePort`로 `tokenId` 추출. 만약
-  refresh-only 검증이 필요하면 `TokenParsePort`에 메서드 추가 (이미
-  `parseRefreshToken`이 동일 검증을 함 → 재사용 가능).
-- **수정 내용**: `LogoutService`가 `JwtProvider` 의존 제거 후
-  `TokenParsePort.parseRefreshToken`으로 일원화. `ReissueTokenService`와
-  동일한 추상화 레벨로 정렬되어 application 계층에서 security 모듈 구체에
-  더는 의존하지 않는다.
+- 근거: `HabitController`가 모든 endpoint에서 `owner()` 호출, command 생성, response 변환을 반복합니다.
+- 문제: 컨트롤러가 유스케이스 라우팅 외에 인증 주체 해석과 변환 코드를 많이 갖습니다.
+- 제안:
+  - `@CurrentHabitOwner` 같은 argument resolver를 도입해 `HabitOwner`를 파라미터로 주입합니다.
+  - command 생성은 request DTO 또는 작은 mapper로 일관되게 모읍니다.
+  - CRUD 응답 status도 생성은 `201 Created`, 삭제는 `204 No Content`처럼 REST 관례에 맞춥니다.
 
-#### (H-3) `AuthController#logout`이 도메인 예외를 직접 처리 — ✅ 수정 완료
-```java
-} catch (BaseException exception) {
-    if (!"INVALID_REFRESH_TOKEN".equals(exception.getErrorCode().name())) {
-        throw exception;
-    }
-}
-```
-- “이미 만료된 토큰으로 로그아웃해도 200” 정책을 컨트롤러가 처리. 응용 계층이
-  표현해야 할 정책이다.
-- **권장**: `LogoutService`가 invalid-token을 무시하도록 만들거나(idempotent
-  logout), use case 결과 타입에 “이미 로그아웃됨” 케이스를 표현.
-- **수정 내용**: `LogoutService`가 `INVALID_REFRESH_TOKEN`을 내부에서 잡고
-  세션이 없으면 `ifPresent`로 조용히 종료하도록 멱등화. `AuthController#logout`
-  의 `try/catch`/swallow 로직 제거.
+## P2: habit-service 성능/정합성
 
-#### (H-4) `UserRepository.save(User)`가 `Long`을 반환 — ✅ 수정 완료
-- 포트가 JPA 자동생성 PK(`Long`)를 그대로 노출 — 어댑터 세부 사항이 도메인
-  포트로 새어 나옴.
-- 이 `Long`은 auth-service가 외래 키로 보관하기 위한 값이라 “MSA 식별자
-  계약”으로 의미가 있긴 하다. 그래도 도메인 어휘는 `UserId(publicId)`다.
-- **권장**: `User.create(...)`가 `internalId`까지 포함하도록 정리하거나, port가
-  `User`를 반환하고 caller가 `user.getId()` / `user.getInternalId()`를 꺼내게
-  한다.
-- **수정 내용**: `User`에 nullable `internalId` 필드와 `User.from(internalId, ...)`
-  팩토리 추가. `UserRepository.save(User)` 시그니처가 `User`를 반환하고
-  caller(`CreateUserService`)는 `saved.getInternalId()`로 꺼내 사용. JPA
-  어댑터/매퍼는 영속화된 엔티티를 도메인으로 다시 매핑.
+### 8. 습관 순서 교환 로직의 임시 인덱스 제거
 
-#### (H-5) `GetCurrentUserUseCase`가 raw `String` 인자 — ✅ 수정 완료
-- 다른 use case는 모두 Command 객체를 받는데 여기만 `getCurrentUser(String publicId)`.
-- **권장**: `GetCurrentUserCommand(String publicId)` 도입 + `execute(...)` 시그니처
-  통일.
-- **수정 내용**: `GetCurrentUserCommand(String publicId)` record 도입(컴팩트
-  생성자에서 null 검증). `GetCurrentUserUseCase.execute(Command)` 시그니처로
-  통일하고 `UserController`/`GetCurrentUserService`도 일치시켰다.
+- 근거: `SwapHabitIndexService`는 `Integer.MAX_VALUE`를 임시 parking index로 사용해 세 번 저장합니다. 관련 코드: `habit-service/src/main/java/com/dochiri/habitservice/application/service/SwapHabitIndexService.java:21`, `:38`.
+- 위험: `Integer.MAX_VALUE`가 실제 인덱스와 충돌할 가능성이 있고, unique constraint를 추가하기 어렵습니다.
+- 제안:
+  - DB에서 `(owner_type, owner_public_id, sort_index)` unique constraint를 명확히 둡니다.
+  - repository에 `swapIndex(owner, sourceId, targetId)` 같은 명령형 메서드를 두고 단일 트랜잭션 안에서 lock 또는 bulk update로 처리합니다.
+  - 같은 habit id가 들어온 경우를 명시적으로 no-op 또는 validation error로 처리합니다.
 
-#### (H-6) Use case 메서드 시그니처 통일 — ✅ 수정 완료
-- habit-service: `execute(Command)` 일관됨. ✅
-- auth/user-service: `login` / `issue` / `reissue` / `logout` / `changeRole`
-  / `getCurrentUser` / `buildAuthorizeUrl` 등 메서드명이 제각각.
-- **권장**: 모든 use case를 `execute(Command)`로 통일하면 컨트롤러/테스트 패턴이
-  단순해진다 (선호 사항이므로 강제는 아님).
-- **수정 내용**: `KakaoLoginUseCase` · `ReissueTokenUseCase` ·
-  `AuthTokenIssueUseCase` · `LogoutUseCase` · `ChangeUserRoleUseCase` ·
-  `KakaoAuthorizeUseCase` · `GetCurrentUserUseCase`까지 모두 `execute(Command)`
-  로 일원화. 컨트롤러/구현체/테스트가 동일한 호출 패턴을 따른다.
+### 9. 잔디 집계를 DB 집계로 밀어내기
 
-#### (H-7) 포트 메서드 인자가 raw String — ✅ 수정 완료
-- `AuthAccountRepository.findByProviderAndProviderId(String provider, ...)` —
-  `AuthProvider` enum 인자로 받아야 호출부에서 `AuthProvider.KAKAO.name()`
-  변환을 강요하지 않는다 (`KakaoLoginService`에 그 변환이 노출돼 있다).
-- `HabitRecordRepositoryCustomImpl.findCompletionsForOwnerBetweenDates(String ownerType, ...)`
-  도 마찬가지. `OwnerType` enum을 그대로 받자.
-- **수정 내용**: `AuthAccountRepository.findByProviderAndProviderId`가
-  `AuthProvider` enum을 받도록 수정 (`KakaoLoginService`의 `.name()` 변환
-  제거, JPA 어댑터 내부에서만 `provider.name()` 호출). 마찬가지로
-  `HabitRecordRepositoryCustom.findCompletionsForOwnerBetweenDates`가
-  `OwnerType` enum을 받고 어댑터/캐스팅이 사라졌다.
+- 근거: `HabitRecordJpaAdapter.aggregateGrassByOwnerAndCompletedDateBetween()`는 DB에서 record entity 목록을 가져온 뒤 Java에서 grouping/sum을 수행합니다. 관련 코드: `habit-service/src/main/java/com/dochiri/habitservice/infrastructure/adapter/out/persistence/record/HabitRecordJpaAdapter.java:82`.
+- 문제: 기간이 길고 기록이 많아지면 불필요한 entity materialization이 발생합니다.
+- 제안:
+  - QueryDSL projection으로 `completedDate`, `count`, `sum(durationMinutes)`만 조회합니다.
+  - `HabitGrassAggregation` 전용 projection DTO를 repository custom query에서 반환합니다.
+  - `completed_date`, `habit_id` 복합 인덱스와 habit owner 조회 인덱스를 점검합니다.
 
-#### (H-8) `findById` + `loadById` 중복 — ✅ 수정 완료
-- `HabitRepository`, `HabitRecordRepository` 모두 `findById(Optional)` +
-  `loadById(throw)` 두 종류 메서드를 노출한다.
-- 호출부에서는 거의 항상 `loadById`만 사용 (`findById`는 거의 사용되지 않음).
-- **권장**: `loadById`만 남기거나, 명확한 정책으로 분리. (현 정책이 의도라면
-  Javadoc으로 명시.)
-- **수정 내용**: 두 포트의 `findById`(Optional) 시그니처를 제거하고
-  `loadById`만 노출. 어댑터(`HabitJpaAdapter`/`HabitRecordJpaAdapter`)는
-  내부에서 `findById` 호출 후 도메인 예외로 직접 변환.
+### 10. 첫 습관 생성일 조회 최적화
 
-#### (H-9) 매퍼/DTO 중복 — ✅ 수정 완료
-- `CreateHabitResult.from`, `UpdateHabitNameService#toResult`, `GetHabitsService#toDto`,
-  `GetHabitDetailService` 등 모두 동일한 `Habit` → DTO 변환을 반복한다.
-- **권장**: `HabitView`(공통 DTO) 한 개를 application 계층에서 정의해 모든
-  Result가 이를 사용하거나, MapStruct/공통 DtoFactory로 위임.
-- **수정 내용**: 공통 `HabitView` record를 `application/port/in/dto`에 도입하고
-  `HabitView.from(Habit)` / `HabitView.from(List<Habit>)` 팩토리로 변환을
-  일원화. `CreateHabitResult` · `UpdateHabitNameResult` ·
-  `GetHabitDetailResult` · `GetHabitsResult` · `SwapHabitIndexResult`가
-  `HabitView`를 그대로 보관. 응답 DTO/서비스에서 중복 매핑 제거.
+- 근거: `GetHabitGrassService.firstHabitCreatedDate()`가 owner의 모든 habit을 가져온 뒤 stream에서 최소 생성일을 계산합니다. 관련 코드: `habit-service/src/main/java/com/dochiri/habitservice/application/service/GetHabitGrassService.java:61`.
+- 제안:
+  - `HabitRepository`에 `findFirstCreatedAtByOwner()`를 추가해 DB에서 `min(created_at)`만 조회합니다.
+  - 잔디 조회는 `minCreatedAt`와 aggregate query 두 개만 호출하도록 단순화합니다.
 
----
+## P3: 설정/빌드 정리
 
-## 4. MSA 관점
+### 11. Gradle 의존성 중복 제거
 
-### 4.1 잘 된 점
+- 근거: `auth-service`, `habit-service`, `user-service`가 web, validation, data-jpa, config, eureka, swagger, jjwt, lombok, test 의존성을 거의 반복합니다.
+- 제안:
+  - root `build.gradle`에 서비스 공통 convention을 만들거나 `buildSrc`/convention plugin으로 분리합니다.
+  - `modules:security`가 JWT API를 노출한다면 개별 서비스의 `io.jsonwebtoken:jjwt-api` 직접 의존이 정말 필요한지 재검토합니다.
+  - QueryDSL annotation processor 설정도 JPA 사용 서비스에 공통 적용되게 정리합니다.
 
-- 서비스마다 독립 DB, 독립 도메인, Eureka 기반 디스커버리, Gateway 단일
-  진입점 — 정석적인 구성.
-- **`InternalUserController`**(`/internal/users`)와
-  **`UserController`**(`/api/users/me`)를 패키지/URL prefix로 분리한 점은 좋다.
+### 12. 사용하지 않는 Kafka 모듈의 책임 재확인
 
-### 4.2 개선 필요
+- 근거: `modules:kafka`와 docker compose의 Kafka broker가 존재하지만, 현재 주요 서비스 코드에서 Kafka publisher/consumer 사용은 보이지 않습니다.
+- 제안:
+  - 가까운 계획에 없으면 compose 기본 실행에서 Kafka를 제외하고 별도 profile로 분리합니다.
+  - 사용할 계획이면 auth/user/habit 간 이벤트 경계를 문서화하고, 이벤트 스키마 모듈을 따로 둡니다.
 
-#### (M-1) auth-service가 user-service의 PK를 직접 저장 — ✅ 수정 완료
-```java
-@Entity @Table(name = "auth_users")
-public class AuthAccountEntity {
-    @Id @Column(updatable=false) private Long userId; // ← user-service의 PK
-    ...
-}
-```
-- user-service의 내부 식별자(`Long`)가 auth-service DB까지 흘러간다. user-service가
-  PK 전략을 바꾸면 auth-service 스키마가 깨진다 — 강한 결합.
-- **권장**: 서비스 간 식별자는 `publicId`(UUID) 한 가지만 공유. auth-service는
-  자체 PK를 별도로 가지고, FK는 `publicId(string)` 한 컬럼만 보관한다.
-- **수정 내용**: `AuthAccountEntity`는 자체 `@GeneratedValue` `id`를 PK로 보유하고
-  user-service 식별자는 `publicId(string)` 단 한 컬럼만 보관한다. `AuthAccount`
-  도메인/`CreateSocialUserResult` DTO/`SocialUserCreatePort` 어디에도 user-service
-  의 `Long` PK가 노출되지 않는다. (`Long internalId` 잔존 위치는 `RefreshToken*`
-  데드코드 한정 — 5장에서 별도 제거 권고.)
+### 13. 운영 설정과 로컬 설정 분리
 
-#### (M-2) 내부 통신 URL이 환경변수 fallback `localhost:8081` — ✅ 수정 완료
-```java
-@Value("${app.user-service.base-url:http://localhost:8081}") String userServiceBaseUrl
-```
-- Gateway/Eureka 환경에서 다른 서비스는 `lb://service-name`을 쓰지만, 여기는
-  hardcoded localhost로 fallback이 가능 → 운영 환경에서 사고 발생 가능.
-- **권장**: `WebClient`/`RestClient`에 LoadBalanced 빈을 사용하고
-  `lb://user-service`로 호출. fallback URL을 두지 않는다.
-- **수정 내용**: `UserServiceSocialUserCreateAdapter`가 `@LoadBalanced
-  RestClient.Builder`를 주입받아 `baseUrl("lb://user-service")` 한 곳으로
-  고정. localhost fallback 또는 `app.user-service.base-url` 프로퍼티 자체가
-  존재하지 않는다.
+- 근거: `gateway/src/main/resources/application.yml:73`은 JWT secret 기본값을 갖고 있고, docker compose에도 여러 기본 비밀번호가 있습니다.
+- 제안:
+  - 운영 profile에서는 secret/password 기본값을 제거합니다.
+  - `application-local.yml`, `application-prod.yml`로 의도를 분리합니다.
+  - README의 Redis 설명은 “리프레시 토큰 저장”에서 “인증 세션/refresh token id 기반 session 저장”처럼 현재 구현에 맞게 갱신합니다.
 
-#### (M-3) `InternalUserController`에 보안 미적용 — ✅ 수정 완료
-- 인증/인가 어노테이션이 없다. Gateway가 잘못 라우팅하면 외부에서도 호출 가능.
-- **권장**:
-  1. `/internal/**` 경로를 Gateway에서 명시적으로 차단.
-  2. 서비스 간 호출용 토큰/mTLS 도입.
-  3. SecurityConfiguration에서 `/internal/**`는 내부망 IP 화이트리스트로 한정.
-- **수정 내용**:
-  1. Gateway는 `/api/**` 경로만 라우팅하므로 외부에서 `/internal/**`은
-     라우트 자체가 없다(암묵적 차단).
-  2. user-service에 `InternalApiTokenAuthenticationFilter` + `UserServiceSecurityConfiguration`
-     도입. `/internal/**` 요청은 `X-Internal-Api-Token` 헤더가
-     `internal-api.server.token`과 일치할 때만 통과하며, `ROLE_INTERNAL_API`
-     권한을 받아 `hasRole("INTERNAL_API")` 매처로 격리. 토큰 누락/불일치 시
-     401. auth-service의 `UserServiceSocialUserCreateAdapter`가 같은 헤더로
-     호출하도록 이미 정합.
+## P4: 테스트 보강
 
-#### (M-4) Kakao 로그인 1회당 토큰/유저 정보 호출 2번 + 동시 로그인 충돌 처리 — ✅ 수정 완료
-- `KakaoLoginService`는 신규 사용자 시 user-service에 HTTP 호출하여 사용자 생성,
-  실패 시 `AuthAccountJpaAdapter`에서 동시성 충돌을 다시 update로 회복한다.
-- 분산 트랜잭션이 아니라 **eventually-consistent**한 보상 패턴이지만, 명세가
-  없다 — 사용자 생성에 성공하고 auth_users 저장에 실패하면 user-service에
-  orphan user가 남는다.
-- **권장**: outbox 패턴 또는 Kafka 이벤트 기반(이미 모듈은 존재) 비동기 처리,
-  혹은 idempotency-key를 `providerId`로 부여하고 user-service `POST /internal/users`를
-  멱등하게 만든다.
-- **수정 내용**: `KakaoLoginService.provisionSocialAccount`가
-  `provider:providerId` 형식의 `idempotencyKey`를 생성해 `CreateSocialUserCommand`
-  로 전달. user-service `users` 테이블에 `idempotencyKey` 유니크 컬럼 +
-  `CreateUserService.execute`에서 사전 조회 후 동시 INSERT 충돌 시
-  `DataIntegrityViolationException`을 잡아 동일 키 사용자를 재조회·반환하는
-  멱등 보상까지 추가. 보상 성공 시 auth-service가 같은 `publicId`를 받아
-  orphan 가능성을 제거. (Kafka 기반 비동기 보상은 별도 과제.)
+### 14. 통합 시나리오 테스트 추가
 
-#### (M-5) Kafka 모듈은 있으나 사용처 0건
-- `modules/kafka` 의존성 / `docker-compose`의 Kafka는 있지만, 실제 produce/consume
-  코드는 모든 서비스에서 발견되지 않음.
-- **권장**: 사용 계획을 README/CLAUDE에 명시하거나, 단기간 사용 계획이 없으면
-  의존성을 제거.
+현재 단위 테스트는 꽤 있지만, 서비스 경계와 Redis/내부 API 흐름의 회귀를 잡는 테스트가 더 필요합니다.
 
----
+우선 추가할 테스트:
 
-## 5. 데드 코드 / 일관성 이슈
+- 카카오 로그인 중 user-service 생성 성공 후 auth 저장 실패 재시도 시 idempotency 보장
+- refresh token 재발급 시 기존 session 교체와 gateway session 확인 일치
+- guest session으로 생성한 habit을 로그인 후 user owner로 migration
+- 내부 API 토큰 누락/불일치 시 `/internal/**` 접근 차단
+- habit record 중복 날짜 생성 시 도메인 에러 응답
+- 잔디 조회에서 `from > to`, 미래 날짜, 첫 습관 생성일 이전 요청 처리
+- 같은 habit id로 index swap 요청
 
-| 항목 | 위치 | 조치 |
-|---|---|---|
-| `RefreshToken` (도메인) | `auth-service/domain/RefreshToken.java` | **삭제** — Redis 기반 `AuthSession`으로 대체됨 |
-| `RefreshTokenRepository` | `application/port/out` | **삭제** |
-| `RefreshTokenJpaAdapter` | `infrastructure/adapter/out/persistence` | **삭제** (`@Repository` 어노테이션도 누락 → 미주입 확인) |
-| `RefreshTokenJpaRepository` | 동일 디렉토리 | **삭제** |
-| `RefreshTokenEntity` | 동일 디렉토리 + `refresh_tokens` 테이블 | **삭제** + 마이그레이션 |
-| `HabitRecordRepository#findByHabitIdAndCompletedAt` | port + adapter + JpaRepository | **삭제** (호출처 없음) |
-| `HabitRecordEntity#completed` | 항상 true (`HabitRecordMapper.COMPLETED`) | 컬럼 삭제 또는 의미 부여 |
-| `HabitController#userId(JwtPrincipal)` | habit-service controller | 메서드명을 `ownerPublicId`로 변경 (실제 반환은 publicId) |
-| `Asia/Seoul` 하드코딩 | `HabitRecordEntity` + `CreateHabitRecordService` | 공통 상수 또는 `time` 모듈로 이동 |
-| `AuthErrorCode.KAKAO_LOGIN_NOT_CONFIGURED` | 정의만 있고 사용처 없음 | 사용 또는 삭제 |
-| `AuthAccountJpaAdapter#save`의 `@Transactional` | 어댑터에 트랜잭션 어노테이션 | 트랜잭션 경계는 application service에 있는 편이 헥사고날 원칙. 어댑터에서는 제거 가능 |
+## 권장 작업 순서
 
----
+1. `INTERNAL_API_TOKEN`, `JWT_SECRET`, config/eureka 기본 계정의 profile별 설정 정리
+2. `modules/security`에 공통 SecurityFilterChain builder와 JWT 검증 컴포넌트 추출
+3. `InternalRestClient` 리팩토링 및 타임아웃/오류 분류 추가
+4. `AuthSessionRedisAdapter` 원자 저장 방식 개선
+5. `SocialAccountProvisioner` 트랜잭션 경계 축소
+6. habit-service 잔디 집계와 첫 생성일 조회를 DB projection으로 변경
+7. `SwapHabitIndexService`를 repository 명령으로 내리고 unique constraint 추가
+8. 위 변경을 보호하는 통합 테스트 작성
 
-## 6. 우선순위별 리팩토링 권고
-
-### 🔴 High — 정합성/안정성에 직결
-1. **(M-1)** auth-service에서 user-service PK(`Long`) 의존 제거 → `publicId` 중심
-   설계로 전환. ✅
-2. **데드 코드 제거** — `RefreshToken*` 5개 파일 + 테이블 마이그레이션.
-3. **(M-3)** `/internal/**` 경로 보안 (Gateway 라우팅 + Security 설정). ✅
-4. **(M-2)** user-service URL `lb://`로 통일. ✅
-5. **(M-4)** social user 생성 멱등화. ✅
-
-### 🟡 Mid — 헥사고날·DDD 일관성
-6. **(D-1)** `User`, `AuthAccount`에 VO 도입 + 도메인 메서드 추가.
-7. **(D-2)** `AuthSession*Exception`을 인프라로 이동.
-8. **(H-1)(H-5)** `KakaoAuthorizeUseCase` / `GetCurrentUserUseCase`도 Command·Result
-   패턴으로 통일.
-9. **(H-2)(H-3)** Logout 흐름을 use case 안으로 끌어들이고 `TokenParsePort`로
-   추상화.
-10. **(H-7)** Repository 포트의 raw String 인자를 enum으로 교체.
-
-### 🟢 Low — 가독성/유지보수
-11. **(D-4)** `HabitMemo`의 null 패턴을 Optional 또는 empty-VO로 정리.
-12. **(D-5)** Record vs Completion 어휘 통일.
-13. **(H-9)** `Habit → DTO` 변환 코드 중복 제거.
-14. **(H-8)** `findById`/`loadById` 정책 명문화.
-15. `Asia/Seoul` 상수 공통화, `HabitRecordEntity#completed` 정리, 로그아웃
-   컨트롤러 swallow 로직 제거.
-16. (M-5) Kafka 모듈 사용 계획 문서화 또는 의존성 제거.
-
----
-
-## 7. 참고 — 잘 잡힌 디테일
-
-- `Habit.assertOwner` / `HabitOwner.user(...)` / `HabitId.newId()`처럼 도메인이
-  스스로 invariant를 표현하는 메서드명.
-- `AuthAccountJpaAdapter`가 `DataIntegrityViolationException` 동시 INSERT 충돌을
-  retry로 회복하는 시도 (보상 흐름 인지).
-- `JwtTokenAdapter`가 `TokenGeneratePort`/`TokenParsePort`를 동시에 구현하면서
-  application 코드에는 두 추상화로 분리 노출 — 인터페이스 분리 원칙(ISP) 준수.
-- `BaseException` + `ProblemDetail` + `MDC traceId` 결합 — observability 친화적.
-- 모듈 구성(`error-handling`, `security`, `jpa`, `kafka`, `time`, `swagger`,
-  `redis`)이 잘게 쪼개져 서비스가 필요한 것만 의존.
